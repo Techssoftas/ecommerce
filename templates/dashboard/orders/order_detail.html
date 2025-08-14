@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Order #{{ order.order_number }} - Django Ecommerce{% endblock %}
+
+{% block content %}
+
+
+   <div class="main-content">
+
+                <div class="page-content">
+                    <div class="container-fluid">
+
+                        <!-- start page title -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                    <h4 class="mb-sm-0">Order Details</h4>
+
+                                    <div class="page-title-right">
+                                        <ol class="breadcrumb m-0">
+                                            <li class="breadcrumb-item active">Order Details</li>
+                                        </ol>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end page title -->
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body d-flex align-items-center flex-wrap gap-3">
+                                        <div class="flex-grow-1">
+                                            <p class="text-muted mb-2">Order Number</p>
+                                            <h6 class="fs-md mb-0">#{{order.order_number}}</h6>
+                                        </div>
+                                        <div class="flex-shrink-0 text-end">
+                                            <h6 class="fs-md mb-2">{{ order.created_at|date:"d M, Y" }}  <i class="bi bi-calendar4-event align-baseline ms-1"></i></h6>
+                                            <p class="text-muted mb-0">{{  order.created_at|date:"h:i A" }} <i class="bi bi-clock align-baseline ms-1"></i></p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <a href="{% url 'dashboard:download_invoice' order.order_number %}" class="btn btn-primary"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+                                        </div>
+                                    </div>
+                                </div><!--end card-->
+                            </div><!--end col-->
+                        </div><!--end row-->
+
+                        <div class="row">
+                            <div class="col-xxl-3 col-md-6">
+                                <div class="card border-bottom border-2 border-secondary">
+                                    <div class="card-body d-flex gap-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-3">Customer Info</h6>
+                                            <p class="fw-medium fs-md mb-1">{{order.user.username}}</p>
+                                            <p class="text-muted mb-1">{{order.user.email}}</p>
+                                            <p class="text-muted mb-0">+{{order.user.phone}}</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            {% if order.user.profile_image %}
+                                                <img src="{{order.user.profile_image.url}}" alt="" class="avatar-sm rounded img-thumbnail">
+                                            {% else %}
+                                            <img src="{% static 'dashboard/images/users/48/avatar-1.jpg' %}" alt="" class="avatar-sm rounded img-thumbnail">
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                            <div class="col-xxl-3 col-md-6">
+                                <div class="card border-bottom border-2 border-primary">
+                                    <div class="card-body d-flex gap-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-3">Shipping Info</h6>
+                                            {% if order.shipping_address %}
+                                                <p class="fw-medium fs-md mb-1">
+                                                    {{ order.shipping_address.user.get_full_name }}
+                                                </p>
+                                                <p class="text-muted mb-1">
+                                                    {{ order.shipping_address.address_line1 }}
+                                                    {% if order.shipping_address.address_line2 %}
+                                                        , {{ order.shipping_address.address_line2 }}
+                                                    {% endif %}
+                                                </p>
+                                                <p class="text-muted mb-1">
+                                                    {{ order.shipping_address.city }}, {{ order.shipping_address.state }}
+                                                </p>
+                                                <p class="text-muted mb-1">
+                                                    {{ order.shipping_address.postal_code }}
+                                                </p>
+                                                <p class="text-muted mb-0">
+                                                   Phone : {{ order.shipping_address.phone }}
+                                                </p>
+                                            {% else %}
+                                                <p class="text-muted">No shipping address found.</p>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-sm">
+                                                <div class="avatar-title bg-primary-subtle text-primary fs-3 rounded">
+                                                    <i class="ph-truck"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                            <div class="col-xxl-3 col-md-6">
+                                <div class="card border-bottom border-2 border-info">
+                                    <div class="card-body d-flex gap-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-3">Billing Info</h6>
+                                            <p class="fw-medium fs-md mb-1">Bryana Watsica</p>
+                                            <p class="text-muted mb-1">730 Madison Ave, Covington</p>
+                                            <p class="text-muted mb-0">Kentucky, United States</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-sm">
+                                                <div class="avatar-title bg-info-subtle text-info fs-3 rounded">
+                                                    <i class="ph-file-text"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                            <div class="col-xxl-3 col-md-6">
+                                <div class="card border-bottom border-2 border-light">
+                                    <div class="card-body d-flex gap-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-3">Payment Info</h6>
+                                            {% if order.payment %}
+                                                <p class="fw-medium fs-md mb-1">
+                                                    ID: #{{ order.payment.transaction_id|default:"N/A" }}
+                                                </p>
+                                                <p class="text-muted mb-1">
+                                                    Payment Method: <b>{{ order.payment.get_payment_method_display }}</b>
+                                                </p>
+                                                <p class="text-muted mb-0">
+                                                    Amount: <b>₹{{ order.payment.amount }}</b>
+                                                </p>
+                                                <p class="text-muted mb-0">
+                                                    Status: <b>{{ order.payment.get_status_display }}</b>
+                                                </p>
+                                            {% else %}
+                                                <p class="text-muted">No payment details available.</p>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-sm">
+                                                <div class="avatar-title bg-light text-body fs-3 rounded">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30" x="0" y="0" viewBox="0 0 32 32" style="enable-background:new 0 0 30 30" xml:space="preserve" class=""><g><g fill="#000" fill-rule="evenodd" clip-rule="evenodd"><path d="M8 10a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1zM8 5a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1z" fill="#000000" opacity="1" data-original="#000000" class=""></path><path d="M12.5 5a1 1 0 0 1 1-1 7.5 7.5 0 0 1 0 15h-1.913l9.086 8.26a1 1 0 1 1-1.346 1.48l-11-10A1 1 0 0 1 9 17h4.5a5.5 5.5 0 0 0 0-11 1 1 0 0 1-1-1z" fill="#000000" opacity="1" data-original="#000000" class=""></path></g></g></svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                        </div><!--end row-->
+
+                        <div class="row">
+                            <div class="col-xxl-9">
+                                <div class="card">
+                                    <div class="card-header d-flex align-items-center gap-3">
+                                        <h6 class="card-title mb-0 flex-grow-1">Product Items</h6>
+                                        <div class="flex-shrink-0">
+                                            <button type="button" class="btn btn-danger btn-sm"><i class="ph-x align-middle"></i> Cancel Order</button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table align-middle table-nowrap table-borderless">
+                                                <thead class="table-active">
+                                                    <tr>
+                                                        <th>Product Items</th>
+                                                        
+                                                        <th>Item Color</th>
+                                                        <th>Item Size</th>
+                                                        <th>Quantity</th>
+                                                        <th class="text-end">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for item in order.items.all %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="product-item d-flex align-items-center gap-2">
+                                                                    <div class="avatar-sm flex-shrink-0">
+                                                                        <div class="avatar-title bg-light rounded">
+                                                                            {% if item.variant.variant_image %}
+                                                                                <img src="{{ item.variant.variant_image.url }}" alt="{{ item.product.name }}" class="avatar-xs">
+                                                                            {% elif item.product.primary_image %}
+                                                                                <img src="{{ item.product.primary_image.url }}" alt="{{ item.product.name }}" class="avatar-xs">
+                                                                            {% else %}
+                                                                                <img src="{% static 'dashboard/images/products/default.png' %}" alt="No image" class="avatar-xs">
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex-grow-1">
+                                                                        <h6 class="fs-md"><a class="text-reset">{{ item.product.name }}</a></h6>
+                                                                        <p class="text-muted mb-0"><a href="#!" class="text-reset">{{ item.product.category.name }}</a></p>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            
+                                                            <td><button type="button" class="btn rounded-pill mt-2" style="background-color: {{ item.variant.hex_color_code }}; border: 1px solid #ccc;">
+                                                                    </button></td>
+                                                            <td>{{ item.size }}</td>
+                                                            <td>{{ item.quantity }}</td>
+                                                            
+                                                            <td class="fw-medium text-end">₹{{ item.price }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="row gy-3">
+                                            <div class="col-sm-6 col-lg-6 col-xl-3">
+                                                <div class="text-center border border-dashed p-3 rounded">
+                                                    <p class="text-muted mb-2">Order Date</p>
+                                                    <h6 class="fs-md mb-0">{{ order.created_at }}</h6>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-6 col-xl-3">
+                                                <div class="text-center border border-dashed p-3 rounded">
+                                                    <p class="text-muted mb-2">Delivery Date</p>
+                                                    <h6 class="fs-md mb-0">{{ order.delivery_date }}</h6>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-6 col-xl-3">
+                                                <div class="text-center border border-dashed p-3 rounded">
+                                                    <p class="text-muted mb-2">Order Amount</p>
+                                                    <h6 class="fs-md mb-0">₹{{order.total_amount}}</h6>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-6 col-xl-3">
+                                                <div class="text-center border border-dashed p-3 rounded">
+                                                    <p class="text-muted mb-2">Order Status</p>
+
+                                                    {% if order.status == 'pending' %}
+                                                    <span class="badge bg-warning-subtle text-warning mb-0">Pending</span>
+                                                    {% elif order.status == 'confirmed' %}
+                                                    <span class="badge bg-success-subtle text-success mb-0">Confirmed</span>
+                                                    {% elif order.status == 'shipped' %}
+                                                    <span class="badge bg-dark-subtle text-dark mb-0">Shipped</span>
+                                                    {% elif order.status == 'delivered' %}
+                                                    <span class="badge bg-success-subtle text-success mb-0">Delivered</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger-subtle text-danger mb-0">{{order.status}}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!--end card-->
+                            </div><!--end col-->
+                            <div class="col-xxl-3">
+                                <div class="row">
+                                    <div class="col-xxl-12 col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="card-title mb-0">Total order amount</h6>
+                                            </div>
+                                            <div class="card-body pt-4">
+                                                <div class="table-responsive table-card">
+                                                    <table class="table table-borderless mb-0">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Sub Total :</td>
+                                                                <td class="text-end">
+                                                                    ₹{{ order.total_mrp }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Discount <span class="text-muted">(STEEX30)</span> : :</td>
+                                                                <td class="text-end">- ₹{{order.total_discount}} </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shipping Charge :</td>
+                                                                <td class="text-end">₹ 0.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Estimated Tax :</td>
+                                                                <td class="text-end">₹ 0.00</td>
+                                                            </tr>
+                                                            <tr class="border-top border-top-dashed">
+                                                                <th scope="row">Total (INR) :</th>
+                                                                <th class="text-end">₹ {{order.total_amount}}</th>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!--end col-->
+                                    <div class="col-xxl-12 col-lg-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <h5 class="card-title flex-grow-1 mb-0">Logistics Details</h5>
+                                                    <div class="flex-shrink-0">
+                                                        <a href="javascript:void(0);" class="badge bg-secondary-subtle text-secondary">Track Order</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body border-top border-dashed">
+                                                <div>
+                                                    <h6 class="text-muted float-end mb-0">ID: MFDS1400457854</h6>
+                                                    <h5 class="fs-lg clearfix"><a href="#!" class="text-reset">M-Tex</a></h5>
+                                                    <p class="text-muted mb-2 mb-md-0">Scan barcode to track </p>
+                                                    <div class="text-center p-3 pb-0">
+                                                        <img alt="Scan Me!" src="{% static 'dashboard/images/barcode.svg' %}" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!--end col-->
+                                </div><!--end row-->
+                            </div><!--end col-->
+                        </div><!--end row-->
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-header d-flex align-items-center flex-wrap gap-2">
+                                        <h6 class="card-title flex-grow-1 mb-0">Order Status</h6>
+                                        <div class="flex-shrink-0">
+                                            <button type="button" class="btn btn-danger btn-sm"><i class="ph-x align-middle"></i> Cancel Order</button>
+                                            <a href="{% url 'dashboard:download_invoice' order.order_number %}" class="btn btn-primary btn-sm"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="progress progress-step-arrow progress-info mb-4">
+                                            <a href="javascript:void(0);" class="progress-bar active" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"><i class="ph-bag align-baseline me-1 d-none d-lg-inline-block"></i> Order Placed</a>
+                                            <a href="javascript:void(0);" class="progress-bar active d-none d-xxl-inline-block" role="progressbar" style="width: 100%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"><i class="ph-package align-middle me-1"></i> Packed</a>
+                                            <a href="javascript:void(0);" class="progress-bar pending d-none d-md-inline-block" role="progressbar" style="width: 100%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"><i class="ph-truck align-baseline me-1 d-none d-lg-inline-block"></i> Shipping</a>
+                                            <a href="javascript:void(0);" class="progress-bar d-none d-md-inline-block" role="progressbar" style="width: 100%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"><i class="ph-bicycle align-baseline me-1 d-none d-lg-inline-block"></i> Out For Delivery</a>
+                                            <a href="javascript:void(0);" class="progress-bar" role="progressbar" style="width: 100%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"><i class="ph-house-line align-baseline me-1 d-none d-lg-inline-block"></i> Delivered</a>
+                                        </div>
+                                        <div id="map" class="leaflet-map leaflet-gray" style="height: 380px;"></div>
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                        </div><!--end row-->
+
+                    </div>
+                    <!-- container-fluid -->
+                </div>
+                <!-- End Page-content -->
+
+            </div>
+            <!-- end main content-->
+
+  <script src="{% static 'dashboard/js/pages/ecommerce-order-overview.init.js' %}"></script>
+    <!-- leaflet-routing-machine -->
+    <script src="{% static 'dashboard/libs/leaflet-routing-machine/leaflet-routing-machine.min.js' %}"></script>
+     <!-- leaflet plugin -->
+    <script src="{% static 'dashboard/libs/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'dashboard/js/leaflet-us-states.js' %}"></script>
+
+{% endblock %}

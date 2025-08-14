@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Variant - {{ product.name }} - Django Ecommerce{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Edit Variant: {{ variant.variant_type }} - {{ variant.variant_value }}</h1>
+            <a href="{% url 'dashboard:product_edit' product.pk %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Product
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Variant Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary">Update Variant</button>
+                    <a href="{% url 'dashboard:product_edit' product.pk %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Product Info</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Product:</strong> {{ product.name }}</p>
+                <p><strong>Base Price:</strong> ₹{{ product.get_price }}</p>
+                <p><strong>Current Variant:</strong> {{ variant.variant_type }} - {{ variant.variant_value }}</p>
+                <p><strong>Variant Price:</strong> ₹{{ variant.get_price }}</p>
+                <p><strong>Stock:</strong> {{ variant.stock }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

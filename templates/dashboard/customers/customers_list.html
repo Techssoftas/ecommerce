@@ -1,0 +1,370 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+
+
+<!-- start main content-->
+<div class="main-content">
+  <div class="page-content">
+    <div class="container-fluid">
+      <!-- start page title -->
+      <div class="row">
+        <div class="col-12">
+          <div
+            class="page-title-box d-sm-flex align-items-center justify-content-between"
+          >
+            <h4 class="mb-sm-0">Customers</h4>
+
+            <div class="page-title-right">
+              <ol class="breadcrumb m-0">
+                <li class="breadcrumb-item active">Customers</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end page title -->
+      <div class="row mb-2">
+                            <div class="col-12">
+
+                                {% if messages %}
+                                {% for message in messages %}
+                                    <div
+                                    class="alert alert-{{ message.tags }} alert-dismissible fade show mb-xl-0 mb-2"
+                                    role="alert"
+                                    id="alert-{{ forloop.counter }}"
+                                    >
+                                    <strong>{{ message }}..!</strong>
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="alert"
+                                        aria-label="Close"
+                                    ></button>
+                                    </div>
+                                {% endfor %}
+                                {% endif %}
+                                
+
+                            </div>
+                        </div>
+
+                        
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex align-items-center flex-wrap gap-3">
+                <div class="flex-grow-1">
+                  <h3 class="card-title mb-0">Customers List</h3>
+                </div>
+                <div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-secondary">
+                      <i class="ph-cloud-arrow-up align-middle me-1"></i> Export
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--end col-->
+      </div>
+      <!--end row-->
+
+      
+      <!--start table row-->
+          <div class="row" id="customer-list">
+            <div class="col-xxl-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row gy-3">
+                            <div class="col-xl-4">
+                                <div class="search-box">
+                                    <input type="text" class="form-control search" id="search-input" placeholder="Search customer, email, phone..." value="{{ search_query|default:'' }}">
+                                    <i class="ri-search-line search-icon"></i>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-4">
+                                <select class="form-control" id="idStatus" data-choices data-choices-search-false>
+                                    <option value="all" {% if not current_status %}selected{% endif %}>All Statuses</option>
+                                    <option value="Active" {% if current_status == 'Active' %}selected{% endif %}>Active</option>
+                                    <option value="Unactive" {% if current_status == 'Unactive' %}selected{% endif %}>Unactive</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-3 col-md-4">
+                                <select class="form-control" id="sortBy" data-choices data-choices-search-false>
+                                    <option value="id">Sort by ID</option>
+                                    <option value="customer">Sort by Username</option>
+                                    <option value="email">Sort by Email</option>
+                                    <option value="date">Sort by Join Date</option>
+                                    <option value="status">Sort by Status</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-md-4">
+                                <button class="btn btn-subtle-primary w-100" onclick="filterData();">
+                                    <i class="bi bi-funnel align-baseline me-1"></i> Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive table-card">
+                            <table class="table align-middle table-nowrap">
+                                <thead class="text-muted table-light">
+                                    <tr>
+                                        <th class="sort cursor-pointer" data-sort="id">ID</th>
+                                        <th class="sort cursor-pointer" data-sort="customer">Customer</th>
+                                        <th class="sort cursor-pointer" data-sort="email">Email</th>
+                                        <th class="sort cursor-pointer" data-sort="contact">Contact</th>
+                                        <th class="sort cursor-pointer" data-sort="date">Join Date</th>
+                                        <th class="sort cursor-pointer" data-sort="status">Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list" id="customer-table-body">
+                                    {% for customer in customers %}
+                                    <tr data-id="{{ customer.id }}" data-customer="{{ customer.username }}" data-email="{{ customer.email }}" data-contact="{{ customer.phone|default:'N/A' }}" data-date="{{ customer.date_joined|date:'Y-m-d' }}" data-status="{% if customer.is_active %}Active{% else %}Unactive{% endif %}">
+                                        <td class="id">
+                                            <a href="{% url 'dashboard:customer_detail' customer.id %}" class="fw-medium link-primary">{{ customer.id }}</a>
+                                        </td>
+                                        <td class="customer">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-2">
+                                                    <div>
+                                                        <img class="avatar-xs rounded-circle customer-image-elem" alt="" src="{% if customer.profile_image %}{{ customer.profile_image.url }}{% else %}{% static 'dashboard/images/users/32/avatar-2.jpg' %}{% endif %}">
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h5 class="fs-base mb-0">
+                                                        <a href="{% url 'dashboard:customer_detail' customer.id %}" class="text-reset customer-name-elem">{{ customer.username }}</a>
+                                                    </h5>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="email">{{ customer.email }}</td>
+                                        <td class="contact">{{ customer.phone|default:"N/A" }}</td>
+                                        <td class="date">{{ customer.date_joined|date:"d M, Y" }}</td>
+                                        <td class="status">
+                                            <span class="badge bg-{% if customer.is_active %}success{% else %}secondary{% endif %}-subtle text-{% if customer.is_active %}success{% else %}secondary{% endif %}">
+                                                {% if customer.is_active %}Active{% else %}Unactive{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'dashboard:customer_edit' customer.id %}" data-bs-toggle="modal" data-bs-target="#editModal" class="btn btn-subtle-secondary btn-icon btn-sm edit-item-btn">
+                                                <i class="ph-pencil"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-subtle-danger btn-icon btn-sm remove-item-btn" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-customer-id="{{ customer.id }}">
+                                                <i class="ph-trash"></i>
+                                            </a>
+                                            <!-- deleteRecordModal -->
+                                            <div id="deleteRecordModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <button type="button" class="btn-close" id="close-removemodal" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body p-md-5">
+                                                            <div class="text-center">
+                                                                <div class="text-danger">
+                                                                    <i class="bi bi-trash display-5"></i>
+                                                                </div>
+                                                                <div class="mt-4">
+                                                                    <h4 class="mb-2">Are you sure?</h4>
+                                                                    <p class="text-muted mx-3 mb-0">Are you sure you want to remove this customer?</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
+                                                                <button type="button" class="btn w-sm btn-light btn-hover" data-bs-dismiss="modal">Close</button>
+                                                                <form method="POST" action="{% url 'dashboard:customer_delete' customer.id %}" style="display:inline;">
+                                                                    {% csrf_token %}
+                                                                    <button type="submit" class="btn w-sm btn-danger" id="remove-customer">Yes, Delete It!</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- end deleteRecordModal -->
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No customers found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="noresult" style="display: none">
+                            <div class="text-center py-4">
+                                <i class="ph-magnifying-glass fs-1 text-primary"></i>
+                                <h5 class="mt-2">Sorry! No Result Found</h5>
+                                <p class="text-muted mb-0">We've searched more than 150+ customers. We did not find any customers for your search.</p>
+                            </div>
+                        </div>
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-center justify-content-sm-end mt-2">
+                            <div class="pagination-wrap hstack gap-2">
+                                <a class="page-item pagination-prev {% if not page_obj.has_previous %}disabled{% endif %}" href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% else %}javascript:void(0){% endif %}">
+                                    <i class="mdi mdi-chevron-left align-middle"></i>
+                                </a>
+                                <ul class="pagination listjs-pagination mb-0">
+                                    {% if page_obj.number > 3 %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}">1</a>
+                                        </li>
+                                        {% if page_obj.number > 4 %}
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+                                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                                <a class="page-link" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% with total_pages=page_obj.paginator.num_pages %}
+                                        {% if page_obj.number < total_pages|add:-2 %}
+                                            {% if page_obj.number < total_pages|add:-3 %}
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            {% endif %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ total_pages }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}">{{ total_pages }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endwith %}
+                                </ul>
+                                <a class="page-item pagination-next {% if not page_obj.has_next %}disabled{% endif %}" href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% else %}javascript:void(0){% endif %}">
+                                    <i class="mdi mdi-chevron-right align-middle"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-light p-3">
+                                        <h5 class="modal-title" id="exampleModalLabel">Edit Customer</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-customermodal"></button>
+                                    </div>
+                                    <form class="tablelist-form" method="POST" action="" novalidate autocomplete="off">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div id="alert-error-msg" class="d-none alert alert-danger py-2"></div>
+                                            <input type="hidden" id="id-field" name="id">
+                                            <div class="mb-3">
+                                                <label for="username-field" class="form-label">Username</label>
+                                                <input type="text" id="username-field" name="username" class="form-control" placeholder="Enter username" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="email-field" class="form-label">Email</label>
+                                                <input type="email" id="email-field" name="email" class="form-control" placeholder="Enter email" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="phone-field" class="form-label">Phone</label>
+                                                <input type="text" id="phone-field" name="phone" class="form-control" placeholder="Enter phone number">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="status-field" class="form-label">Status</label>
+                                                <select class="form-control" id="status-field" name="is_active" required>
+                                                    <option value="True">Active</option>
+                                                    <option value="False">Unactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <div class="hstack gap-2 justify-content-end">
+                                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-success" id="edit-btn">Update Customer</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end editModal -->
+                    </div>
+                </div>
+            </div>
+      <!--end table row-->
+    </div>
+    <!-- container-fluid -->
+  </div>
+  <!-- End Page-content -->
+</div>
+<!-- end main content-->
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+  var options = {
+    valueNames: ['id', 'customer', 'email', 'contact', 'date', 'status'],
+    page: 1000, // High value to avoid List.js pagination
+    pagination: false // Disable List.js pagination
+  };
+
+  var customerList = new List('customer-list', options);
+
+  // Show/hide "No results" message
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input', function () {
+    const noResult = document.querySelector('.noresult');
+    setTimeout(() => {
+      const visibleRows = document.querySelectorAll('#customer-table-body tr:not(.listjs-empty)');
+      if (visibleRows.length === 0) {
+        noResult.style.display = 'block';
+      } else {
+        noResult.style.display = 'none';
+      }
+    }, 200);
+  });
+
+  // Filter function for status and search
+  function filterData() {
+    const status = document.getElementById('idStatus').value;
+    const search = document.getElementById('search-input').value;
+    let url = '?';
+    if (status && status !== 'all') {
+      url += 'status=' + encodeURIComponent(status);
+    }
+    if (search) {
+      url += (url === '?' ? '' : '&') + 'search=' + encodeURIComponent(search);
+    }
+    window.location.href = url || window.location.pathname;
+  }
+
+  // Sort dropdown handler
+  document.getElementById('sortBy').addEventListener('change', function() {
+    const sortBy = this.value;
+    customerList.sort(sortBy, { order: 'asc' });
+  });
+
+  // Populate edit modal with customer data
+  document.querySelectorAll('.edit-item-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const row = this.closest('tr');
+      const id = row.dataset.id;
+      const username = row.querySelector('.customer-name-elem').textContent;
+      const email = row.querySelector('.email').textContent;
+      const phone = row.querySelector('.contact').textContent;
+      const status = row.querySelector('.status').textContent === 'Active' ? 'True' : 'False';
+      
+      document.getElementById('id-field').value = id;
+      document.getElementById('username-field').value = username;
+      document.getElementById('email-field').value = email;
+      document.getElementById('phone-field').value = phone;
+      document.getElementById('status-field').value = status;
+      document.querySelector('#editModal form').action = `/dashboard/customers/${id}/edit/`;
+    });
+  });
+</script>
+
+{% endblock %}

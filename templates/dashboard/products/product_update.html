@@ -1,0 +1,527 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% block title %}
+Products Create
+{% endblock title %} 
+{% block content %}
+
+<div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+                    <form action="{% url 'dashboard:product_create' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <!-- start page title -->
+                        <div class="row">
+
+                            <div class="col-12">
+
+                                    {% if messages %}
+                                    {% for message in messages %}
+                                        <div
+                                        class="alert alert-{{ message.tags }} alert-dismissible fade show mb-xl-0 mb-2"
+                                        role="alert"
+                                        id="alert-{{ forloop.counter }}"
+                                        >
+                                        <strong>{{ message }}..!</strong>
+                                        <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="alert"
+                                            aria-label="Close"
+                                        ></button>
+                                        </div>
+                                    {% endfor %}
+                                    {% endif %}
+                                    
+
+                                </div>
+
+
+                            <div class="col-12 mt-3">
+                                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                    <h4 class="mb-sm-0">Edit Product</h4>
+
+                                    <div class="page-title-right">
+                                        <ol class="breadcrumb m-0">
+                                            <li class="breadcrumb-item">
+                                            
+                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target=".bs-example-modal-center">
+                                                <i class="bi bi-plus-circle align-baseline me-1"></i>
+                                                    Add Category
+                                                </button>
+                                                
+                                               
+                                            </li>
+                                        </ol>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end page title -->
+
+                        <div class="row">
+                        
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            
+                                            <div class="col-xxl-12">
+                                               
+                                                    <div class="mb-3">
+                                                        <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" value="{{ product.name }}"  name="name" id="productTitle" placeholder="Enter product title" >
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
+                                                        <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
+                                                            <option value="">{{ product.name }}</option>
+                                                            {% for category in categories %}
+                                                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
+                                                        <textarea class="form-control" name="description"  id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8">{{ product.description }}</textarea>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="productBrand" class="form-label">Brand <span class="text-danger">*</span></label>
+                                                                <input type="text" value="{{ product.brand }}"  name="brand" class="form-control" id="productBrand" placeholder="Enter brand" >
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="productBrand" class="form-label">Model name <span class="text-danger">*</span></label>
+                                                                <input type="text" name="model_name" value="{{ product.model_name }}" class="form-control" id="productBrand" placeholder="Enter brand" >
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
+                                                                <div class="input-group has-validation">
+                                                                    <span class="input-group-text" id="product-price-addon">₹</span>
+                                                                    <input type="number" value="{{ product.mrp }}" class="form-control" name="product_mrp_price" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                                                    <div class="invalid-feedback">Please Enter a MRP price.</div>
+                                                                </div>
+                                                            </div>
+                                                        </div><!--end col-->
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
+                                                                <div class="input-group has-validation">
+                                                                    <span class="input-group-text" id="product-price-addon">₹</span>
+                                                                    <input type="number" name="product_selling_price" value="{{ product.price }}" class="form-control" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                                                    <div class="invalid-feedback">Please Enter a selling price.</div>
+                                                                </div>
+                                                            </div>
+                                                        </div><!--end col-->
+                                                    
+                                                    </div>
+                                                    
+                                                    <div class="row mt-3">
+                                                        <div class="col-lg-6">
+                                                            <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="cod_available" {% if product.is_cod_available %}checked{% endif %} class="form-check-input" id="id_cod_available">
+                                                                <label class="form-check-label" for="exchangeableInput">Cod Available</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="returnable" {% if product.is_returnable %}checked{% endif %} class="form-check-input" id="id_returnable">
+                                                                <label class="form-check-label" for="refundableInput">Returnable</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="free_shipping" {% if product.free_shipping %}checked{% endif %} class="form-check-input" id="id_free_shipping">
+                                                                <label class="form-check-label" for="refundableInput">Free Shipping</label>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                
+                                            </div><!--end col-->
+                                        </div><!--end row-->
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                        </div><!--end row-->
+
+                    
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            
+                                            <div class="col-xxl-12">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Product Images <span class="text-danger">*</span></label>
+                                                    <div class="dropzone text-center" id="dropzoneArea">
+                                                        <div class="fallback">
+                                                            <input name="product_images" type="file" multiple>
+                                                        </div>
+                                                        <div class="dz-message needsclick">
+                                                            <div class="mb-3">
+                                                                <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                                            </div>
+                                                            <h4>Drop product images here or click to upload.</h4>
+
+                                                          
+                                                        </div>
+
+                                                        
+                                                    </div>
+
+                                                    
+                                                </div>
+
+                                                
+                                            </div>
+                                        </div><!--end row-->
+                                    </div>
+                                </div>
+                            </div><!--end col-->
+                        </div><!--end row-->
+                           
+                         <div class="row">
+                        
+                            <div class="col-lg-12">
+                                <div class="">
+                                    <div class="">
+                                      
+                                        <div class="hstack gap-2 justify-content-end mb-3">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                            <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                            
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                                
+                            </div><!--end col-->
+
+                            
+                        </div><!--end row-->
+
+                    </form>  
+                        <div class="row">
+                        
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            
+                                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                    <h4 class="mb-sm-0">Edit Variant</h4>
+
+                                    <div class="page-title-right">
+                                        <ol class="breadcrumb m-0">
+                                            <li class="breadcrumb-item">
+                                            
+                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target=".bs-example-modal-center">
+                                                <i class="bi bi-plus-circle align-baseline me-1"></i>
+                                                    Add Variant
+                                                </button>
+                                                
+                                               
+                                            </li>
+                                        </ol>
+                                    </div>
+
+                                </div>
+
+
+
+
+
+
+                                                {% for variant in product.variants.all %}
+                                                    <div class="col-xxl-3 col-lg-4 col-md-6">
+                                                        <div class="card ribbon-box ribbon-fill">
+                                                            {% if variant.discount_percentage > 0 %}
+                                                                <div class="ribbon ribbon-danger">Sale</div>
+                                                            {% endif %}
+
+                                                            <div class="card-body p-4 m-4">
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-icon btn-subtle-danger position-absolute top-0 end-0 m-3 remove-list"
+                                                                    data-remove-id="{{ variant.id }}"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#deleteRecordModal">
+                                                                    <i class="ph-trash"></i>
+                                                                </button>
+
+
+                                                                <!-- deleteRecordModal -->
+                                                                        <div
+                                                                            id="deleteRecordModal"
+                                                                            class="modal fade zoomIn"
+                                                                            tabindex="-1"
+                                                                            aria-hidden="true"
+                                                                        >
+                                                                            <div class="modal-dialog modal-dialog-centered">
+                                                                            <div class="modal-content">
+                                                                                <div class="modal-header">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    class="btn-close"
+                                                                                    id="close-removemodal"
+                                                                                    data-bs-dismiss="modal"
+                                                                                    aria-label="Close"
+                                                                                ></button>
+                                                                                </div>
+                                                                                <div class="modal-body p-md-5">
+                                                                                <div class="text-center">
+                                                                                    <div class="text-danger">
+                                                                                    <i class="bi bi-trash display-5"></i>
+                                                                                    </div>
+                                                                                    <div class="mt-4">
+                                                                                    <h4 class="mb-2">Are you sure ?</h4>
+                                                                                    <p class="text-muted mx-3 mb-0">
+                                                                                        Are you sure you want to remove this variant ?
+                                                                                    </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
+                                                                                    <button
+                                                                                    type="button"
+                                                                                    class="btn w-sm btn-light btn-hover"
+                                                                                    data-bs-dismiss="modal"
+                                                                                    >
+                                                                                    Close
+                                                                                    </button>
+                                                                                    <form method="POST" action="{% url 'dashboard:variant_delete' product.id  variant.id %}"   style="display:inline;">
+                                                                                        {% csrf_token %}
+                                                                                        <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
+                                                                                    </form>
+                                                                                </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- /.modal-content -->
+                                                                            </div>
+                                                                            <!-- /.modal-dialog -->
+                                                                        </div>
+                                                                        <!-- /deleteRecordModal -->
+
+
+                                                                {% if variant.variant_image %}
+                                                                    <img src="{{ variant.variant_image.url }}"
+                                                                        alt="{{ product.name }}"
+                                                                        class="img-fluid"
+                                                                        style="height: 82px;width: 120px;"/>
+                                                                {% else %}
+                                                                    <img src="{% static 'dashboard/images/products/img-1.png' %}"
+                                                                        alt="{{ product.name }}"
+                                                                        class="img-fluid"
+                                                                        style="height: 82px;width: 120px;"/>
+                                                                {% endif %}
+                                                            </div>
+
+                                                            <div class="card-body pt-0">
+                                                                {% if product.average_rating > 0 %}
+                                                                    <span class="badge bg-warning-subtle text-warning float-end">
+                                                                        <i class="bi bi-star-fill align-baseline me-1"></i>
+                                                                        <span class="rate">{{ product.average_rating }}</span>
+                                                                    </span>
+                                                                {% endif %}
+
+                                                                <h5 class="fs-lg mb-3">
+                                                                    ₹{{ variant.price }}
+                                                                    {% if variant.mrp and variant.discount_percentage > 0 %}
+                                                                        <small class="fs-sm fw-normal text-decoration-line-through text-muted">
+                                                                            ₹{{ variant.mrp }}
+                                                                        </small>
+                                                                    {% endif %}
+                                                                </h5>
+
+
+                                                                    {% for size_val in variant.size %}
+                                                                        <button type="button" class="btn rounded-pill btn-primary">{{ size_val }}</button>
+                                                                    {% endfor %}
+                                                                <br>
+                                                                <button type="button"
+                                                                            class="btn rounded-pill mt-2"
+                                                                            style="background-color: {{ variant.hex_color_code }}; border: 1px solid #ccc;">
+                                                                    </button>
+
+
+                                                                <div class="mt-3 hstack gap-2">
+                                                                    
+                                                                    <a href="{% url 'dashboard:product_details' product.id %}" class="btn btn-secondary w-100">
+                                                                        <i class="ph-pencil me-1 align-middle"></i> Edit
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                              
+
+                                            
+                                        </div><!--end row-->
+
+                                       
+                                    </div>
+                                </div>
+                                
+                            </div><!--end col-->
+
+                            
+                        </div><!--end row-->
+
+
+                        
+                  
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+        <!--start back-to-top-->
+            <button class="btn btn-dark btn-icon" id="back-to-top">
+            <i class="bi bi-caret-up fs-3xl"></i>
+            </button>
+    <!--end back-to-top-->
+        
+        </div>
+        <!-- end main content-->
+
+
+<!-- Modal --> 
+<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <h5 class="mb-3">Add New Variant</h5>
+                <form action="{% url 'dashboard:variant_create' product.id %}" method="post" class="row g-3" accept="multipart/form-data">
+                {% csrf_token %}
+                    <div class="col-md-12">
+                        <label for="fullnameInput" class="form-label">Name
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="fullnameInput" name="name" placeholder="Enter name" required>
+                    </div>
+                    
+                    
+                    <div class="col-12">
+                        <label for="inputAddress" class="form-label">Description</label>
+                        <input type="text" class="form-control" name="description" id="inputAddress" placeholder="Description">
+                    </div>
+                    <div class="col-12">
+                        <label for="inputAddress" class="form-label">Image</label>
+                        <input type="file" class="form-control" name="image" accept=".png,.jpeg,.jpg" id="inputAddress" >
+                    </div>
+                    
+                    
+                    <div class="col-12">
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+    <!-- dropzone js -->
+    <script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
+    <!-- init js -->
+    <script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
+
+
+<script>
+    const colorInput = document.getElementById('productColor');
+    const colorHexDisplay = document.getElementById('colorHexDisplay');
+
+    function updateColorCode() {
+        colorHexDisplay.value = colorInput.value;
+    }
+
+    // Initialize
+    updateColorCode();
+
+    // Update on change
+    colorInput.addEventListener('input', updateColorCode);
+</script>
+
+<!-- Include jQuery if not already included -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let selectedSizes = [];
+
+        $('#button-addon2').click(function () {
+            let newSize = $('#sizeInput').val().trim();
+            if (newSize !== "" && !selectedSizes.includes(newSize)) {
+                selectedSizes.push(newSize);
+
+                // Update the hidden input
+                $('#selectedSize').val(selectedSizes.join(','));
+
+                // Create and append the new button
+                $('#selectedSizeContainer').append(`
+                    <button type="button" class="btn rounded-pill btn-primary m-1">${newSize}</button>
+                `);
+
+                // Clear input
+                $('#sizeInput').val('');
+            }
+        });
+    });
+</script>
+
+<script>
+Dropzone.autoDiscover = false; // avoid auto init
+
+var myDropzone = new Dropzone("#dropzoneArea", {
+    autoProcessQueue: false,       // don't auto-upload
+    uploadMultiple: true,
+    parallelUploads: 10,
+    maxFiles: 20,
+    paramName: "product_images",   // must match Django field name
+    addRemoveLinks: true
+});
+
+document.getElementById("productDropzoneForm").addEventListener("submit", function(e) {
+    e.preventDefault(); // stop normal submit
+
+    var form = this;
+    var formData = new FormData(form);
+
+    // append Dropzone files into formData
+    myDropzone.files.forEach(function(file) {
+        formData.append("product_images", file, file.name);
+    });
+
+    fetch(form.action, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Success:", data);
+        // optionally redirect or show message
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+});
+
+</script>
+
+
+
+{% endblock content %}

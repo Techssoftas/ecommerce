@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+{% load static %}
+<html
+  lang="en"
+  data-layout="vertical"
+  data-sidebar="dark"
+  data-sidebar-size="lg"
+  data-preloader="disable"
+  data-theme="default"
+  data-topbar="light"
+  data-bs-theme="light"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="Minimal Admin & Dashboard Template" name="description" />
+    <meta content="Themesbrand" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{% static 'dashboard/images/favicon.ico' %}" />
+
+    <!-- Fonts css load -->
+    <link rel="preconnect" href="https://fonts.googleapis.com/" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      id="fontsLink"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- jsvectormap css -->
+    <link
+      href="{% static 'dashboard/libs/jsvectormap/css/jsvectormap.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!--Swiper slider css-->
+    <link
+      href="{% static 'dashboard/libs/swiper/swiper-bundle.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!-- Layout config Js -->
+    <script src="{% static 'dashboard/js/layout.js' %}"></script>
+    <!-- Bootstrap Css -->
+    <link
+      href="{% static 'dashboard/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <!-- Icons Css -->
+    <link
+      href="{% static 'dashboard/css/icons.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <!-- App Css-->
+    <link
+      href="{% static 'dashboard/css/app.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <!-- custom Css-->
+    <link
+      href="{% static 'dashboard/css/custom.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+  </head>
+
+  <body>
+    <!-- Begin page -->
+    <div id="layout-wrapper">
+      <!-- ========== App Menu ========== -->
+      <div class="app-menu navbar-menu">
+        <!-- LOGO -->
+        <div class="navbar-brand-box">
+          <a href="" class="logo logo-dark">
+            <span class="logo-sm">
+              <img
+                src="{% static 'dashboard/images/logo-sm.png' %}"
+                alt=""
+                height="22"
+              />
+            </span>
+            <span class="logo-lg">
+              <!-- <img
+                src="{% static 'dashboard/images/logo-dark.png' %}"
+                alt=""
+                height="22"
+              /> -->
+              <h5  height="22">M-Tex</h5>
+            </span>
+          </a>
+          <a href="" class="logo logo-light">
+            <span class="logo-sm">
+              <img
+                src="{% static 'dashboard/images/logo-sm.png' %}"
+                alt=""
+                height="22"
+              />
+            </span>
+            <span class="logo-lg">
+              <img
+                src="{% static 'dashboard/images/logo-light.png' %}"
+                alt=""
+                height="22"
+              />
+            </span>
+          </a>
+          <button
+            type="button"
+            class="btn btn-sm p-0 fs-3xl header-item float-end btn-vertical-sm-hover"
+            id="vertical-hover"
+          >
+            <i class="ri-record-circle-line"></i>
+          </button>
+        </div>
+
+        <div id="scrollbar">
+          <div class="container-fluid">
+            <div id="two-column-menu"></div>
+            <ul class="navbar-nav" id="navbar-nav">
+              <li class="menu-title"><span data-key="t-menu">Menu</span></li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard:dashboard' %}"
+                  class="nav-link menu-link"
+                >
+                  <i class="ph-gauge"></i>
+                  <span data-key="t-calendar">Dashboards</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard:product_list' %}"
+                  class="nav-link menu-link"
+                >
+                  <i class="ph-storefront"></i>
+                  <span data-key="t-chat">Products</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard:orders_list' %}"
+                  class="nav-link menu-link"
+                >
+                   <i class="ri-shopping-cart-2-line"></i>
+                  <span data-key="t-chat ms-2">Orders</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard:payment_list' %}"
+                  class="nav-link menu-link"
+                >
+                   <i class="ri-bank-line"></i>
+                  <span data-key="t-chat">Payments</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard:customers_list' %}"
+                  class="nav-link menu-link"
+                >
+                  <i class="ph-user-circle"></i>
+                  <span data-key="t-chat">Customers</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="{% url 'dashboard:logout' %}"
+                  class="nav-link menu-link"
+                >
+                  <i
+                    class="mdi mdi-logout text-muted fs-lg align-middle me-1"
+                  ></i>
+                  <span data-key="t-chat">Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- Sidebar -->
+        </div>
+
+        <div class="sidebar-background"></div>
+      </div>
+      <!-- Left Sidebar End -->
+      <!-- Vertical Overlay-->
+      <div class="vertical-overlay"></div>   
+      <header id="page-topbar">
+        <div class="layout-width">
+          <div class="navbar-header">
+            <div class="d-flex">
+              <!-- LOGO -->
+              <div class="navbar-brand-box horizontal-logo">
+                <a href="" class="logo logo-dark">
+                  <span class="logo-sm">
+                    <!-- <img
+                      src="{% static 'dashboard/images/logo-sm.png' %}"
+                      alt=""
+                      height="22"
+                    /> -->
+                    <h5>M-TEX</h5>
+                  </span>
+                  <span class="logo-lg">
+                    <!-- <img
+                      src="{% static 'dashboard/images/logo-dark.png' %}"
+                      alt=""
+                      height="22"
+                    /> -->
+                     <h5>M-TEX</h5>
+                  </span>
+                </a>
+
+                <a href="" class="logo logo-light">
+                  <span class="logo-sm">
+                    <!-- <img
+                      src="{% static 'dashboard/images/logo-sm.png' %}"
+                      alt=""
+                      height="22"
+                    /> -->
+                     <h5>M-TEX</h5>
+                  </span>
+                  <span class="logo-lg">
+                    <!-- <img
+                      src="{% static 'dashboard/images/logo-light.png' %}"
+                      alt=""
+                      height="22"
+                    /> -->
+                     <h5>M-TEX</h5>
+                  </span>
+                </a>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger shadow-none"
+                id="topnav-hamburger-icon"
+              >
+                <span class="hamburger-icon">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </button>
+
+             
+            </div>
+
+            <div class="d-flex align-items-center">
+              <div class="ms-1 header-item d-none d-sm-flex">
+                <button
+                  type="button"
+                  class="btn btn-icon btn-topbar btn-ghost-dark rounded-circle"
+                  data-toggle="fullscreen"
+                >
+                  <i class="bi bi-arrows-fullscreen fs-lg"></i>
+                </button>
+              </div>
+
+              <div class="dropdown topbar-head-dropdown ms-1 header-item">
+                <button
+                  type="button"
+                  class="btn btn-icon btn-topbar btn-ghost-dark rounded-circle mode-layout"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="bi bi-sun align-middle fs-3xl"></i>
+                </button>
+                <div
+                  class="dropdown-menu p-2 dropdown-menu-end"
+                  id="light-dark-mode"
+                >
+                  <a href="#!" class="dropdown-item" data-mode="light"
+                    ><i class="bi bi-sun align-middle me-2"></i> Default (light
+                    mode)</a
+                  >
+                  <a href="#!" class="dropdown-item" data-mode="dark"
+                    ><i class="bi bi-moon align-middle me-2"></i> Dark</a
+                  >
+                  <a href="#!" class="dropdown-item" data-mode="auto"
+                    ><i class="bi bi-moon-stars align-middle me-2"></i> Auto
+                    (system default)</a
+                  >
+                </div>
+              </div>
+
+              
+              <div class="dropdown header-item topbar-user">
+                <button
+                  type="button"
+                  class="btn shadow-none"
+                  id="page-header-user-dropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <span class="d-flex align-items-center">
+                    <img
+                      class="rounded-circle header-profile-user"
+                      src="{% static 'dashboard/images/chat-user.jpg' %}"
+                      alt="Header Avatar"
+                    />
+                    <span class="text-start ms-xl-2">
+                      <span
+                        class="d-none d-xl-inline-block ms-1 fw-medium user-name-text"
+                        >{{request.user}}</span
+                      >
+                      <span
+                        class="d-none d-xl-block ms-1 fs-sm user-name-sub-text"
+                        >Admin</span
+                      >
+                    </span>
+                  </span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <!-- item-->
+                  <h6 class="dropdown-header">Welcome {{request.user}}!</h6>
+                  <a class="dropdown-item" href="pages-profile.html"
+                    ><i
+                      class="mdi mdi-account-circle text-muted fs-lg align-middle me-1"
+                    ></i>
+                    <span class="align-middle">Profile</span></a
+                  >
+
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="pages-profile.html"
+                    ><i
+                      class="mdi mdi-wallet text-muted fs-lg align-middle me-1"
+                    ></i>
+                    <span class="align-middle"
+                      >Balance : <b>$8451.36</b></span
+                    ></a
+                  >
+                  <a class="dropdown-item" href="pages-profile-settings.html"
+                    ><span
+                      class="badge bg-success-subtle text-success mt-1 float-end"
+                      >New</span
+                    ><i
+                      class="mdi mdi-cog-outline text-muted fs-lg align-middle me-1"
+                    ></i>
+                    <span class="align-middle">Settings</span></a
+                  >
+                  <a class="dropdown-item" href="auth-lockscreen.html"
+                    ><i
+                      class="mdi mdi-lock text-muted fs-lg align-middle me-1"
+                    ></i>
+                    <span class="align-middle">Lock screen</span></a
+                  >
+                  <a class="dropdown-item" href="{% url 'dashboard:logout' %}"
+                    ><i
+                      class="mdi mdi-logout text-muted fs-lg align-middle me-1"
+                    ></i>
+                    <span class="align-middle" data-key="t-logout"
+                      >Logout</span
+                    ></a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- removeNotificationModal -->
+      <div
+        id="removeNotificationModal"
+        class="modal fade zoomIn"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                id="NotificationModalbtn-close"
+              ></button>
+            </div>
+            <div class="modal-body p-md-5">
+              <div class="text-center">
+                <div class="text-danger">
+                  <i class="bi bi-trash display-4"></i>
+                </div>
+                <div class="mt-4 fs-base">
+                  <h4 class="mb-1">Are you sure ?</h4>
+                  <p class="text-muted mx-4 mb-0">
+                    Are you sure you want to remove this Notification ?
+                  </p>
+                </div>
+              </div>
+              <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                <button
+                  type="button"
+                  class="btn w-sm btn-light"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  class="btn w-sm btn-danger"
+                  id="delete-notification"
+                >
+                  Yes, Delete It!
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+      <!-- /.modal -->
+
+      <!-- removeCartModal -->
+      <div
+        id="removeCartModal"
+        class="modal fade zoomIn"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                id="close-cartmodal"
+              ></button>
+            </div>
+            <div class="modal-body p-md-5">
+              <div class="text-center">
+                <div class="text-danger">
+                  <i class="bi bi-trash display-5"></i>
+                </div>
+                <div class="mt-4">
+                  <h4>Are you sure ?</h4>
+                  <p class="text-muted mx-4 mb-0">
+                    Are you sure you want to remove this product ?
+                  </p>
+                </div>
+              </div>
+              <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                <button
+                  type="button"
+                  class="btn w-sm btn-light"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  class="btn w-sm btn-danger"
+                  id="remove-cartproduct"
+                >
+                  Yes, Delete It!
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+      <!-- /.modal -->
+
+      <!-- ============================================================== -->
+      <!-- Start right Content here -->
+      <!-- ============================================================== -->
+    </div>
+    <!-- END layout-wrapper -->
+
+    {% block content %} {% endblock content %}
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="addAmount"
+      tabindex="-1"
+      aria-labelledby="addAmountLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title" id="addAmountLabel">Add Amount</h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form action="#!">
+              <div class="row g-3">
+                <div class="col-lg-12">
+                  <div>
+                    <label for="AmountInput" class="form-label">Amount</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="AmountInput"
+                      placeholder="$000.00"
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <label class="form-label">Select Method</label>
+                  <div class="row g-3">
+                    <div class="col-lg-4">
+                      <label class="border rounded w-100 form-label p-2">
+                        <input
+                          class="form-check-input me-1"
+                          name="exampleRadios"
+                          type="radio"
+                          value=""
+                          checked
+                        />
+                        Visa
+                      </label>
+                    </div>
+                    <div class="col-lg-4">
+                      <label class="border rounded w-100 form-label p-2">
+                        <input
+                          class="form-check-input me-1"
+                          name="exampleRadios"
+                          type="radio"
+                          value=""
+                        />
+                        Mastercard
+                      </label>
+                    </div>
+                    <div class="col-lg-4">
+                      <label class="border rounded w-100 form-label p-2">
+                        <input
+                          class="form-check-input me-1"
+                          name="exampleRadios"
+                          type="radio"
+                          value=""
+                        />
+                        Credit Card
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div>
+                    <label for="cardNumber" class="form-label"
+                      >Card Number</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="cardNumber"
+                      placeholder="xxxx xxxx xxxx xxxx"
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-8">
+                  <div>
+                    <label for="month" class="form-label">Expiry Date</label>
+                    <div class="row g-3">
+                      <div class="col-lg-6">
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="month"
+                          placeholder="MM"
+                        />
+                      </div>
+                      <div class="col-lg-6">
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="years"
+                          placeholder="YYYY"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div>
+                    <label for="cvv/cvc" class="form-label">CVV/CVC</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="cvv/cvc"
+                      placeholder="***"
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div>
+                    <label for="cardHoldersName" class="form-label"
+                      >Cardholders Name</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="cardHoldersName"
+                      placeholder="Enter name"
+                    />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-ghost-danger"
+              data-bs-dismiss="modal"
+            >
+              <i class="ph-x align-middle"></i> Close
+            </button>
+            <button type="button" class="btn btn-primary">Add Amount</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end Modal -->
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 overflow-hidden">
+          <div class="modal-body p-0 ribbon-box">
+            <div class="ribbon ribbon-danger ribbon-shape trending-ribbon">
+              <span class="trending-ribbon-text">Trending</span>
+              <i
+                class="ri-flashlight-fill text-white align-bottom float-end ms-1"
+              ></i>
+            </div>
+            <div class="row g-0">
+              <div class="col-lg-5">
+                <div class="bg-primary-subtle p-5 h-100">
+                  <div class="p-lg-4">
+                    <img
+                      src="{% static 'dashboard/images/products/img-3.png' %}"
+                      alt=""
+                      class="img-fluid"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!--end col-->
+              <div class="col-lg-7">
+                <div class="p-4 h-100">
+                  <button
+                    type="button"
+                    class="btn-close float-end"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  ></button>
+                  <a href="#!"
+                    ><h5 class="mb-1">Craft Women Black Sling Bag</h5></a
+                  >
+                  <p class="text-muted">Fashion & Clothing</p>
+
+                  <h5 class="mb-3">
+                    $199.99
+                    <del class="text-muted fs-sm fw-normal">$299.99</del>
+                  </h5>
+
+                  <ul class="list-unstyled hstack gap-2 mb-4">
+                    <li>Available Colors</li>
+                    <li>
+                      <div class="avatar-xxs">
+                        <div
+                          class="avatar-title rounded bg-primary-subtle"
+                        ></div>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="avatar-xxs">
+                        <div
+                          class="avatar-title rounded bg-success-subtle"
+                        ></div>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="avatar-xxs">
+                        <div
+                          class="avatar-title rounded bg-danger-subtle"
+                        ></div>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="avatar-xxs">
+                        <div class="avatar-title rounded bg-dark-subtle"></div>
+                      </div>
+                    </li>
+                  </ul>
+
+                  <ul class="list-unstyled vstack gap-2 mb-4">
+                    <li class="">
+                      <i
+                        class="bi bi-check2-circle me-2 align-middle text-success"
+                      ></i
+                      >In stock
+                    </li>
+                    <li class="">
+                      <i
+                        class="bi bi-check2-circle me-2 align-middle text-success"
+                      ></i
+                      >Free delivery available
+                    </li>
+                    <li class="">
+                      <i
+                        class="bi bi-check2-circle me-2 align-middle text-success"
+                      ></i
+                      >Sales 10% Off Use Code: <b>STEEX10</b>
+                    </li>
+                  </ul>
+
+                  <div class="hstack gap-2 justify-content-end">
+                    <button class="btn btn-primary">
+                      <i class="bi bi-cart align-baseline me-1"></i> Add To Cart
+                    </button>
+                    <button class="btn btn-subtle-secondary">
+                      View Details
+                      <i class="bi bi-arrow-right align-baseline ms-1"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!--end col-->
+            </div>
+            <!--end row-->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Product Modal -->
+
+    <!--start back-to-top-->
+    <button class="btn btn-dark btn-icon" id="back-to-top">
+      <i class="bi bi-caret-up fs-3xl"></i>
+    </button>
+    <!--end back-to-top-->
+
+    <!--preloader-->
+    <div id="preloader">
+      <div id="status">
+        <div class="spinner-border text-primary avatar-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-6">© Techssoft.</div>
+          <div class="col-sm-6">
+            <div class="text-sm-end d-none d-sm-block">
+              Design & Develop by 💕 Techssoft.
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+
+    <script>
+  // Wait for the DOM to fully load
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+      const alerts = document.querySelectorAll(".alert");
+      alerts.forEach(function (alert) {
+        // Use Bootstrap's built-in alert dismissal
+        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+        bsAlert.close();
+      });
+    }, 5000); // 5000 ms = 5 seconds
+  });
+</script>
+
+
+    <!-- JAVASCRIPT -->
+    <script src="{% static 'dashboard/libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'dashboard/libs/simplebar/simplebar.min.js' %}"></script>
+    <script src="{% static 'dashboard/js/plugins.js' %}"></script>
+
+    <!-- apexcharts -->
+    <script src="{% static 'dashboard/libs/apexcharts/apexcharts.min.js' %}"></script>
+
+    <!-- Vector map-->
+    <script src="{% static 'dashboard/libs/jsvectormap/js/jsvectormap.min.js' %}"></script>
+    <script src="{% static 'dashboard/libs/jsvectormap/maps/world-merc.js' %}"></script>
+
+    <!--Swiper slider js-->
+    <script src="{% static 'dashboard/libs/swiper/swiper-bundle.min.js' %}"></script>
+
+    <script src="{% static 'dashboard/libs/list.js/list.min.js' %}"></script>
+
+    <!-- Dashboard init -->
+    <script src="{% static 'dashboard/js/pages/dashboard-ecommerce.init.js' %}"></script>
+
+    <!-- App js -->
+    <script src="{% static 'dashboard/js/app.js' %}"></script>
+
+    <!-- ecommerce-product-grid-list js -->
+    <script src="{% static 'dashboard/js/pages/ecommerce-product-grid-list.init.js' %}"></script>
+
+       <!-- rater-js plugin -->
+      <script src="{% static 'dashboard/libs/rater-js/index.js' %}"></script>
+      
+      <script src="{% static 'dashboard/js/pages/ecommerce-product-overview.init.js' %}"></script>
+
+    <!-- nouisliderribute js -->
+    <script src="{% static 'dashboard/libs/nouislider/nouislider.min.js' %}"></script>
+    <script src="{% static 'dashboard/libs/wnumb/wNumb.min.js' %}"></script>
+
+    <!-- prismjs plugin -->
+    <script src="{% static 'dashboard/libs/prismjs/prism.js' %}"></script>
+
+    <!-- Modal Js -->
+    <script src="{% static 'dashboard/js/pages/modal.init.js' %}"></script>
+
+    <!-- dropzone js -->
+    <script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
+
+    <!-- ckediter js -->
+    <script src="{% static 'dashboard/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js' %}"></script>
+
+
+  <!-- init js -->
+    <script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
+
+
+    
+ 
+  </body>
+</html>

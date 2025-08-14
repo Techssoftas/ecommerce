@@ -1,0 +1,664 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Products {% endblock title %} {% block content %}
+<!-- start main content-->
+<div class="main-content">
+  <div class="page-content">
+    <div class="container-fluid">
+      <!-- start page title -->
+      <div class="row">
+        <div class="col-12">
+          <div
+            class="page-title-box d-sm-flex align-items-center justify-content-between"
+          >
+            <h4 class="mb-sm-0">Products</h4>
+
+            <div class="page-title-right">
+              <ol class="breadcrumb m-0">
+                <li class="breadcrumb-item active">Products</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end page title -->
+
+      <div class="row mb-2">
+        <div class="col-12">
+
+            {% if messages %}
+              {% for message in messages %}
+                <div
+                  class="alert alert-{{ message.tags }} alert-dismissible fade show mb-xl-0 mb-2"
+                  role="alert"
+                  id="alert-{{ forloop.counter }}"
+                >
+                  <strong>{{ message }}..!</strong>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                  ></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+              
+
+          </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xxl-3">
+          <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <div class="flex-grow-1">
+                <h5 class="card-title mb-0">Filters</h5>
+              </div>
+              <div class="flex-shrink-0">
+                <a href="#!" class="text-reset text-decoration-underline"
+                  >Clear All</a
+                >
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="search-box mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="searchResultList"
+                  autocomplete="off"
+                  placeholder="Search products, category etc..."
+                />
+                <i class="ri-search-line search-icon"></i>
+              </div>
+              <div
+                class="accordion accordion-flush filter-panel"
+                id="accordionExample"
+              >
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="categoryAccordion">
+                      <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseCategory"
+                        aria-expanded="true"
+                        aria-controls="collapseCategory"
+                      >
+                        Product Category
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseCategory"
+                      class="accordion-collapse collapse show"
+                      aria-labelledby="categoryAccordion"
+                      data-bs-parent="#categoryFilters"
+                    >
+                      <div class="accordion-body">
+                        <ul class="list-unstyled mb-0 filter-list">
+                          {% for category in categories %}
+                            <li>
+                              <a href="#" class="d-flex py-1 align-items-center">
+                                <div class="flex-grow-1">
+                                  <h5 class="fs-sm mb-0 listname">{{ category.name }}</h5>
+                                </div>
+                                {% if category.product_count > 0 %}
+                                  <div class="flex-shrink-0 ms-2">
+                                    <span class="badge bg-light text-muted">{{ category.product_count }}</span>
+                                  </div>
+                                {% endif %}
+                              </a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                  <h2 class="accordion-header" id="priceAccordion">
+                    <button
+                      class="accordion-button"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapsePrice"
+                      aria-expanded="true"
+                      aria-controls="collapsePrice"
+                    >
+                      Price
+                    </button>
+                  </h2>
+                  <div
+                    id="collapsePrice"
+                    class="accordion-collapse collapse show"
+                    aria-labelledby="priceAccordion"
+                    data-bs-parent="#priceFilters"
+                  >
+                    <div class="accordion-body">
+                      <div
+                        id="product-price-range"
+                        data-slider-color="secondary"
+                      ></div>
+                      <div
+                        class="formCost d-flex gap-2 align-items-center mt-3"
+                      >
+                        <input
+                          class="form-control form-control-sm"
+                          type="text"
+                          id="minCost"
+                          value="0"
+                        />
+                        <span class="fw-semibold text-muted">to</span>
+                        <input
+                          class="form-control form-control-sm"
+                          type="text"
+                          id="maxCost"
+                          value="1000"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="ColorsAccordion">
+                    <button
+                      class="accordion-button"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseColors"
+                      aria-expanded="true"
+                      aria-controls="collapseColors"
+                    >
+                      Colors
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseColors"
+                    class="accordion-collapse collapse show"
+                    aria-labelledby="ColorsAccordion"
+                    data-bs-parent="#ColorsFilters"
+                  >
+                    <div class="accordion-body">
+                      <div class="hstack gap-2 flex-wrap">
+                        <a href="#!" class="btn btn-sm btn-subtle-primary"
+                          >Blue</a
+                        >
+                        <a href="#!" class="btn btn-sm btn-subtle-secondary"
+                          >Dark</a
+                        >
+                        <a href="#!" class="btn btn-sm btn-subtle-success"
+                          >Green</a
+                        >
+                        <a href="#!" class="btn btn-sm btn-subtle-danger"
+                          >Red</a
+                        >
+                        <a href="#!" class="btn btn-sm btn-subtle-dark"
+                          >Black</a
+                        >
+                        <a href="#!" class="btn btn-sm btn-subtle-warning"
+                          >Yellow</a
+                        >
+                        <a href="#!" class="btn btn-sm btn-subtle-info">Cyan</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="discountAccordion">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseDiscount"
+                      aria-expanded="false"
+                      aria-controls="collapseDiscount"
+                    >
+                      Discount
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseDiscount"
+                    class="accordion-collapse collapse"
+                    aria-labelledby="discountAccordion"
+                    data-bs-parent="#brandsFilters"
+                  >
+                    <div class="accordion-body">
+                      <div
+                        class="d-flex flex-column gap-2 filter-check"
+                        id="discount-filter"
+                      >
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="50"
+                            id="productdiscountRadio6"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="productdiscountRadio6"
+                            >50% or more</label
+                          >
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="40"
+                            id="productdiscountRadio5"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="productdiscountRadio5"
+                            >40% or more</label
+                          >
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="30"
+                            id="productdiscountRadio4"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="productdiscountRadio4"
+                          >
+                            30% or more
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="20"
+                            id="productdiscountRadio3"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="productdiscountRadio3"
+                          >
+                            20% or more
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="10"
+                            id="productdiscountRadio2"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="productdiscountRadio2"
+                          >
+                            10% or more
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="0"
+                            id="productdiscountRadio1"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="productdiscountRadio1"
+                          >
+                            Less than 10%
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--end col-->
+
+        <div class="col-xxl-9">
+          <div class="row align-items-center mb-4 g-3">
+            <div class="col-xxl-2 col-lg-4 col-sm-6 me-auto">
+              <h5 class="mb-0">
+                Products
+                <span
+                  class="badge bg-secondary-subtle text-secondary align-middle ms-1"
+                  >{{ total_products }}</span
+                >
+              </h5>
+            </div>
+            <!--end col-->
+            <div class="col-xxl-2 col-lg-4 col-sm-6">
+              <div
+                class="choices"
+                data-type="select-one"
+                tabindex="0"
+                role="listbox"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <div class="choices__inner">
+                  <select
+                    class="form-control choices__input"
+                    data-choices=""
+                    data-choices-search-false=""
+                    hidden=""
+                    tabindex="-1"
+                    data-choice="active"
+                  >
+                    <option value="All Select" selected="">All Select</option>
+                    <option value="Best Rated">Best Rated</option>
+                    <option value="Best Selling">Best Selling</option>
+                    <option value="Newest">Newest</option>
+                    <option value="Trending">Trending</option>
+                  </select>
+                  <div class="choices__list choices__list--single">
+                    <div
+                      class="choices__item choices__item--selectable"
+                      data-item=""
+                      data-id="1"
+                      data-value="All Select"
+                      aria-selected="true"
+                      role="option"
+                    >
+                      All Select
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="choices__list choices__list--dropdown"
+                  aria-expanded="false"
+                >
+                  <div class="choices__list" role="listbox">
+                    <div
+                      id="choices--95fe-item-choice-1"
+                      class="choices__item choices__item--choice is-selected choices__item--selectable is-highlighted"
+                      role="option"
+                      data-choice=""
+                      data-id="1"
+                      data-value="All Select"
+                      data-select-text="Press to select"
+                      data-choice-selectable=""
+                      aria-selected="true"
+                    >
+                      All Select
+                    </div>
+                    <div
+                      id="choices--95fe-item-choice-2"
+                      class="choices__item choices__item--choice choices__item--selectable"
+                      role="option"
+                      data-choice=""
+                      data-id="2"
+                      data-value="Best Rated"
+                      data-select-text="Press to select"
+                      data-choice-selectable=""
+                    >
+                      Best Rated
+                    </div>
+                    <div
+                      id="choices--95fe-item-choice-3"
+                      class="choices__item choices__item--choice choices__item--selectable"
+                      role="option"
+                      data-choice=""
+                      data-id="3"
+                      data-value="Best Selling"
+                      data-select-text="Press to select"
+                      data-choice-selectable=""
+                    >
+                      Best Selling
+                    </div>
+                    <div
+                      id="choices--95fe-item-choice-4"
+                      class="choices__item choices__item--choice choices__item--selectable"
+                      role="option"
+                      data-choice=""
+                      data-id="4"
+                      data-value="Newest"
+                      data-select-text="Press to select"
+                      data-choice-selectable=""
+                    >
+                      Newest
+                    </div>
+                    <div
+                      id="choices--95fe-item-choice-5"
+                      class="choices__item choices__item--choice choices__item--selectable"
+                      role="option"
+                      data-choice=""
+                      data-id="5"
+                      data-value="Trending"
+                      data-select-text="Press to select"
+                      data-choice-selectable=""
+                    >
+                      Trending
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--end col-->
+            <div class="col-lg-auto">
+              <a href="{% url 'dashboard:product_create'%}" class="btn btn-primary"
+                ><i class="bi bi-plus-circle align-baseline me-1"></i> Add
+                Product</a
+              >
+            </div>
+            <!--end col-->
+          </div>
+          <!--end row-->
+
+          <div class="row" id="product-grid">
+            {% for product in products %}
+            <div class="col-xxl-3 col-lg-4 col-md-6">
+              <div class="card ribbon-box ribbon-fill">
+                {% if product.discount_percentage > 0 %}
+                <div class="ribbon ribbon-danger">Sale</div>
+                {% endif %}
+                <div class="card-body p-4 m-4">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-icon btn-subtle-danger position-absolute top-0 end-0 m-3 remove-list"
+                    data-remove-id="{{ product.id }}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteRecordModal"
+                  >
+                    <i class="ph-trash"></i>
+                  </button>
+
+
+
+              <!-- deleteRecordModal -->
+              <div
+                id="deleteRecordModal"
+                class="modal fade zoomIn"
+                tabindex="-1"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button
+                        type="button"
+                        class="btn-close"
+                        id="close-removemodal"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div class="modal-body p-md-5">
+                      <div class="text-center">
+                        <div class="text-danger">
+                          <i class="bi bi-trash display-5"></i>
+                        </div>
+                        <div class="mt-4">
+                          <h4 class="mb-2">Are you sure ?</h4>
+                          <p class="text-muted mx-3 mb-0">
+                            Are you sure you want to remove this record ?
+                          </p>
+                        </div>
+                      </div>
+                      <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
+                        <button
+                          type="button"
+                          class="btn w-sm btn-light btn-hover"
+                          data-bs-dismiss="modal"
+                        >
+                          Close
+                        </button>
+                        <form method="POST" action="{% url 'dashboard:product_delete' product.id %}"   style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
+                      </form>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+              </div>
+              <!-- /deleteRecordModal -->
+
+                  {% if product.primary_image %}
+                  <img
+                    src="{{ product.primary_image.image.url }}"
+                    alt="{{ product.primary_image.alt_text|default:product.name }}"
+                    class="img-fluid"
+                    style="height: 82px;width: 120px;"
+                  />
+                  {% else %}
+                  <img
+                    src="{% static 'dashboard/images/products/img-1.png' %}"
+                    alt="{{ product.name }}"
+                    class="img-fluid"
+                    style="height: 82px;width: 120px;"
+                  />
+                  {% endif %}
+                </div>
+                <div class="card-body pt-0">
+                  {% if product.average_rating > 0 %}
+                  <span class="badge bg-warning-subtle text-warning float-end">
+                    <i class="bi bi-star-fill align-baseline me-1"></i>
+                    <span class="rate">{{ product.average_rating }}</span>
+                  </span>
+                  {% endif %}
+                  <h5 class="fs-lg mb-3">
+                    ₹{{ product.get_price }} 
+                    {% if product.mrp and  product.discount_percentage > 0 %}
+                    <small
+                      class="fs-sm fw-normal text-decoration-line-through text-muted"
+                    >
+                      ₹{{ product.mrp }}
+                    </small>
+                    {% endif %}
+                  </h5>
+                  <a href="{% url 'dashboard:product_details' product.id %}">
+                    <h6 class="fs-md text-truncate">{{ product.name }}</h6>
+                  </a>
+                  <a
+                    class="text-decoration-underline text-muted mb-0"
+                  >
+                    {{ product.category.name }}
+                  </a>
+                  <div class="mt-3 hstack gap-2">
+                    <a
+                      href="{% url 'dashboard:product_edit' product.id %}"
+                      class="btn btn-primary w-100"
+                    >
+                      <i class="ph-pencil me-1 align-middle"></i> Edit
+                    </a>
+                    <a href="{% url 'dashboard:product_details' product.id %}" class="btn btn-secondary w-100">
+                      <i class="ph-eye me-1 align-middle"></i> View
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+              <p>No products found.</p>
+            </div>
+            {% endfor %}
+          </div>
+          <!--end row-->
+
+         
+          <!-- start pagination -->
+           <!-- Pagination and Results Info -->
+<div class="row mb-4 align-items-center" id="pagination-element" style="display: flex">
+    <div class="col-sm">
+        <div class="text-muted">
+            Showing <span class="fw-semibold">{{ page_obj.start_index }} - {{ page_obj.end_index }}</span> of
+            <span class="fw-semibold">{{ total_products }}</span> Results
+        </div>
+    </div>
+
+    <div class="col-sm-auto mt-3 mt-sm-0">
+        <div class="pagination-block pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
+            <!-- Previous Page Link -->
+            <div class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% endif %}" 
+                   class="page-link" id="page-prev">←</a>
+            </div>
+
+            <!-- Page Numbers -->
+            <span id="page-num" class="pagination">
+                {% for num in page_obj.paginator.page_range %}
+                    <div class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link clickPageNumber" 
+                           href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </div>
+                {% endfor %}
+            </span>
+
+            <!-- Next Page Link -->
+            <div class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% endif %}" 
+                   class="page-link" id="page-next">→</a>
+            </div>
+        </div>
+    </div>
+</div>
+          <!-- end pagination -->
+
+          <div class="row d-none" id="search-result-elem">
+            <div class="col-lg-12">
+              <div class="text-center py-5">
+                <div class="avatar-lg mx-auto mb-4">
+                  <div
+                    class="avatar-title bg-light text-primary rounded-circle fs-4xl"
+                  >
+                    <i class="bi bi-search"></i>
+                  </div>
+                </div>
+
+                <h5>No matching records found</h5>
+              </div>
+            </div>
+          </div>
+          <!-- end search-result -->
+        </div>
+        <!--end col-->
+      </div>
+      <!--end row-->
+    </div>
+    <!-- container-fluid -->
+  </div>
+  <!-- End Page-content -->
+
+    <!--start back-to-top-->
+    <button class="btn btn-dark btn-icon" id="back-to-top">
+      <i class="bi bi-caret-up fs-3xl"></i>
+    </button>
+    <!--end back-to-top-->
+
+</div>
+<!-- end main content-->
+
+
+<!-- ecommerce-product-grid-list js -->
+<script src="{% static 'dashboard/js/pages/ecommerce-product-grid-list.init.js' %}"></script>
+
+{% endblock content %}
