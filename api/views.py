@@ -12,12 +12,41 @@ from django.db.models import Q
 from .models import *
 from .serializers import *
 from rest_framework.generics import RetrieveAPIView,UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
-
-# JWT Authentication Views
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.authtoken.models import Token
 # Authentication Views
+
+
+class EmailLoginView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not email or not password:
+            return Response({"error": "Email and password required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # authenticate will automatically use USERNAME_FIELD = 'email'
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                "message": "Authenticated Successfully..!",
+                "token": token.key,
+               
+            }, status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class TestProtectedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"message": "Authenticated user", "email": request.user.email})
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserRegistrationSerializer

@@ -10,9 +10,7 @@ app_name = 'api'
 
 urlpatterns = [
     # JWT Authentication
-    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('verify/', verify_token_view, name='verify_token'),
+    path('login/', EmailLoginView.as_view(), name='email_login'),
     path('register/', RegisterView.as_view(), name='register'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
     path('logout/', logout_view, name='logout'),

@@ -292,9 +292,11 @@ def product_create(request):
         variant_image = request.FILES.get('variant_image')
         print("variant_image",variant_image)
         hex_color_code = request.POST.get('hex_color_code')
+        variant_value = request.POST.get('variant_value')
         # for size in variant_sizes and hex_color_code:
         ProductVariant.objects.create(product=product,
                                     size=variant_sizes,
+                                    variant_value=variant_value,
                                     hex_color_code=hex_color_code,
                                     mrp=variant_mrp,
                                     price=variant_selling,
