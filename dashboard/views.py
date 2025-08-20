@@ -287,10 +287,13 @@ def product_create(request):
             )
         # Handle product variants
         variant_sizes = request.POST.getlist('variant_sizes')
+        # If it still comes as a single string like "S,M,L,XL"
+        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
+            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
+
         variant_mrp = request.POST.get('variant_mrp_price')
         variant_selling = request.POST.get('variant_selling_price')
         variant_image = request.FILES.get('variant_image')
-        print("variant_image",variant_image)
         hex_color_code = request.POST.get('hex_color_code')
         variant_value = request.POST.get('variant_value')
         # for size in variant_sizes and hex_color_code:
