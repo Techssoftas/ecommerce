@@ -179,11 +179,13 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.29.150:5173',#my
     'http://192.168.29.3:5173',#naveen
     "https://m2hit.in",
+    "https://mtex.in",  
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://m2hit.in",
+     "https://mtex.in",  
 ]
 
 
