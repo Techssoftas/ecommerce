@@ -225,6 +225,12 @@ LOGIN_URL = '/login_view/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/dashboard/login/'
 
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
+
+
+
 # Stripe Configuration
 # STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default='')
 # STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
