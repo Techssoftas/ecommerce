@@ -171,19 +171,19 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = False
+# CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://192.168.29.20:5173",#yogavarthini
     'http://192.168.29.150:5173',#my
     'http://192.168.29.3:5173',#naveen
-    "https://64f11d68bef3.ngrok-free.app",
+    "https://m2hit.in",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-    "https://64f11d68bef3.ngrok-free.app",
+    "https://m2hit.in",
 ]
 
 
