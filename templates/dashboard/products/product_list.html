@@ -461,7 +461,7 @@
                     class="btn btn-sm btn-icon btn-subtle-danger position-absolute top-0 end-0 m-3 remove-list"
                     data-remove-id="{{ product.id }}"
                     data-bs-toggle="modal"
-                    data-bs-target="#deleteRecordModal"
+                    data-bs-target="#deleteRecordModal-{{ product.id }}"
                   >
                     <i class="ph-trash"></i>
                   </button>
@@ -470,7 +470,7 @@
 
               <!-- deleteRecordModal -->
               <div
-                id="deleteRecordModal"
+                id="deleteRecordModal-{{ product.id }}"
                 class="modal fade zoomIn"
                 tabindex="-1"
                 aria-hidden="true"
@@ -481,7 +481,7 @@
                       <button
                         type="button"
                         class="btn-close"
-                        id="close-removemodal"
+                        id="close-removemodal-{{ product.id }}"
                         data-bs-dismiss="modal"
                         aria-label="Close"
                       ></button>
@@ -508,7 +508,7 @@
                         </button>
                         <form method="POST" action="{% url 'dashboard:product_delete' product.id %}"   style="display:inline;">
                           {% csrf_token %}
-                          <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
+                          <button type="submit" class="btn w-sm btn-danger" id="remove-product"> Yes, Delete It!</button>
                       </form>
                       </div>
                     </div>

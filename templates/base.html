@@ -79,11 +79,12 @@
         <div class="navbar-brand-box">
           <a href="" class="logo logo-dark">
             <span class="logo-sm">
-              <img
+              {% comment %} <img
                 src="{% static 'dashboard/images/logo-sm.png' %}"
                 alt=""
                 height="22"
-              />
+              /> {% endcomment %}
+              <h5>M-TEX</h5>
             </span>
             <span class="logo-lg">
               <!-- <img
@@ -103,11 +104,12 @@
               />
             </span>
             <span class="logo-lg">
-              <img
-                src="{% static 'dashboard/images/logo-light.png' %}"
+              {% comment %} <img
+                src="{% static 'dashboard/images/logolight.png' %}"
                 alt=""
                 height="22"
-              />
+              /> {% endcomment %}
+               <h5>M-TEX</h5>
             </span>
           </a>
           <button
@@ -304,7 +306,7 @@
                   <span class="d-flex align-items-center">
                     <img
                       class="rounded-circle header-profile-user"
-                      src="{% static 'dashboard/images/chat-user.jpg' %}"
+                      src="{% static 'dashboard/images/chatuser.jpg' %}"
                       alt="Header Avatar"
                     />
                     <span class="text-start ms-xl-2">

@@ -341,7 +341,7 @@ def product_edit(request, pk):
 @login_required
 @user_passes_test(is_admin)
 def product_delete(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(Product, id=pk)
     if request.method == 'POST':
         product.delete()
         messages.success(request, 'Product deleted successfully!')
