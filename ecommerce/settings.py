@@ -111,7 +111,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'dashboard/static'),  # Adjust to your static folder path
+    os.path.join(BASE_DIR, 'static'),  # Adjust to your static folder path
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where static files are collected for production
 

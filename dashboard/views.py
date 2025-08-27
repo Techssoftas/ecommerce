@@ -177,6 +177,7 @@ def product_create(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         category_id = request.POST.get('category')
+        subcategory = request.POST.get('subcategory')
         description = request.POST.get('description')
         brand = request.POST.get('brand')
         model_name = request.POST.get('model_name') 
@@ -239,7 +240,7 @@ def product_create(request):
             # specifications=specifications,
             # key_features=key_features,
             category=category,
-            # subcategory=subcategory,
+            subcategory=subcategory,
             price=product_selling_price,
             discount_price=discount_price,
             mrp=product_mrp_price,

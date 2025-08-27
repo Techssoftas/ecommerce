@@ -74,16 +74,31 @@ Products Create
                                                         <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
                                                         <input type="text" class="form-control" name="name" id="productTitle" placeholder="Enter product title" >
                                                     </div>
-                                                    <div class="mb-3">
-                                                        <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
-                                                        <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
-                                                            <option value="">Select categories</option>
-                                                            {% for category in categories %}
-                                                                <option value="{{ category.id }}">{{ category.name }}</option>
-                                                            {% endfor %}
-                                                        </select>
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
+                                                                <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
+                                                                    <option value="">Select categories</option>
+                                                                    {% for category in categories %}
+                                                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="subCategories" class="form-label">Sub Category <span class="text-danger">*</span></label>
+                                                                <select class="form-control" name="subcategory"  id="subCategories" required>
+                                                                    <option value="Men">Mens</option>
+                                                                    <option value="Womens">Womens</option>
+                                                                    <option value="Kids(Boys)">Kids(Boys)</option>
+                                                                    <option value="Kids(Girls)">Kids(Girls)</option>
+                                                                    
+                                                                </select>
+                                                            </div>
+                                                        </div>
                                                     </div>
-
                                                     
                                                     <div class="mb-3">
                                                         <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
