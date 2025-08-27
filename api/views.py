@@ -170,6 +170,21 @@ class ProductListView(APIView):
         result_page = paginator.paginate_queryset(products, request)
         serializer = ProductSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+class FilterListView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request):
+        category = request.query_params.get('category', None)
+        subcategory = request.query_params.get('subcategory', None)
+        products = Product.objects.filter(is_active=True)
+        
+        if category:
+            products = products.filter(category_name=category,subcategory=subcategory)
+        
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(products, request)
+        serializer = ProductSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 class CategoryListView(APIView):
     permission_classes = [permissions.AllowAny]
