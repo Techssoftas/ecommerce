@@ -46,7 +46,7 @@ Products Create
                                         <ol class="breadcrumb m-0">
                                             <li class="breadcrumb-item">
                                             
-                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target=".bs-example-modal-center">
+                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#AddCategoryModal">
                                                 <i class="bi bi-plus-circle align-baseline me-1"></i>
                                                     Add Category
                                                 </button>
@@ -228,7 +228,7 @@ Products Create
                                         <ol class="breadcrumb m-0">
                                             <li class="breadcrumb-item">
                                             
-                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target=".bs-example-modal-center">
+                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#AddVariantModal">
                                                 <i class="bi bi-plus-circle align-baseline me-1"></i>
                                                     Add Variant
                                                 </button>
@@ -316,7 +316,7 @@ Products Create
 
                                                                 {% if variant.variant_image %}
                                                                     <img src="{{ variant.variant_image.url }}"
-                                                                        alt="{{ product.name }}"
+                                                                        alt="{{ variant.variant_value }}"
                                                                         class="img-fluid"
                                                                         style="height: 82px;width: 120px;"/>
                                                                 {% else %}
@@ -357,13 +357,148 @@ Products Create
 
                                                                 <div class="mt-3 hstack gap-2">
                                                                     
-                                                                    <a href="{% url 'dashboard:product_details' product.id %}" class="btn btn-secondary w-100">
+                                                                    <a type="button" data-bs-toggle="modal" data-edit-id="{{ variant.id }}" data-bs-target="#EditVariantModal-{{ variant.id }}" class="btn btn-secondary w-100">
                                                                         <i class="ph-pencil me-1 align-middle"></i> Edit
                                                                     </a>
+
+
+                                                                    <!-- EditVariantModal  --> 
+                                                                    <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="EditVariantModal-{{ variant.id }}" aria-labelledby="EditVariantModal-{{ variant.id }}" aria-hidden="true">
+                                                                        <div class="modal-dialog modal-dialog-centered">
+                                                                            <div class="modal-content">
+                                                                                <div class="modal-body text-center p-5">
+                                                                                    <h5 class="mb-3">Edit Variant -  {{variant.variant_value }}</h5>
+                                                                                    <form action="{% url 'dashboard:variant_edit' product.id variant.id %}" method="post" class="row g-3" enctype="multipart/form-data">
+                                                                                    {% csrf_token %}
+                                                                                        <div class="row mt-3">
+                                                                                                            
+                                                                                            
+                                                                                            <div class="col-lg-12">
+                                                                                                <div class="mb-3">
+                                                                                                    <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
+                                                                                                    <div class="input-group has-validation">
+                                                                                                        <span class="input-group-text" id="product-price-addon">₹</span>
+                                                                                                        <input type="number" class="form-control" name="variant_mrp_price" value="{{variant.mrp}}" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                                                                                        <div class="invalid-feedback">Please Enter a MRP price.</div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div><!--end col-->
+                                                                                            <div class="col-lg-12">
+                                                                                                <div class="mb-3">
+                                                                                                    <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
+                                                                                                
+                                                                                                    <div class="input-group has-validation">
+                                                                                                        <span class="input-group-text" id="product-price-addon">₹</span>
+                                                                                                        
+                                                                                                        <input  name="variant_selling_price" class="form-control" value="{{variant.price}}" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                                                                                        <div class="invalid-feedback">Please Enter a selling price.</div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div><!--end col-->
+                                                                                            
+                                                                                            <div class="col-lg-12">
+                                                                                                <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
+                                                                                                    
+                                                                                                <div class="input-group">
+                                                                                                    <label class="input-group-text" for="inputGroupSelect01">Colors</label>
+                                                                                                    <select class="form-select" id="inputGroupSelect01" name="variant_value">
+
+                                                                                                        <option value="{{variant.variant_value}}">{{variant.variant_value}}</option>
+                                                                                                        <option value="black">Black</option>
+                                                                                                        <option value="red">Red</option>
+                                                                                                        <option value="green">Green</option>
+                                                                                                        <option value="blue">Blue</option>
+                                                                                                        <option value="yellow">Yellow</option>
+                                                                                                        <option value="orange">Orange</option>
+                                                                                                        <option value="purple">Purple</option>
+                                                                                                        <option value="pink">Pink</option>
+                                                                                                        <option value="white">White</option>
+                                                                                                        <option value="gray">Gray</option>
+                                                                                                        <option value="brown">Brown</option>
+                                                                                                        <option value="violet">Violet</option>
+                                                                                                        <option value="indigo">Indigo</option>
+                                                                                                        <option value="cyan">Cyan</option>
+                                                                                                        <option value="magenta">Magenta</option>
+                                                                                                        <option value="gold">Gold</option>
+                                                                                                        <option value="silver">Silver</option>
+                                                                                                        <option value="beige">Beige</option>
+                                                                                                        <option value="maroon">Maroon</option>
+                                                                                                        <option value="navy">Navy</option>
+                                                                                                        <option value="teal">Teal</option>
+                                                                                                        <option value="lime">Lime</option>
+                                                                                                        <option value="olive">Olive</option>
+                                                                                                    </select>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            
+                                                                                        
+                                                                                            <div class="col-lg-12 mt-2">
+                                                                                                <div class="mb-3 ">
+                                                                                                    <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
+                                                                                                    <div class="d-flex align-items-center">
+                                                                                                        <input type="color" 
+                                                                                                            name="hex_color_code" 
+                                                                                                            class="form-control form-control-color w-100 color-picker" 
+                                                                                                            id="productColor-{{ variant.id }}" 
+                                                                                                            value="{{ variant.hex_color_code }}" required>
+
+                                                                                                        <input type="text" 
+                                                                                                            class="form-control color-display" 
+                                                                                                            id="colorHexDisplay-{{ variant.id }}" 
+                                                                                                            value="{{ variant.hex_color_code }}" readonly 
+                                                                                                            style="max-width: 120px;">
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <div class="mb-3 ">
+                                                                                                    <label for="sizeInput-{{ variant.id }}" class="form-label">Size <span class="text-danger">*</span></label>
+                                                                                                <div class="input-group">
+                                                                                                        <input type="text" class="form-control" id="sizeInput-{{ variant.id }}" aria-label="Recipient's username" aria-describedby="button-addon2">
+                                                                                                        <button class="btn btn-info add-size-btn" type="button" data-variant="{{ variant.id }}">Add</button>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <div class="mb-3">
+                                                                                                    <label for="productBrand" class="form-label">Selected Size <span class="text-danger">*</span></label>
+                                                                                                    <br/>
+                                                                                                    <input type="hidden" name="variant_sizes" value="" id="selectedSize-{{ variant.id }}" required>
+                                                                                                    <div id="selectedSizeContainer-{{ variant.id }}"></div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            
+                                                                                            <div class="col-lg-12">
+                                                                                                <div class="mb-3">
+                                                                                                    <label for="productBrand" class="form-label">Image <span class="text-danger">*</span></label>
+                                                                                                    <input type="file" name="variant_image" accept=".png,.jpg,.jpeg" class="form-control" id="productBrand" >
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            
+
+                                                                                            
+                                                                                        </div><!--end row-->
+
+                                                                                        <div class="hstack gap-2 justify-content-end mb-3">
+                                                                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                                                                            <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                                                                            
+                                                                                        </div>
+                                                                                    </form>
+                                                                                    
+                                                                                </div>
+                                                                            </div><!-- /.modal-content -->
+                                                                        </div><!-- /.modal-dialog -->
+                                                                    </div><!-- /.modal -->
+
+                                                                  
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
+
+
+                                                     
                                                 {% endfor %}
                               
 
@@ -395,14 +530,13 @@ Products Create
         </div>
         <!-- end main content-->
 
-
 <!-- Modal --> 
-<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="AddCategoryModal" aria-labelledby="AddCategoryModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-body text-center p-5">
-                <h5 class="mb-3">Add New Variant</h5>
-                <form action="{% url 'dashboard:variant_create' product.id %}" method="post" class="row g-3" accept="multipart/form-data">
+                <h5 class="mb-3">Add New Category</h5>
+                <form action="{% url 'dashboard:add_category' %}" method="post" class="row g-3" enctype="multipart/form-data">
                 {% csrf_token %}
                     <div class="col-md-12">
                         <label for="fullnameInput" class="form-label">Name
@@ -410,8 +544,7 @@ Products Create
                         </label>
                         <input type="text" class="form-control" id="fullnameInput" name="name" placeholder="Enter name" required>
                     </div>
-                    
-                    
+                               
                     <div class="col-12">
                         <label for="inputAddress" class="form-label">Description</label>
                         <input type="text" class="form-control" name="description" id="inputAddress" placeholder="Description">
@@ -436,6 +569,134 @@ Products Create
 
 
 
+
+<!-- Modal --> 
+<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="AddVariantModal" aria-labelledby="AddVariantModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <h5 class="mb-3">Add New Variant</h5>
+                <form action="{% url 'dashboard:variant_create' product.id %}" method="post" class="row g-3" enctype="multipart/form-data">
+                {% csrf_token %}
+                     <div class="row mt-3">
+                                         
+                        
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text" id="product-price-addon">₹</span>
+                                    <input type="number" class="form-control" name="variant_mrp_price" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                    <div class="invalid-feedback">Please Enter a MRP price.</div>
+                                </div>
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text" id="product-price-addon">₹</span>
+                                    <input type="number" name="variant_selling_price" class="form-control" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                    <div class="invalid-feedback">Please Enter a selling price.</div>
+                                </div>
+                            </div>
+                        </div><!--end col-->
+                        
+                        <div class="col-lg-12">
+                            <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
+                                
+                            <div class="input-group">
+                                <label class="input-group-text" for="inputGroupSelect01">Colors</label>
+                                <select class="form-select" id="inputGroupSelect01" name="variant_value">
+
+                                    <option value="black">Black</option>
+                                    <option value="red">Red</option>
+                                    <option value="green">Green</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="yellow">Yellow</option>
+                                    <option value="orange">Orange</option>
+                                    <option value="purple">Purple</option>
+                                    <option value="pink">Pink</option>
+                                    <option value="white">White</option>
+                                    <option value="gray">Gray</option>
+                                    <option value="brown">Brown</option>
+                                    <option value="violet">Violet</option>
+                                    <option value="indigo">Indigo</option>
+                                    <option value="cyan">Cyan</option>
+                                    <option value="magenta">Magenta</option>
+                                    <option value="gold">Gold</option>
+                                    <option value="silver">Silver</option>
+                                    <option value="beige">Beige</option>
+                                    <option value="maroon">Maroon</option>
+                                    <option value="navy">Navy</option>
+                                    <option value="teal">Teal</option>
+                                    <option value="lime">Lime</option>
+                                    <option value="olive">Olive</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                       
+                        <div class="col-lg-12 mt-2">
+                            <div class="mb-3 ">
+                                <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" 
+                                        name="hex_color_code" 
+                                        class="form-control form-control-color w-100 color-picker" 
+                                        id="productColor-add" value="#000000" required>
+
+                                    <input type="text" 
+                                        class="form-control color-display" 
+                                        id="colorHexDisplay-add" 
+                                        readonly style="max-width: 120px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3 ">
+                                <label for="sizeInput-add" class="form-label">Size <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                    <input type="text" class="form-control" id="sizeInput-add" aria-label="Recipient's username" aria-describedby="button-addon2" >
+                                    <button class="btn btn-info add-size-btn" type="button" data-variant="add">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                
+                                <label for="productBrand" class="form-label">Selected Size <span class="text-danger">*</span></label>
+                                <br/>
+                                <input type="hidden" name="variant_sizes" id="selectedSize-add" required>
+                                <div id="selectedSizeContainer-add"></div>
+                            </div>
+                        </div>
+                        
+                         <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label for="productBrand" class="form-label">Image <span class="text-danger">*</span></label>
+                                <input type="file" name="variant_image" accept=".png,.jpg,.jpeg" class="form-control" id="productBrand" placeholder="Enter brand" required>
+                            </div>
+                        </div>
+                        
+
+                        
+                    </div><!--end row-->
+
+                    <div class="hstack gap-2 justify-content-end mb-3">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                        
+                    </div>
+                </form>
+                
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
     <!-- dropzone js -->
     <script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
     <!-- init js -->
@@ -443,45 +704,68 @@ Products Create
 
 
 <script>
-    const colorInput = document.getElementById('productColor');
-    const colorHexDisplay = document.getElementById('colorHexDisplay');
+$(document).ready(function () {
+    $(".color-picker").each(function () {
+        let colorInput = $(this);
+        let variantId = this.id.replace("productColor-", ""); // "add" or variant.id
+        let colorHexDisplay = $(`#colorHexDisplay-${variantId}`);
 
-    function updateColorCode() {
-        colorHexDisplay.value = colorInput.value;
-    }
+        function updateColorCode() {
+            let colorVal = colorInput.val();
+            colorHexDisplay.val(colorVal);
+            colorHexDisplay.css("background-color", colorVal);
+            colorHexDisplay.css("color", "#fff");
+        }
 
-    // Initialize
-    updateColorCode();
+        updateColorCode(); // init
+        colorInput.on("input", updateColorCode);
+    });
+});
 
-    // Update on change
-    colorInput.addEventListener('input', updateColorCode);
+
 </script>
 
 <!-- Include jQuery if not already included -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function () {
-        let selectedSizes = [];
+$(document).ready(function () {
+    let selectedSizes = { add: [] };
 
-        $('#button-addon2').click(function () {
-            let newSize = $('#sizeInput').val().trim();
-            if (newSize !== "" && !selectedSizes.includes(newSize)) {
-                selectedSizes.push(newSize);
+    // Add button click (Add Variant)
+    $(".add-size-btn").click(function () {
+        let variantId = $(this).data("variant"); // "add" or number
+        if (!selectedSizes[variantId]) {
+            selectedSizes[variantId] = [];
+        }
 
-                // Update the hidden input
-                $('#selectedSize').val(selectedSizes.join(','));
+        let newSize = $(`#sizeInput-${variantId}`).val().trim();
+        if (newSize !== "" && !selectedSizes[variantId].includes(newSize)) {
+            selectedSizes[variantId].push(newSize);
 
-                // Create and append the new button
-                $('#selectedSizeContainer').append(`
-                    <button type="button" class="btn rounded-pill btn-primary m-1">${newSize}</button>
-                `);
+            // update hidden field
+            $(`#selectedSize-${variantId}`).val(selectedSizes[variantId].join(","));
 
-                // Clear input
-                $('#sizeInput').val('');
-            }
-        });
+            // show button
+            $(`#selectedSizeContainer-${variantId}`).append(`
+                <button type="button" class="btn rounded-pill btn-primary m-1">${newSize}</button>
+            `);
+
+            $(`#sizeInput-${variantId}`).val("");
+        }
     });
+
+    // ✅ Require at least 1 size before form submit
+    $("#AddVariantModal form").on("submit", function (e) {
+        if (selectedSizes["add"].length === 0) {
+            alert("Please add at least one size.");
+            e.preventDefault(); // stop submit
+        }
+    });
+});
+
 </script>
+
+
 
 <script>
 Dropzone.autoDiscover = false; // avoid auto init

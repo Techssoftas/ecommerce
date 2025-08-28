@@ -701,24 +701,36 @@ def variant_create(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     
     if request.method == 'POST':
-        variant_sizes = request.POST.getlist('variant_sizes')
+        
         variant_mrp = request.POST.get('variant_mrp_price')
         variant_selling = request.POST.get('variant_selling_price')
         variant_image = request.FILES.get('variant_image')
         hex_color_code = request.POST.get('hex_color_code')
+        variant_value = request.POST.get('variant_value')
+        variant_sizes = request.POST.getlist('variant_sizes')
+        print("variant_image",variant_image)
+        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
+            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
+
         sku = request.POST.get('sku')
         if not sku:
             sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
         # for size in variant_sizes and hex_color_code:
-        ProductVariant.objects.create(product=product,
-                                    size=variant_sizes,
-                                    hex_color_code=hex_color_code,
-                                    mrp=variant_mrp,
-                                    price=variant_selling,
-                                    variant_image=variant_image,
-                                    sku =sku,   
-                                        )
-        messages.success(request, "Variant Created successfully.")
+        if ProductVariant.objects.filter(product=product,variant_value = variant_value).exists():
+            messages.warning(request, "Variant Values & Colour Alredy Created...")
+            return redirect('dashboard:product_edit', pk=product_id)
+        else:
+            
+            ProductVariant.objects.create(product=product,
+                                        size=variant_sizes,
+                                        hex_color_code=hex_color_code,
+                                        variant_value = variant_value,
+                                        mrp=variant_mrp,
+                                        price=variant_selling,
+                                        variant_image=variant_image,
+                                        sku =sku,   
+                                            )
+            messages.success(request, "Variant Created successfully..")
         return redirect('dashboard:product_edit', pk=product_id)
     
     return render(request, 'dashboard/products/variant_create.html', {
@@ -731,18 +743,43 @@ def variant_create(request, product_id):
 def variant_edit(request, product_id, variant_id):
     product = get_object_or_404(Product, pk=product_id)
     variant = get_object_or_404(ProductVariant, pk=variant_id, product=product)
-    
+
     if request.method == 'POST':
-        form = ProductVariantForm(request.POST, request.FILES, instance=variant)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Product variant updated successfully!')
-            return redirect('dashboard:product_edit', pk=product_id)
-    else:
-        form = ProductVariantForm(instance=variant)
+        variant_mrp = request.POST.get('variant_mrp_price')
+        variant_selling = request.POST.get('variant_selling_price')
+        hex_color_code = request.POST.get('hex_color_code')
+        variant_value = request.POST.get('variant_value')
+        variant_sizes = request.POST.getlist('variant_sizes')
+        variant_image = request.FILES.get('variant_image')  # ✅ file handling
+        print("variant_sizes",variant_sizes)
+        
+        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
+            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
+
+        sku = request.POST.get('sku')
+        if not sku:
+            sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+
+        variant.hex_color_code = hex_color_code
+        variant.variant_value = variant_value
+        variant.mrp = variant_mrp
+        
+        variant.price = variant_selling
+        if variant_image:  # only update if new image uploaded
+            variant.variant_image = variant_image
+
+        if variant_sizes:
+            variant.size = variant_sizes
+       
+        variant.sku = sku
+
+        variant.save()
+        messages.success(request, 'Product variant updated successfully!')
+        return redirect('dashboard:product_edit', pk=product_id)
+    
     
     return render(request, 'dashboard/products/variant_edit.html', {
-        'form': form, 
+       
         'product': product,
         'variant': variant
     })

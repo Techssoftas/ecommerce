@@ -298,7 +298,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ShippingAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShippingAddress
-        fields = ['id', 'user', 'address_line1', 'address_line2', 'city', 'state', 'postal_code','type_of_address', 'phone', 'is_default', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'address_line1', 'address_line2', 'city', 'state','country', 'postal_code','type_of_address', 'phone', 'is_default', 'created_at', 'updated_at']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
     def validate(self, data):

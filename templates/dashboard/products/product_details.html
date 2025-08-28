@@ -234,7 +234,7 @@ Products Details
                                                 </div><!--end col-->
                                             </div><!--end row-->
                                             <div class="mt-4 d-flex gap-2">
-                                                <button type="button" class="btn btn-primary w-100">Edit</button>
+                                                <a href="{% url 'dashboard:product_edit' product.id %}" type="button" class="btn btn-primary w-100">Edit</button>
                                                <a href="#deleteProduct" data-review-id="{{ review.id }}" class="badge bg-danger-subtle text-danger" data-bs-toggle="modal">
                                                 <button type="button" class="btn btn-danger w-100"><i class="ph-trash align-middle me-1"></i> Delete</button>
                                                </a>
