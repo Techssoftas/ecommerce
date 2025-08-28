@@ -749,10 +749,11 @@ def variant_edit(request, product_id, variant_id):
         variant_selling = request.POST.get('variant_selling_price')
         hex_color_code = request.POST.get('hex_color_code')
         variant_value = request.POST.get('variant_value')
-        variant_sizes = request.POST.getlist('variant_sizes')
         variant_image = request.FILES.get('variant_image')  # ✅ file handling
+        variant_sizes = request.POST.getlist('variant_sizes')
         print("variant_sizes",variant_sizes)
-        
+        variant_sizes = [s.strip() for s in variant_sizes if s.strip()]  # remove empty strings
+
         if len(variant_sizes) == 1 and "," in variant_sizes[0]:
             variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
 
@@ -770,7 +771,7 @@ def variant_edit(request, product_id, variant_id):
 
         if variant_sizes:
             variant.size = variant_sizes
-       
+            print("variant size update")
         variant.sku = sku
 
         variant.save()
