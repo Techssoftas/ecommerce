@@ -161,33 +161,49 @@ Products Create
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="row">
-                                            
-                                            <div class="col-xxl-12">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Product Images <span class="text-danger">*</span></label>
-                                                    <div class="dropzone text-center" id="dropzoneArea">
-                                                        <div class="fallback">
-                                                            <input name="product_images" type="file" multiple>
-                                                        </div>
-                                                        <div class="dz-message needsclick">
-                                                            <div class="mb-3">
-                                                                <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
-                                                            </div>
-                                                            <h4>Drop product images here or click to upload.</h4>
+    <div class="col-xxl-12">
+        <div class="mb-3">
+            <label class="form-label">Product Images <span class="text-danger">*</span></label>
+            <div class="dropzone text-center" id="dropzoneArea">
+                <div class="fallback">
+                    <input name="product_images" type="file" multiple>
+                </div>
+                <div class="dz-message needsclick">
+                    <div class="mb-3">
+                        <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                    </div>
+                    <h4>Drop product images here or click to upload.</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                                          
-                                                        </div>
+<!-- Show existing product images -->
+<div class="row mt-3">
+    {% for img in product.images.all %}
+        <div class="col-sm-3 col-6 mb-3 image-card" id="image-{{ img.id }}">
+            <div class="position-relative border rounded p-1">
+                <!-- Delete Button -->
+                <button type="button" 
+                        class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 delete-image-btn" 
+                        data-id="{{ img.id }}">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <!-- Image -->
+                <img src="{{ img.image.url }}" 
+                     alt="{{ product.name }}" 
+                     class="img-fluid rounded"
+                     style="height:150px; width:100%; object-fit:cover;">
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p>No images available for this product.</p>
+        </div>
+    {% endfor %}
+</div>
 
-                                                        
-                                                    </div>
-
-                                                    
-                                                </div>
-
-                                                
-                                            </div>
-                                        </div><!--end row-->
-                                    </div>
                                 </div>
                             </div><!--end col-->
                         </div><!--end row-->
@@ -807,5 +823,60 @@ document.getElementById("productDropzoneForm").addEventListener("submit", functi
 </script>
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script>
+    $(document).on("click", ".delete-image-btn", function () {
+    let imageId = $(this).data("id");
+    let imageCard = $("#image-" + imageId);
+
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Do you really want to delete this image?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/dashboard/product-image/delete/${imageId}/`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"), // for Django
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire("Deleted!", "Image deleted successfully.", "success");
+                    imageCard.remove(); // remove from UI
+                } else {
+                    Swal.fire("Error!", "Failed to delete image.", "error");
+                }
+            })
+            .catch(() => {
+                Swal.fire("Error!", "Something went wrong.", "error");
+            });
+        }
+    });
+});
+
+// ✅ Helper function to get CSRF token (for Django)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+</script>
 {% endblock content %}

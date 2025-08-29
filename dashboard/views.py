@@ -794,6 +794,24 @@ def variant_delete(request, product_id, variant_id):
     messages.success(request, "Variant deleted successfully.")
     return redirect('dashboard:product_edit', pk=product_pk)
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["DELETE"])
+def delete_product_image(request, image_id):
+    try:
+        product_image = get_object_or_404(ProductImage, id=image_id)
+
+        # Optional: delete the file from storage too
+        if product_image.image:
+            product_image.image.delete(save=False)
+
+        product_image.delete()
+        return JsonResponse({"message": "Image deleted successfully"}, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
 # Customer Management
 @login_required
 @user_passes_test(is_admin)
