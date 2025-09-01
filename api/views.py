@@ -179,8 +179,11 @@ class FilterListView(APIView):
         subcategory = request.query_params.get('subcategory', None)
 
         products = Product.objects.filter(is_active=True)
-        print(category,subcategory)
-        if category:
+
+        if not category:  # covers both None and ""
+            products = products.filter(subcategory=subcategory)
+           
+        else:
             products = products.filter(category__name=category,subcategory=subcategory)
         
 

@@ -89,7 +89,7 @@ class Product(models.Model):
     specifications = models.JSONField(default=dict, blank=True)  # Store detailed specs
     key_features = models.JSONField(default=list, blank=True)  # Array of key features
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    subcategory = models.CharField(choices=SUB_CATEGORY, default='Men')
+    subcategory = models.CharField(choices=SUB_CATEGORY, default='Mens')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
