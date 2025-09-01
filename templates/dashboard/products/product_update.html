@@ -9,7 +9,7 @@ Products Create
 
             <div class="page-content">
                 <div class="container-fluid">
-                    <form action="{% url 'dashboard:product_create' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
+                    <form action="{% url 'dashboard:product_edit' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
                         {% csrf_token %}
                         <!-- start page title -->
                         <div class="row">
@@ -840,7 +840,8 @@ document.getElementById("productDropzoneForm").addEventListener("submit", functi
         confirmButtonText: "Yes, delete it!"
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/dashboard/product-image/delete/${imageId}/`, {
+            const baseUrl = window.location.origin;  
+            fetch(`${baseUrl}/product_image/delete/${imageId}/`, {
                 method: "DELETE",
                 headers: {
                     "X-CSRFToken": getCookie("csrftoken"), // for Django
