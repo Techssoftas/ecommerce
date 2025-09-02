@@ -176,7 +176,7 @@ from django.db.models import Q
 class ShopFilterListView(APIView):
     permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
+    def get(self, request):
         """
         Filters products based on request body parameters:
         {
@@ -528,73 +528,63 @@ class PendingOrderApiView(APIView):
         return Response(serializer.data)
 
 
-class SingleProductPurchaseAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class BuyNowCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user = request.user
         product_id = request.data.get("product_id")
-        variant_id = request.data.get("variant_id")  # optional
-        size = request.data.get("size")  # optional
+        variant_id = request.data.get("variant_id")
         quantity = int(request.data.get("quantity", 1))
 
-        if not product_id:
-            return Response({"message": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Get product
         try:
-            product = Product.objects.get(id=product_id, is_active=True)
+            product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
-            return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Product not found"}, status=404)
 
-        # Get variant if provided
         variant = None
         if variant_id:
-            try:
-                variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
-            except ProductVariant.DoesNotExist:
-                return Response({"message": "Variant not found"}, status=status.HTTP_404_NOT_FOUND)
+            variant = ProductVariant.objects.filter(id=variant_id, product=product).first()
 
-        # Get default shipping address
-        shipping_address = ShippingAddress.objects.filter(user=user, is_default=True).first()
-        if not shipping_address:
-            return Response({'message': 'Default shipping address not found.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Calculate price
+        # Price
+        price = product.get_price
         if variant:
             price = variant.get_price
-        else:
-            price = product.get_price
 
-        total_amount = price * quantity
+        data = {
+            "items": [
+                {
+                    "product": {
+                        "id": product.id,
+                        "name": product.name,
+                        "primary_image": product.primary_image.url if product.primary_image else None
+                    },
+                    "variant": {
+                        "id": variant.id,
+                        "size": variant.size,
+                        "color": variant.color,
+                        "price": variant.get_price,
+                    } if variant else None,
+                    "quantity": quantity,
+                    "subtotal": price * quantity,
+                }
+            ],
+            "total_items": quantity,
+            "total_price": price * quantity,
+        }
 
-        # Create order
-        order = Order.objects.create(
-            user=user,
-            total_amount=total_amount,
-            shipping_address=shipping_address,
-            billing_address=shipping_address.address_line1,
-            phone=shipping_address.phone or user.phone,
-            email=user.email,
-        )
+        return Response(data)
 
-        # Create order item
-        OrderItem.objects.create(
-            order=order,
-            product=product,
-            variant=variant,
-            size=size,
-            quantity=quantity,
-            price=price,
-        )
+class CartCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        return Response({
-            "message": "Order placed successfully",
-            "order_id": order.id,
-            "order_number": order.order_number,
-            "total_amount": total_amount
-        }, status=status.HTTP_201_CREATED)
+    def get(self, request):
+        try:
+            cart = Cart.objects.get(user=request.user)
+        except Cart.DoesNotExist:
+            return Response({"detail": "Cart is empty"}, status=404)
 
+        serializer = CartCheckoutSerializer(cart)
+        return Response(serializer.data)
 
 class ShippingAddressListCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]

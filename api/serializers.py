@@ -231,6 +231,15 @@ class AddToCartSerializer(serializers.Serializer):
     varient_size = serializers.CharField(required=True)
     quantity = serializers.IntegerField(min_value=1, default=1)
 
+class CartCheckoutSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True)
+    total_items = serializers.ReadOnlyField()
+    total_price = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'items', 'total_items', 'total_price']
+
 class WishlistSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     

@@ -42,7 +42,8 @@ urlpatterns = [
     path('order_detail/<str:pk>/', OrderDetailView.as_view(), name='order_detail'),
     path('pending_orders/', PendingOrderApiView.as_view(), name='pending_order_list'),# For GET/POST
     path('orders/<int:order_id>/', OrderApiView.as_view(), name='order_update'),# For PUT
-    path('buy_now/', SingleProductPurchaseAPIView.as_view(), name='buy_now'),
+    path('buy_now/', BuyNowCheckoutView.as_view(), name='buy_now'),
+    path('cart_checkout/', CartCheckoutView.as_view(), name='cart_checkout'),
 
     path('shipping-address/', ShippingAddressListCreateView.as_view(), name='shipping-addresses'),
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),
