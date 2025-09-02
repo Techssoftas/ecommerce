@@ -550,19 +550,21 @@ class BuyNowCheckoutView(APIView):
         if variant:
             price = variant.get_price
 
+     
         data = {
             "items": [
                 {
                     "product": {
                         "id": product.id,
                         "name": product.name,
-                        "primary_image": product.primary_image.url if product.primary_image else None
+                        
                     },
                     "variant": {
                         "id": variant.id,
                         "size": variant.size,
-                        "color": variant.color,
+                        "color": variant.variant_value,
                         "price": variant.get_price,
+                        "primary_image": variant.variant_image.url if variant.variant_image else None
                     } if variant else None,
                     "quantity": quantity,
                     "subtotal": price * quantity,
@@ -571,7 +573,7 @@ class BuyNowCheckoutView(APIView):
             "total_items": quantity,
             "total_price": price * quantity,
         }
-
+     
         return Response(data)
 
 class CartCheckoutView(APIView):
