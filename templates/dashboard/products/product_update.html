@@ -9,7 +9,7 @@ Products Create
 
             <div class="page-content">
                 <div class="container-fluid">
-                    <form action="{% url 'dashboard:product_edit' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
+                    <form action="{% url 'dashboard:product_edit' product.id %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
                         {% csrf_token %}
                         <!-- start page title -->
                         <div class="row">
@@ -470,7 +470,7 @@ Products Create
                                                                                                 <div class="mb-3 ">
                                                                                                     <label for="sizeInput-{{ variant.id }}" class="form-label">Size <span class="text-danger">*</span></label>
                                                                                                 <div class="input-group">
-                                                                                                        <input type="text" class="form-control" id="sizeInput-{{ variant.id }}" aria-label="Recipient's username" aria-describedby="button-addon2">
+                                                                                                        <input type="text" class="form-control" style="text-transform: uppercase;" id="sizeInput-{{ variant.id }}" aria-label="Recipient's username" aria-describedby="button-addon2">
                                                                                                         <button class="btn btn-info add-size-btn" type="button" data-variant="{{ variant.id }}">Add</button>
                                                                                                     </div>
                                                                                                 </div>
@@ -673,7 +673,7 @@ Products Create
                             <div class="mb-3 ">
                                 <label for="sizeInput-add" class="form-label">Size <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                    <input type="text" class="form-control" id="sizeInput-add" aria-label="Recipient's username" aria-describedby="button-addon2" >
+                                    <input type="text" class="form-control" style="text-transform: uppercase;" id="sizeInput-add" aria-label="Recipient's username" aria-describedby="button-addon2" >
                                     <button class="btn btn-info add-size-btn" type="button" data-variant="add">Add</button>
                                 </div>
                             </div>

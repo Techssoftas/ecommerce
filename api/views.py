@@ -176,7 +176,7 @@ from django.db.models import Q
 class ShopFilterListView(APIView):
     permission_classes = [permissions.AllowAny]
 
-    def get(self, request):
+    def post(self, request):
         """
         Filters products based on request body parameters:
         {
