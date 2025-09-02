@@ -170,7 +170,89 @@ class ProductListView(APIView):
         result_page = paginator.paginate_queryset(products, request)
         serializer = ProductSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
-    
+
+from django.db.models import Q
+
+class ShopFilterListView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        """
+        Filters products based on request body parameters:
+        {
+            "category_id": 1,
+            "subcategory": "Mens",
+            "color": "Black",
+            "size": "M",
+            "min_price": 250,
+            "max_price": 500
+        }
+        """
+        data = request.data
+
+        category_id = data.get('category_id')
+        subcategory = data.get('subcategory')   # Mens / Womens
+        color = data.get('color')               # ex: Black
+        size = data.get('size')                 # ex: M
+        min_price = data.get('min_price')
+        max_price = data.get('max_price')
+
+        products = Product.objects.all()
+
+        # 🔹 Category filter
+        if category_id:
+            products = products.filter(category_id=category_id)
+            print("category_id",products)
+        # 🔹 Gender / subcategory filter
+        if subcategory:
+            products = products.filter(subcategory=subcategory)
+            print("subcategory",products)
+        # 🔹 Color filter
+        if color:
+            products = products.filter(variants__variant_value__iexact=color)
+            print("color",products)
+        # 🔹 Size filter (JSONField → contains lookup)
+        if size:
+            # Variant match filter (SQLite/MySQL)
+            products = products.filter(
+                variants__id__in=ProductVariant.objects.extra(
+                    where=["JSON_EXTRACT(size, '$') LIKE %s"],
+                    params=[f'%\"{size}\"%']
+                ).values("id")
+            )  
+
+            # # PostgreSQL supports `__contains`
+            # products = products.filter(variants__size__contains=[size])
+
+
+        # 🔹 Price filter
+        if min_price and max_price:
+            products = products.filter(
+               
+                Q(variants__price__gte=min_price, variants__price__lte=max_price)
+            )
+            print("min_price and",products)
+        elif min_price:
+            products = products.filter(
+                 Q(variants__price__gte=min_price)
+            )
+            print("min_price",products)
+        elif max_price:
+            products = products.filter(
+                 Q(variants__price__lte=max_price)
+            )
+            print("max_price",products)
+        # 🔹 remove duplicates
+        products = products.distinct()
+
+        # Pagination
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(products, request)
+        serializer = ProductSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+
 class FilterListView(APIView):
     permission_classes = [permissions.AllowAny]
 

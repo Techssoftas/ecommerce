@@ -22,7 +22,8 @@ urlpatterns = [
     path('products/<str:pk>/', ProductDetailView.as_view(), name='product_detail'),
     path('categories/', CategoryListView.as_view(), name='category_list'),
     
-     path('filter_products/', FilterListView.as_view(), name='filter_products'),
+    path('filter_products/', FilterListView.as_view(), name='filter_products'),
+    path('shopfilter/', ShopFilterListView.as_view(), name='shopfilter'),
 
     # Cart
     path('cart/', CartView.as_view(), name='cart'),
