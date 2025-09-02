@@ -380,7 +380,10 @@ class CartView(APIView):
         try:
             cart_item = CartItem.objects.get(id=item_id, cart__user=request.user)
             cart_item.delete()
-            return Response({'message': 'Item removed from cart'}, status=status.HTTP_200_OK)
+            cart, _ = Cart.objects.get_or_create(user=request.user)
+            serializer = CartSerializer(cart)
+            
+            return Response({'data':serializer.data,'message': 'Item removed from cart'}, status=status.HTTP_200_OK)
         except CartItem.DoesNotExist:
             return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
 
