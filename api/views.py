@@ -564,7 +564,7 @@ class BuyNowCheckoutView(APIView):
                         "size": variant.size,
                         "color": variant.variant_value,
                         "price": variant.get_price,
-                        "primary_image": variant.variant_image.url if variant.variant_image else None
+                        "variant_image": variant.variant_image.url if variant.variant_image else None
                     } if variant else None,
                     "quantity": quantity,
                     "subtotal": price * quantity,
