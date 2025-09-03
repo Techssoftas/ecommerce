@@ -33,7 +33,7 @@ class EmailLoginView(APIView):
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             return Response({
-                "message": "Authenticated Successfully..!",
+                "message": "Login Successfully..!",
                 "token": token.key,
                 'username':user.username,
                
@@ -160,6 +160,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ProductListView(APIView):
     permission_classes = [permissions.AllowAny]
     def get(self, request):
+        print('ProductListView')
         category_id = request.query_params.get('category_id', None)
         products = Product.objects.filter(is_active=True)
         
@@ -176,7 +177,8 @@ from django.db.models import Q
 class ShopFilterListView(APIView):
     permission_classes = [permissions.AllowAny]
 
-    def get(self, request):
+    def post(self, request):
+        print('ShopFilterListView')
         """
         Filters products based on request body parameters:
         {
@@ -189,8 +191,8 @@ class ShopFilterListView(APIView):
         }
         """
         data = request.data
-
-        category_id = data.get('category_id')
+        # print("data",data)
+        category_id = data.get('category')
         subcategory = data.get('subcategory')   # Mens / Womens
         color = data.get('color')               # ex: Black
         size = data.get('size')                 # ex: M
@@ -202,12 +204,15 @@ class ShopFilterListView(APIView):
         # 🔹 Category filter
         if category_id:
             products = products.filter(category_id=category_id)
+            # print("category_id",products)
         # 🔹 Gender / subcategory filter
         if subcategory:
             products = products.filter(subcategory=subcategory)
+            # print("subcategory",products)
         # 🔹 Color filter
         if color:
             products = products.filter(variants__variant_value__iexact=color)
+            # print("color",products)
         # 🔹 Size filter (JSONField → contains lookup)
         if size:
             # Variant match filter (SQLite/MySQL)
@@ -217,7 +222,7 @@ class ShopFilterListView(APIView):
                     params=[f'%\"{size}\"%']
                 ).values("id")
             )  
-
+            # print("size",products)
             # # PostgreSQL supports `__contains`
             # products = products.filter(variants__size__contains=[size])
 
@@ -241,7 +246,7 @@ class ShopFilterListView(APIView):
 
         # 🔹 remove duplicates
         products = products.distinct()
-
+        # print("maibn products",products)
         # Pagination
         paginator = StandardResultsSetPagination()
         result_page = paginator.paginate_queryset(products, request)

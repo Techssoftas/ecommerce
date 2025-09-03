@@ -9,7 +9,7 @@ staticfiles/
 *.sqlite3
 *.pyc
 # migrations/
-
+migrations/
 
 #Defaults
 

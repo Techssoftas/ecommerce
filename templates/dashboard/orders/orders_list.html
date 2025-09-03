@@ -153,7 +153,7 @@
                                                     <th scope="col" class="sort cursor-pointer" data-sort="customer">Customer</th>
                                                     <th scope="col" class="sort cursor-pointer" data-sort="payment_method">Payment Method</th>
                                                     <th scope="col" class="sort cursor-pointer" data-sort="amount">Amount</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th>
+                                                    {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
                                                     <th scope="col" class="sort cursor-pointer" data-sort="status">Delivery Status</th>
                                                     <th scope="col">Action</th>
                                                 </tr>
@@ -161,23 +161,23 @@
                                            <tbody class="list form-check-all" id="order-table-body">
                                                 {% for order in orders %}
                                                 <tr
-    data-order-id="{{ order.order_number }}"
-    data-order-date="{{ order.created_at|date:'Y-m-d' }}"
-    data-delivery-date="
-        {% if order.status == 'delivered' %}
-            {{ order.updated_at|date:'Y-m-d' }}
-        {% elif order.items.first %}
-            {{ order.created_at|add_days:order.items.first.product.delivery_time_max|date:'Y-m-d' }}
-        {% else %}
-            {{ order.created_at|date:'Y-m-d' }}
-        {% endif %}
-    "
-    data-products="{% for item in order.items.all %}{{ item.product.name }}{% if item.variant %} ({{ item.variant.variant_value }}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}"
-    data-customer="{{ order.user.username }}"
-    data-payment-method="{% if order.payment %}{{ order.payment.get_payment_method_display }}{% else %}COD{% endif %}"
-    data-amount="{{ order.total_amount }}"
-    data-status="{{ order.get_status_display }}"
->    <th>
+                                                    data-order-id="{{ order.order_number }}"
+                                                    data-order-date="{{ order.created_at|date:'Y-m-d' }}"
+                                                    data-delivery-date="
+                                                        {% if order.status == 'delivered' %}
+                                                            {{ order.updated_at|date:'Y-m-d' }}
+                                                        {% elif order.items.first %}
+                                                            {{ order.created_at|add_days:order.items.first.product.delivery_time_max|date:'Y-m-d' }}
+                                                        {% else %}
+                                                            {{ order.created_at|date:'Y-m-d' }}
+                                                        {% endif %}
+                                                    "
+                                                    data-products="{% for item in order.items.all %}{{ item.product.name }}{% if item.variant %} ({{ item.variant.variant_value }}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}"
+                                                    data-customer="{{ order.user.username }}"
+                                                    data-payment-method="{% if order.payment %}{{ order.payment.get_payment_method_display }}{% else %}COD{% endif %}"
+                                                    data-amount="{{ order.total_amount }}"
+                                                    data-status="{{ order.get_status_display }}"
+                                                >    <th>
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox" name="chk_child" value="{{ order.id }}">
                                                             <label class="form-check-label"></label>
@@ -199,11 +199,9 @@
                                                         {% endif %}
                                                     </td>
                                                     <td class="products">
-                                                        {% for item in order.items.all %}
-                                                            {{ item.product.name }}{% if item.variant %} ({{ item.variant.variant_value }}){% endif %}{% if not forloop.last %}, {% endif %}
-                                                        {% empty %}
-                                                            No products
-                                                        {% endfor %}
+                                                        {% with item=order.items.all.0 %}
+                                                            {{ item.product.name|slice:":30" }}{% if item.variant %} ({{ item.variant.variant_value }}){% endif %}
+                                                        {% endwith %}
                                                     </td>
                                                     <td class="customer">
                                                         {{ order.user.username }}
@@ -218,7 +216,7 @@
                                                     <td class="amount">
                                                         <span class="fw-medium">₹{{ order.total_amount }}</span>
                                                     </td>
-                                                    <td class="rating">
+                                                    {% comment %} <td class="rating">
                                                         <h5 class="fs-md fw-medium mb-0">
                                                             {% with avg_rating=order.items.first.product.average_rating %}
                                                                 {% if avg_rating > 0 %}
@@ -228,9 +226,9 @@
                                                                 {% endif %}
                                                             {% endwith %}
                                                         </h5>
-                                                    </td>
+                                                    </td> {% endcomment %}
                                                     <td class="status">
-                                                        <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' or order.status == 'refunded' %}danger{% elif order.status == 'confirmed' %}primary{% else %}warning{% endif %}-subtle text-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' or order.status == 'refunded' %}danger{% elif order.status == 'confirmed' %}primary{% else %}warning{% endif %}">
+                                                        <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' or order.status == 'refunded' %}danger{% elif order.status == 'confirmed' %}success{% else %}warning{% endif %}-subtle text-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' or order.status == 'refunded' %}danger{% elif order.status == 'confirmed' %}success{% else %}warning{% endif %}">
                                                             {{ order.get_status_display }}
                                                         </span>
                                                     </td>
