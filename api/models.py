@@ -387,10 +387,10 @@ class Order(models.Model):
 
         # ✅ Set default delivery date only if not already set
         if not self.delivery_date:
-            # Use current date if created_at is not yet available
-            base_date = self.created_at.date() if self.created_at else timezone.now().date()
-            self.delivery_date = base_date + timedelta(days=7)
-
+            # Use current datetime as base
+            base_datetime = self.created_at if self.created_at else timezone.now()
+            self.delivery_date = base_datetime + timedelta(days=7)
+            
         # Check if status has changed
         if self.pk:  # If order already exists
             old_order = Order.objects.get(pk=self.pk)

@@ -236,3 +236,25 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 #Test Key
 RAZORPAY_KEY_ID = "rzp_test_RCJ4LxmMOSnvyB"
 RAZORPAY_KEY_SECRET = "eB8kvT0n5XI2fQyk9QrmVPJu"
+
+
+LOGGING = {
+    'version': 1,  # ✅ Required
+    'disable_existing_loggers': False,
+
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),  # Creates debug.log in project root
+        },
+    },
+
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

@@ -202,15 +202,12 @@ class ShopFilterListView(APIView):
         # 🔹 Category filter
         if category_id:
             products = products.filter(category_id=category_id)
-            print("category_id",products)
         # 🔹 Gender / subcategory filter
         if subcategory:
             products = products.filter(subcategory=subcategory)
-            print("subcategory",products)
         # 🔹 Color filter
         if color:
             products = products.filter(variants__variant_value__iexact=color)
-            print("color",products)
         # 🔹 Size filter (JSONField → contains lookup)
         if size:
             # Variant match filter (SQLite/MySQL)
@@ -231,17 +228,17 @@ class ShopFilterListView(APIView):
                
                 Q(variants__price__gte=min_price, variants__price__lte=max_price)
             )
-            print("min_price and",products)
+       
         elif min_price:
             products = products.filter(
                  Q(variants__price__gte=min_price)
             )
-            print("min_price",products)
+
         elif max_price:
             products = products.filter(
                  Q(variants__price__lte=max_price)
             )
-            print("max_price",products)
+
         # 🔹 remove duplicates
         products = products.distinct()
 
@@ -303,7 +300,6 @@ class CartView(APIView):
 
     def post(self, request):
         """Add to Cart"""
-        print(request.data)
         serializer = AddToCartSerializer(data=request.data)
         if serializer.is_valid():
             product_id = serializer.validated_data['product_id']
@@ -455,7 +451,7 @@ class OrderApiView(APIView):
     def get(self, request):
         orders = Order.objects.filter(user=request.user).order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
-        print(serializer.data)
+
         return Response(serializer.data)
     
         
@@ -500,7 +496,7 @@ class OrderApiView(APIView):
             return Response({'message': 'Cart not found'}, status=status.HTTP_404_NOT_FOUND)    
 
     def put(self, request, order_id):
-        print(request.data)
+
         try:
             order = Order.objects.get(id=order_id, user=request.user)
         except Order.DoesNotExist:
@@ -524,7 +520,7 @@ class PendingOrderApiView(APIView):
     def get(self, request):
         pending_orders = Order.objects.filter(user=request.user, status='pending').order_by('-created_at')
         serializer = OrderSerializer(pending_orders, many=True)
-        print(serializer.data)
+
         return Response(serializer.data)
 
 
@@ -685,7 +681,7 @@ def create_order(request):
     
     # Now create Razorpay order
     try:
-        print("amount", int(order.total_amount * 100))
+        
         payment_order = client.order.create({
            
             "amount": int(order.total_amount * 100),  # In paise
