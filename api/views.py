@@ -546,9 +546,9 @@ class BuyNowCheckoutView(APIView):
             variant = ProductVariant.objects.filter(id=variant_id, product=product).first()
 
         # Price
-        price = product.get_price
+        price = Decimal(product.get_price)
         if variant:
-            price = variant.get_price
+            price = Decimal(variant.get_price)
 
      
         data = {
@@ -563,15 +563,15 @@ class BuyNowCheckoutView(APIView):
                         "id": variant.id,
                         "size": variant.size,
                         "color": variant.variant_value,
-                        "price": variant.get_price,
+                        "price": float(variant.get_price),
                         "variant_image": variant.variant_image.url if variant.variant_image else None
                     } if variant else None,
                     "quantity": quantity,
-                    "subtotal": price * quantity,
+                    "subtotal": float(price * quantity),
                 }
             ],
             "total_items": quantity,
-            "total_price": price * quantity,
+            "total_price": float(price * quantity),
         }
      
         return Response(data)
@@ -587,6 +587,169 @@ class CartCheckoutView(APIView):
 
         serializer = CartCheckoutSerializer(cart)
         return Response(serializer.data)
+
+import razorpay
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+@api_view(['POST'])
+def create_order(request):
+    user = request.user  # Assuming authentication middleware sets request.user
+    if not user.is_authenticated:
+        return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    data = request.data
+    type = data.get('type')  # 'cart' or 'buynow' from frontend
+    
+    if type == 'cart':
+        # Get user's cart
+        try:
+            cart = Cart.objects.get(user=user)
+            if not cart.items.exists():
+                return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Calculate total
+            total_amount = cart.total_price  # Uses your @property
+            
+            # Create Order
+            order = Order.objects.create(
+                user=user,
+                total_amount=total_amount,
+                billing_address='',  # Fill if needed
+                phone=user.phone or '',  # From user profile?
+                email=user.email,
+                notes='',
+                source=type  # 'cart' or 'buynow'
+            )
+            
+            # Create OrderItems from CartItems
+            for cart_item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    variant=cart_item.variant,
+                    size=cart_item.varient_size or '',
+                    quantity=cart_item.quantity,
+                    price=cart_item.variant.price if cart_item.variant else cart_item.product.get_price
+                )
+            
+            # (Optional: Don't clear cart yet, do it after payment success)
+        
+        except Cart.DoesNotExist:
+            return Response({"error": "No cart found"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif type == 'buynow':
+        product_id = data.get('product_id')
+        variant_id = data.get('variant_id')
+        quantity = data.get('quantity', 1)
+        
+        if not (product_id and variant_id and quantity):
+            return Response({"error": "Missing product/variant/quantity"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            product = Product.objects.get(id=product_id)
+            variant = ProductVariant.objects.get(id=variant_id)
+            
+            price = variant.price
+            total_amount = price * int(quantity)
+            
+            # Create Order
+            order = Order.objects.create(
+                user=user,
+                total_amount=total_amount,
+                billing_address='',  # Fill if needed
+                phone=user.phone or '',
+                email=user.email,
+                notes='',
+                source=type  # 'cart' or 'buynow'
+            )
+            
+            # Create single OrderItem
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                variant=variant,
+                size='',  # If applicable
+                quantity=quantity,
+                price=price
+            )
+        
+        except (Product.DoesNotExist, ProductVariant.DoesNotExist):
+            return Response({"error": "Invalid product/variant"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    else:
+        return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Now create Razorpay order
+    try:
+        print("amount", int(order.total_amount * 100))
+        payment_order = client.order.create({
+           
+            "amount": int(order.total_amount * 100),  # In paise
+            "currency": "INR",
+            "payment_capture": "1",  # Auto capture
+            "notes": {"order_id": order.order_number}  # Link to your Order
+        })
+        
+        # Create Payment record (pending)
+        Payment.objects.create(
+            order=order,
+            payment_method='razorpay',  # Or from data
+            amount=order.total_amount,
+            transaction_id=payment_order['id'],
+            gateway_response=payment_order
+        )
+        
+        return Response({
+            "id": payment_order['id'],
+            "amount": payment_order['amount'],
+            "currency": payment_order['currency'],
+            "order_id": order.order_number  # Your Django order.order_number, for later use
+        })
+    
+    except razorpay.errors.BadRequestError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def verify_payment(request):
+    data = request.data  # Razorpay response: razorpay_order_id, razorpay_payment_id, razorpay_signature
+    user = request.user
+    
+    try:
+        # Verify signature (important for security)
+        client.utility.verify_payment_signature(data)
+        
+        # Get your Order from notes or transaction_id
+        payment = Payment.objects.get(transaction_id=data['razorpay_order_id'])
+        order = payment.order
+        
+        if order.user != user:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Update Payment and Order
+        payment.status = 'completed'
+        payment.gateway_response = data
+        payment.save()
+        
+        order.status = 'confirmed'
+        order.shipping_address_id = data.get('shipping_address_id')  # Send from frontend if needed
+        order.save()
+        
+        # Clear cart only for cart orders
+        if order.source == 'cart' and Cart.objects.filter(user=user).exists():
+            Cart.objects.get(user=user).items.all().delete()  # Or delete the whole cart if preferred
+        
+        return Response({"success": "Payment verified and order confirmed"})
+    
+    except razorpay.errors.SignatureVerificationError:
+        return Response({"error": "Signature verification failed"}, status=status.HTTP_400_BAD_REQUEST)
+    except Payment.DoesNotExist:
+        return Response({"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 
 class ShippingAddressListCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]

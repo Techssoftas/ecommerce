@@ -362,6 +362,7 @@ class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     order_number =  AlphaNumericFieldfive(unique=True, null=True, blank=True)
     status = models.CharField(max_length=20, choices=ORDER_STATUS, default='pending')
+    source = models.CharField(max_length=10,choices=(('cart', 'Cart'), ('buynow', 'Buy Now')),default='cart')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_address = models.ForeignKey('api.ShippingAddress', on_delete=models.SET_NULL, null=True, related_name='orders')
     billing_address = models.TextField()

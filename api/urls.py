@@ -45,6 +45,9 @@ urlpatterns = [
     path('buy_now/', BuyNowCheckoutView.as_view(), name='buy_now'),
     path('cart_checkout/', CartCheckoutView.as_view(), name='cart_checkout'),
 
+    path('create_order/', create_order, name='create_order'),
+    path('verify_payment/', verify_payment, name='verify_payment'),
+
     path('shipping-address/', ShippingAddressListCreateView.as_view(), name='shipping-addresses'),
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),
 

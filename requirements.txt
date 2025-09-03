@@ -16,6 +16,7 @@ razorpay==1.4.2
 reportlab==4.4.3
 requests==2.32.4
 rest-framework-simplejwt==0.0.2
+setuptools==80.9.0
 sqlparse==0.5.3
 tzdata==2025.2
 urllib3==2.5.0

@@ -222,7 +222,7 @@ class CartSerializer(serializers.ModelSerializer):
             # Use variant.get_price if variant exists, else product.get_price
             price = item.variant.get_price if item.variant else item.product.get_price
             total += price * item.quantity
-        return total
+        return Decimal(total)
     
 
 class AddToCartSerializer(serializers.Serializer):
