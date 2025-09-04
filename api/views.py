@@ -138,6 +138,7 @@ class ChangePasswordView(APIView):
 
 
 class PasswordResetRequestView(APIView):
+    permission_classes =[permissions.AllowAny]
     def post(self, request):
         email = request.data.get('email')
         try:
@@ -160,6 +161,7 @@ class PasswordResetRequestView(APIView):
 
 
 class PasswordResetConfirmView(APIView):
+    permission_classes =[permissions.AllowAny]
     def post(self, request, uidb64, token):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
