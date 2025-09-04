@@ -4,6 +4,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
 from django.db.models import Q
+from django.conf import settings
+
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -169,10 +171,22 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_primary_image(self, obj):
         request = self.context.get('request')
         primary = obj.images.filter(is_primary=True).first()
-        if primary and request:
-            return request.build_absolute_uri(primary.image.url)
-        return primary.image.url if primary else (obj.images.first().image.url if obj.images.exists() else None)
-    
+        image_url = None
+
+        if primary:
+            image_url = primary.image.url
+        elif obj.images.exists():
+            image_url = obj.images.first().image.url
+
+        if image_url:
+            if request:
+                return request.build_absolute_uri(image_url)
+            else:
+                domain = getattr(settings, 'DOMAIN', 'https://m2hit.in')  # fallback domain
+                return domain + image_url
+        return None
+
+
     def get_new_variant(self, obj):
         three_days_ago = timezone.now() - timedelta(days=3)
         return obj.variants.filter(

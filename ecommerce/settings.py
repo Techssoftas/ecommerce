@@ -124,6 +124,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'api.CustomUser'
+DOMAIN = "https://m2hit.in"
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
