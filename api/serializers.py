@@ -131,10 +131,12 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ['image', 'is_primary', 'alt_text']
 
     def get_image(self, obj):
-        request = self.context.get('request')
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
-        return obj.image.url if obj.image else None
+        if obj.image:
+            return obj.image.url
+        return None
+
+   
+
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     get_price = serializers.ReadOnlyField()
@@ -169,21 +171,11 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
     def get_primary_image(self, obj):
-        request = self.context.get('request')
         primary = obj.images.filter(is_primary=True).first()
-        image_url = None
-
         if primary:
-            image_url = primary.image.url
+            return primary.image.url
         elif obj.images.exists():
-            image_url = obj.images.first().image.url
-
-        if image_url:
-            if request:
-                return request.build_absolute_uri(image_url)
-            else:
-                domain = getattr(settings, 'DOMAIN', 'https://m2hit.in')  # fallback domain
-                return domain + image_url
+            return obj.images.first().image.url
         return None
 
 
