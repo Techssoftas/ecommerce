@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
-
+from django.db.models import Q
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -139,11 +139,13 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     get_savings = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
     is_in_stock = serializers.ReadOnlyField()
-      
+    
+   
     class Meta:
         model = ProductVariant
         fields = '__all__'
 
+   
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -153,12 +155,13 @@ class ProductSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     discount_price = serializers.DecimalField(max_digits=10, decimal_places=2, allow_null=True)
     primary_image = serializers.SerializerMethodField()
+    new_variant  = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'category','subcategory', 'price','mrp', 'discount_price', 'brand',
-            'variants','description',
+            'variants','description','new_variant',
             'discount_percentage', 'stock', 'images', 'primary_image',
             'availability_status', 'is_active', 'is_featured'
         ]
@@ -169,6 +172,13 @@ class ProductSerializer(serializers.ModelSerializer):
         if primary and request:
             return request.build_absolute_uri(primary.image.url)
         return primary.image.url if primary else (obj.images.first().image.url if obj.images.exists() else None)
+    
+    def get_new_variant(self, obj):
+        three_days_ago = timezone.now() - timedelta(days=3)
+        return obj.variants.filter(
+            models.Q(created_at__gte=three_days_ago) |
+            models.Q(updated_at__gte=three_days_ago)
+        ).exists()
     
 
 class ProductListSerializer(serializers.ModelSerializer):

@@ -160,17 +160,22 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ProductListView(APIView):
     permission_classes = [permissions.AllowAny]
     def get(self, request):
-        print('ProductListView')
-        category_id = request.query_params.get('category_id', None)
-        products = Product.objects.filter(is_active=True)
+        try:
+            category_id = request.query_params.get('category_id', None)
+            products = Product.objects.filter(is_active=True)
+            
+            if category_id:
+                products = products.filter(category_id=category_id)
+            
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(products, request)
+            serializer = ProductSerializer(result_page, many=True, context={'request': request})
+            return paginator.get_paginated_response(serializer.data)
         
-        if category_id:
-            products = products.filter(category_id=category_id)
-        
-        paginator = StandardResultsSetPagination()
-        result_page = paginator.paginate_queryset(products, request)
-        serializer = ProductSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        except Exception as e:
+            print("💥 Error while fetching products:", str(e))
+            return Response({'detail': 'Internal Server Error'}, status=500)
+
 
 from django.db.models import Q
 
