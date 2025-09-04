@@ -13,6 +13,9 @@ urlpatterns = [
     path('login/', EmailLoginView.as_view(), name='email_login'),
     path('register/', RegisterView.as_view(), name='register'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
     path('logout/', logout_view, name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile_update/', UpdateProfileView.as_view(), name='profile_update'),

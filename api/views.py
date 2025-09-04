@@ -15,6 +15,17 @@ from rest_framework.generics import RetrieveAPIView,UpdateAPIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.authtoken.models import Token
+
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_decode
+User = get_user_model()
+
 # Authentication Views
 
 
@@ -124,6 +135,50 @@ class ChangePasswordView(APIView):
             return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            reset_url = f"https://m2hit.in/reset-password/{uid}/{token}/"  # Your React URL
+
+            send_mail(
+                'Reset your password',
+                f'Click the link to reset your password: {reset_url}',
+                'noreply@example.com',
+                [user.email],
+            )
+            return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+
+            if not default_token_generator.check_token(user, token):
+                return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+            new_password = request.data.get('new_password')
+            if not new_password:
+                return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.set_password(new_password)
+            user.save()
+
+            return Response({'message': 'Password has been reset successfully'}, status=status.HTTP_200_OK)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'error': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileView(RetrieveAPIView):
