@@ -180,7 +180,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
     def get_new_variant(self, obj):
-        three_days_ago = timezone.now() - timedelta(days=3)
+        three_days_ago = timezone.now() - timedelta(days=7)
         return obj.variants.filter(
             models.Q(created_at__gte=three_days_ago) |
             models.Q(updated_at__gte=three_days_ago)
