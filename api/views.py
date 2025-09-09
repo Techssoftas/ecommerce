@@ -138,27 +138,35 @@ class ChangePasswordView(APIView):
 
 
 class PasswordResetRequestView(APIView):
-    permission_classes =[permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         email = request.data.get('email')
+        
         try:
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
 
-            reset_url = f"https://m2hit.in/reset-password/{uid}/{token}/"  # Your React URL
+            reset_url = f"http://localhost:5173/reset-password/{uid}/{token}/"  # React URL
 
             send_mail(
                 'Reset your password',
                 f'Click the link to reset your password: {reset_url}',
-                'noreply@example.com',
+                'suriyathaagam@gmail.com',  # from email
                 [user.email],
             )
+
             return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
 
         except User.DoesNotExist:
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        except Exception as e:
+            # Print full traceback to console
+            print("Unexpected error:", str(e))
+            # traceback.print_exc()
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PasswordResetConfirmView(APIView):
     permission_classes =[permissions.AllowAny]
@@ -336,6 +344,7 @@ class FilterListView(APIView):
         paginator = StandardResultsSetPagination()
         result_page = paginator.paginate_queryset(products, request)
         serializer = ProductSerializer(result_page, many=True)
+
         return paginator.get_paginated_response(serializer.data)
 
 
