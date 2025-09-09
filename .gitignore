@@ -4,7 +4,7 @@ media/
 *.png
 # .gitignore
 local_settings.py
-staticfiles/
+# staticfiles/
 #Migration files
 *.sqlite3
 *.pyc
