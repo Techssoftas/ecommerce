@@ -341,7 +341,7 @@
                                             {% for num in page_obj.paginator.page_range %}
                                                 {% if num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
                                                     <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                                                        <a class="page-link" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ num }}</a>
+                                                        <a class="page-link" style="background-color:#002147;border-color:#002147;" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ num }}</a>
                                                     </li>
                                                 {% endif %}
                                             {% endfor %}
