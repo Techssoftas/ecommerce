@@ -13,7 +13,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <h4 class="mb-sm-0">Orders</h4>
+                                <h4 class="mb-sm-0" style="font-family:serif;">Orders</h4>
 
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
@@ -56,45 +56,45 @@
                         <div class="col">
                             <div class="card border-bottom border-3 card-animate border-secondary">
                                 <div class="card-body">
-                                    <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 3.8%</span>
-                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ total_orders }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Total Orders</p>
+                                    <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 3.8%</span>
+                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ total_orders }}" style="font-family:sans-serif;">0</span></h4>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Total Orders</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card border-bottom border-3 card-animate border-primary">
                                 <div class="card-body">
-                                    <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 20.8%</span>
-                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ new_orders }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">New Orders</p>
+                                    <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 20.8%</span>
+                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ new_orders }}" style="font-family:sans-serif;">0</span></h4>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">New Orders</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card border-bottom border-3 card-animate border-warning">
                                 <div class="card-body">
-                                    <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 12.6%</span>
-                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ pending_orders }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Pending Orders</p>
+                                    <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 12.6%</span>
+                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ pending_orders }}" style="font-family:sans-serif;">0</span></h4>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Pending Orders</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card border-bottom border-3 card-animate border-success">
                                 <div class="card-body">
-                                    <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 18.7%</span>
-                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ delivered_orders }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Delivered Orders</p>
+                                    <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 18.7%</span>
+                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ delivered_orders }}" style="font-family:sans-serif;">0</span></h4>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Delivered Orders</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card border-bottom border-3 card-animate border-danger">
                                 <div class="card-body">
-                                    <span class="badge bg-danger-subtle text-danger float-end"><i class="ph-trend-down align-middle me-1"></i> 7.1%</span>
-                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ cancelled_orders }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Cancelled Orders</p>
+                                    <span class="badge bg-danger-subtle text-danger float-end" style="font-family:sans-serif;"> <i class="ph-trend-down align-middle me-1"></i> 7.1%</span>
+                                    <h4 class="mb-4"><span class="counter-value" data-target="{{ cancelled_orders }}" style="font-family:sans-serif;">0</span></h4>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Cancelled Orders</p>
                                 </div>
                             </div>
                         </div>
@@ -129,7 +129,7 @@
                                                         <button class="dropdown-item sort" data-sort="status">Status</button>
                                                     </div>
                                                 </div>
-                                                 <button type="button" class="btn btn-primary add-btn ms-auto" data-bs-toggle="modal" data-bs-target="#showModal"><i class="bi bi-plus-circle align-baseline me-1"></i> Add Order</button>
+                                                 <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal" style="font-family:serif;"><i class="bi bi-plus-circle align-baseline me-1" ></i> Add Order</button>
                                             </div>
                                         </div>
                                     </div>
@@ -137,7 +137,7 @@
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <!-- start table -->
-                                        <table class="table table-borderless table-centered align-middle table-nowrap mb-0">
+                                        <table class="table  table-centered align-middle table-nowrap mb-0">
                                             <thead class="text-muted table-light">
                                                 <tr>
                                                     <th>
@@ -146,16 +146,16 @@
                                                             <label class="form-check-label" for="checkAll"></label>
                                                         </div>
                                                     </th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="order_id">Order ID</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="order_date">Order Date</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="delivery_date">Delivery Date</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="products">Products</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="customer">Customer</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="payment_method">Payment Method</th>
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="amount">Amount</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif;">Order ID</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif;">Order Date</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="delivery_date">Delivery Date</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="products" style="font-family:serif;">Products</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;">Customer</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;">Payment Method</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;">Amount</th>
                                                     {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
-                                                    <th scope="col" class="sort cursor-pointer" data-sort="status">Delivery Status</th>
-                                                    <th scope="col">Action</th>
+                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="status" style="font-family:serif;">Delivery Status</th>
+                                                    <th scope="col"  class="fs-lg" style="font-family:serif;">Action</th>
                                                 </tr>
                                             </thead>
                                            <tbody class="list form-check-all" id="order-table-body">
@@ -183,13 +183,13 @@
                                                             <label class="form-check-label"></label>
                                                         </div>
                                                     </th>
-                                                    <td class="order_id">
-                                                        <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary">{{ order.order_number }}</a>
+                                                    <td class="order_id" style="font-family:sans-serif;">
+                                                        <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_number }} </a>
                                                     </td>
                                                     <td class="order_date">
                                                         {{ order.created_at|date:"d M, Y" }}
                                                     </td>
-                                                    <td class="delivery_date">
+                                                    <td class="delivery_date"  style="font-family:sans-serif;">
                                                         {% if order.items.first %}
                                                             {% with delivery_date=order.created_at|add_days:order.items.first.product.delivery_time_max %}
                                                                 {{ delivery_date|date:"Y-m-d" }}
@@ -198,23 +198,23 @@
                                                             {{ order.created_at|date:"Y-m-d" }}
                                                         {% endif %}
                                                     </td>
-                                                    <td class="products">
+                                                    <td class="products" style="font-family:sans-serif;">
                                                         {% with item=order.items.all.0 %}
                                                             {{ item.product.name|slice:":30" }}{% if item.variant %} ({{ item.variant.variant_value }}){% endif %}
                                                         {% endwith %}
                                                     </td>
-                                                    <td class="customer">
+                                                    <td class="customer" style="font-family:sans-serif;">
                                                         {{ order.user.username }}
                                                     </td>
-                                                    <td class="payment_method">
+                                                    <td class="payment_method" style="font-family:sans-serif;">
                                                         {% if order.payment %}
                                                             {{ order.payment.get_payment_method_display }}
                                                         {% else %}
                                                             COD
                                                         {% endif %}
                                                     </td>
-                                                    <td class="amount">
-                                                        <span class="fw-medium">₹{{ order.total_amount }}</span>
+                                                    <td class="amount" style="font-family:sans-serif;">
+                                                        <span class="fw-medium" style="font-family:sans-serif;">₹{{ order.total_amount }}</span>
                                                     </td>
                                                     {% comment %} <td class="rating">
                                                         <h5 class="fs-md fw-medium mb-0">

@@ -13,7 +13,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <h4 class="mb-sm-0">Payments</h4>
+                                <h4 class="mb-sm-0" style="font-family:serif;">Payments</h4>
 
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
@@ -58,7 +58,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 4.2%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ total_payments }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Total Payments</p>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Total Payments</p>
                                 </div>
                             </div>
                         </div>
@@ -67,7 +67,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 15.3%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ successful_payments }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Successful Payments</p>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Successful Payments</p>
                                 </div>
                             </div>
                         </div>
@@ -76,7 +76,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-warning-subtle text-warning float-end"><i class="ph-trend-up align-middle me-1"></i> 8.9%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ pending_payments }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Pending Payments</p>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Pending Payments</p>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end"><i class="ph-trend-up align-middle me-1"></i> 10.5%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ completed_payments }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Completed Payments</p>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Completed Payments</p>
                                 </div>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-danger-subtle text-danger float-end"><i class="ph-trend-down align-middle me-1"></i> 5.4%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ refunded_payments }}">0</span></h4>
-                                    <p class="text-muted fw-medium text-uppercase mb-0">Refunded Payments</p>
+                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Refunded Payments</p>
                                 </div>
                             </div>
                         </div>
@@ -130,7 +130,7 @@
                                                     <button class="dropdown-item sort" data-sort="status">Status</button>
                                                 </div>
                                             </div>
-                                            <button type="button" class="btn btn-primary add-btn ms-auto" data-bs-toggle="modal" data-bs-target="#showModal"><i class="bi bi-plus-circle align-baseline me-1"></i> Add Payment</button>
+                                            <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal"  style="font-family:serif;"><i class="bi bi-plus-circle align-baseline me-1"></i> Add Payment</button>
                                         </div>
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <!-- start table -->
-                                    <table class="table table-borderless table-centered align-middle table-nowrap mb-0">
+                                    <table class="table  table-centered align-middle table-nowrap mb-0">
                                         <thead class="text-muted table-light">
                                             <tr>
                                                 <th>
@@ -147,14 +147,14 @@
                                                         <label class="form-check-label" for="checkAll"></label>
                                                     </div>
                                                 </th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="transaction_id">Transaction ID</th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="payment_date">Payment Date</th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="order_number">Order Number</th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="customer">Customer</th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="payment_method">Payment Method</th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="amount">Amount</th>
-                                                <th scope="col" class="sort cursor-pointer" data-sort="status">Payment Status</th>
-                                                <th scope="col">Action</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="transaction_id" style="font-family:serif;">Transaction ID</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="payment_date" style="font-family:serif;">Payment Date</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="order_number" style="font-family:serif;">Order Number</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;">Customer</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;">Payment Method</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;">Amount</th>
+                                                <th scope="col" class="sort cursor-pointer fs-lg" data-sort="status" style="font-family:serif;">Payment Status</th>
+                                                <th scope="col" class="fs-lg" style="font-family:serif;">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody class="list form-check-all" id="payment-table-body">
@@ -166,23 +166,23 @@
                                                         <label class="form-check-label"></label>
                                                     </div>
                                                 </th>
-                                                <td class="transaction_id">
+                                                <td class="transaction_id" style="font-family:sans-serif;">
                                                     <a href="" class="fw-medium link-primary">{{ payment.transaction_id|default:"N/A" }}</a>
                                                 </td>
-                                                <td class="payment_date">
+                                                <td class="payment_date" style="font-family:sans-serif;">
                                                     {{ payment.created_at|date:"d M, Y" }}
                                                 </td>
-                                                <td class="order_number">
+                                                <td class="order_number" style="font-family:sans-serif;">
                                                     <a href="{% url 'dashboard:order_detail' payment.order.order_number %}" class="fw-medium link-primary">{{ payment.order.order_number }}</a>
                                                 </td>
-                                                <td class="customer">
+                                                <td class="customer" style="font-family:sans-serif;">
                                                     {{ payment.order.user.username }}
                                                 </td>
-                                                <td class="payment_method">
+                                                <td class="payment_method" style="font-family:sans-serif;">
                                                     {{ payment.get_payment_method_display }}
                                                 </td>
-                                                <td class="amount">
-                                                    <span class="fw-medium">₹{{ payment.amount }}</span>
+                                                <td class="amount" style="font-family:sans-serif;">
+                                                    <span class="fw-medium" style="font-family:sans-serif;">₹{{ payment.amount }}</span>
                                                 </td>
                                                 <td class="status">
                                                     <span class="badge bg-{% if payment.status == 'completed' %}success{% elif payment.status == 'failed' or payment.status == 'cancelled' or payment.status == 'refunded' %}danger{% else %}warning{% endif %}-subtle text-{% if payment.status == 'completed' %}success{% elif payment.status == 'failed' or payment.status == 'cancelled' or payment.status == 'refunded' %}danger{% else %}warning{% endif %}">

@@ -11,7 +11,7 @@
           <div
             class="page-title-box d-sm-flex align-items-center justify-content-between"
           >
-            <h4 class="mb-sm-0">Customers</h4>
+            <h4 class="mb-sm-0"  style="font-family:serif;">Customers</h4>
 
             <div class="page-title-right">
               <ol class="breadcrumb m-0">
@@ -58,8 +58,8 @@
                 </div>
                 <div>
                   <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-secondary">
-                      <i class="ph-cloud-arrow-up align-middle me-1"></i> Export
+                    <button type="button" class="btn btn-secondary fs-lg"  style="font-family:serif;">
+                      <i class="ph-cloud-arrow-up align-middle me-1" ></i> Export
                     </button>
                   </div>
                 </div>
@@ -101,7 +101,7 @@
                                 </select>
                             </div>
                             <div class="col-xl-2 col-md-4">
-                                <button class="btn btn-subtle-primary w-100" onclick="filterData();">
+                                <button class="btn btn-subtle-primary w-100 fs-lg" onclick="filterData();"  style="font-family:serif;">
                                     <i class="bi bi-funnel align-baseline me-1"></i> Filter
                                 </button>
                             </div>
@@ -114,19 +114,19 @@
                             <table class="table align-middle table-nowrap">
                                 <thead class="text-muted table-light">
                                     <tr>
-                                        <th class="sort cursor-pointer" data-sort="id">ID</th>
-                                        <th class="sort cursor-pointer" data-sort="customer">Customer</th>
-                                        <th class="sort cursor-pointer" data-sort="email">Email</th>
-                                        <th class="sort cursor-pointer" data-sort="contact">Contact</th>
-                                        <th class="sort cursor-pointer" data-sort="date">Join Date</th>
-                                        <th class="sort cursor-pointer" data-sort="status">Status</th>
-                                        <th>Action</th>
+                                        <th class="sort cursor-pointer fs-lg" data-sort="id"  style="font-family:serif;">ID</th>
+                                        <th class="sort cursor-pointer fs-lg" data-sort="customer"  style="font-family:serif;">Customer</th>
+                                        <th class="sort cursor-pointer fs-lg" data-sort="email"  style="font-family:serif;">Email</th>
+                                        <th class="sort cursor-pointer fs-lg" data-sort="contact"  style="font-family:serif;">Contact</th>
+                                        <th class="sort cursor-pointer fs-lg" data-sort="date"  style="font-family:serif;">Join Date</th>
+                                        <th class="sort cursor-pointer fs-lg" data-sort="status"  style="font-family:serif;">Status</th>
+                                        <th   class="fs-lg" style="font-family:serif;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="list" id="customer-table-body">
                                     {% for customer in customers %}
                                     <tr data-id="{{ customer.id }}" data-customer="{{ customer.username }}" data-email="{{ customer.email }}" data-contact="{{ customer.phone|default:'N/A' }}" data-date="{{ customer.date_joined|date:'Y-m-d' }}" data-status="{% if customer.is_active %}Active{% else %}Unactive{% endif %}">
-                                        <td class="id">
+                                        <td class="id" style="font-family:sans-serif;" >
                                             <a href="{% url 'dashboard:customer_detail' customer.id %}" class="fw-medium link-primary">{{ customer.id }}</a>
                                         </td>
                                         <td class="customer">
@@ -143,9 +143,9 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="email">{{ customer.email }}</td>
-                                        <td class="contact">{{ customer.phone|default:"N/A" }}</td>
-                                        <td class="date">{{ customer.date_joined|date:"d M, Y" }}</td>
+                                        <td class="email" style="font-family:sans-serif;">{{ customer.email }}</td>
+                                        <td class="contact" style="font-family:sans-serif;">{{ customer.phone|default:"N/A" }}</td>
+                                        <td class="date" style="font-family:sans-serif;">{{ customer.date_joined|date:"d M, Y" }}</td>
                                         <td class="status">
                                             <span class="badge bg-{% if customer.is_active %}success{% else %}secondary{% endif %}-subtle text-{% if customer.is_active %}success{% else %}secondary{% endif %}">
                                                 {% if customer.is_active %}Active{% else %}Unactive{% endif %}
