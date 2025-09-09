@@ -58,7 +58,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 3.8%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ total_orders }}" style="font-family:sans-serif;">0</span></h4>
-                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Total Orders</p>
+                                    <p class="  fw-bold text-uppercase mb-0" style="font-family:serif; color:#002147;">Total Orders</p>
                                 </div>
                             </div>
                         </div>
@@ -67,7 +67,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 20.8%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ new_orders }}" style="font-family:sans-serif;">0</span></h4>
-                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">New Orders</p>
+                                    <p class="  fw-bold text-uppercase mb-0" style="font-family:serif;  color:#002147;">New Orders</p>
                                 </div>
                             </div>
                         </div>
@@ -76,7 +76,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 12.6%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ pending_orders }}" style="font-family:sans-serif;">0</span></h4>
-                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Pending Orders</p>
+                                    <p class=" fw-bold text-uppercase mb-0" style="font-family:serif; color:#002147;">Pending Orders</p>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;"><i class="ph-trend-up align-middle me-1"></i> 18.7%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ delivered_orders }}" style="font-family:sans-serif;">0</span></h4>
-                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Delivered Orders</p>
+                                    <p class=" fw-bold text-uppercase mb-0" style="font-family:serif; color:#002147;">Delivered Orders</p>
                                 </div>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                                 <div class="card-body">
                                     <span class="badge bg-danger-subtle text-danger float-end" style="font-family:sans-serif;"> <i class="ph-trend-down align-middle me-1"></i> 7.1%</span>
                                     <h4 class="mb-4"><span class="counter-value" data-target="{{ cancelled_orders }}" style="font-family:sans-serif;">0</span></h4>
-                                    <p class="text-muted  fw-bold text-uppercase mb-0" style="font-family:serif;">Cancelled Orders</p>
+                                    <p class="  fw-bold text-uppercase mb-0" style="font-family:serif;  color:#002147;">Cancelled Orders</p>
                                 </div>
                             </div>
                         </div>
@@ -129,7 +129,7 @@
                                                         <button class="dropdown-item sort" data-sort="status">Status</button>
                                                     </div>
                                                 </div>
-                                                 <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal" style="font-family:serif;"><i class="bi bi-plus-circle align-baseline me-1" ></i> Add Order</button>
+                                                 <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal" style="font-family:serif;background-color:#002147;border-color:#002147;"><i class="bi bi-plus-circle align-baseline me-1" ></i> Add Order</button>
                                             </div>
                                         </div>
                                     </div>
@@ -146,16 +146,16 @@
                                                             <label class="form-check-label" for="checkAll"></label>
                                                         </div>
                                                     </th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif;">Order ID</th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif;">Order Date</th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="delivery_date">Delivery Date</th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="products" style="font-family:serif;">Products</th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;">Customer</th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;">Payment Method</th>
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;">Amount</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif; color:#002147;">Order ID</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Order Date</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="delivery_date"style="font-family:serif; color:#002147;">Delivery Date</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="products" style="font-family:serif;color:#002147;">Products</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
+                                                    <th scope="col" class=" cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                                                     {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
-                                                    <th scope="col" class="sort cursor-pointer fs-lg" data-sort="status" style="font-family:serif;">Delivery Status</th>
-                                                    <th scope="col"  class="fs-lg" style="font-family:serif;">Action</th>
+                                                    <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
+                                                    <th scope="col"  class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
                                                 </tr>
                                             </thead>
                                            <tbody class="list form-check-all" id="order-table-body">
