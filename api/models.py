@@ -84,6 +84,8 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     brand = models.CharField(max_length=100, blank=True, null=True)
     model_name = models.CharField(max_length=100, blank=True, null=True)
+    fabric = models.CharField(max_length=100, blank=True, null=True)
+    occasion = models.CharField(max_length=100, blank=True, null=True)
     short_description = models.CharField(max_length=500, blank=True)
     description = models.TextField()
     specifications = models.JSONField(default=dict, blank=True)  # Store detailed specs

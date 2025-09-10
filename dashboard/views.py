@@ -478,6 +478,163 @@ def product_create(request):
 
 @login_required
 @user_passes_test(is_admin)
+def mens_product_create(request):
+    categories = Category.objects.all()
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        category_id = request.POST.get('category')
+        description = request.POST.get('description')
+        brand = request.POST.get('brand')
+        occasion = request.POST.get('occasion')
+        model_name = request.POST.get('model_name') 
+        is_cod_available = request.POST.get('cod_available') == 'on'  
+        is_returnable = request.POST.get('is_returnable')   == 'on'
+        is_free_shipping = request.POST.get('free_shipping') == 'on'  
+        
+        discount_price = request.POST.get('discount_price')
+        sku = request.POST.get('sku')
+        if not sku:
+            sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+
+        short_description = request.POST.get('short_description')
+        
+        key_features = {}
+        for key, value in request.POST.items():
+            if key.startswith("key_features["):
+                # extract the field name inside brackets
+                field_name = key[len("key_features["):-1]  
+                key_features[field_name] = value
+
+        
+        key_features = key_features
+        subcategory = 'Mens'
+         
+        discount_price = request.POST.get('discount_price')
+        product_mrp_price = request.POST.get('product_mrp_price',0)
+        product_selling_price = request.POST.get('product_selling_price',0)
+      
+        stock = request.POST.get('stock',0)
+        minimum_order_quantity = request.POST.get('minimum_order_quantity')
+        maximum_order_quantity = request.POST.get('maximum_order_quantity')
+        
+        barcode = request.POST.get('barcode')
+        hsn_code = request.POST.get('hsn_code')
+        weight = request.POST.get('weight')
+        dimensions_length = request.POST.get('dimensions_length')
+        dimensions_width = request.POST.get('dimensions_width')
+        dimensions_height = request.POST.get('dimensions_height')
+        condition = request.POST.get('condition')
+        availability_status = request.POST.get('availability_status')
+        meta_title = request.POST.get('meta_title')
+        meta_description = request.POST.get('meta_description')
+        tags = request.POST.get('tags')
+        #   = request.POST.get('is_free_shipping') == 'on'
+        # delivery_time_min = request.POST.get('delivery_time_min')
+        # delivery_time_max = request.POST.get('delivery_time_max')
+        # is_active = request.POST.get('is_active') == 'on'
+        # is_featured = request.POST.get('is_featured') == 'on'
+        # is_bestseller = request.POST.get('is_bestseller') == 'on'
+        # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
+        # is_trending = request.POST.get('is_trending') == 'on'
+        # is_deal_of_day = request.POST.get('is_deal_of_day') == 'on'
+        # is_replaceable = request.POST.get('is_replaceable') == 'on'
+        # warranty_period = request.POST.get('warranty_period')
+        # warranty_type = request.POST.get('warranty_type')
+        # warranty_description = request.POST.get('warranty_description')
+        # return_period = request.POST.get('return_period')
+        # return_policy = request.POST.get('return_policy')
+        category = get_object_or_404(Category, id=category_id)
+        product = Product.objects.create(
+            name=name,
+            brand=brand,
+            model_name=model_name,
+            # short_description=short_description,
+            description=description,
+            # specifications=specifications,
+            key_features=key_features,
+            category=category,
+            subcategory=subcategory,
+            occasion = occasion,
+            price=product_selling_price,
+            discount_price=discount_price,
+            mrp=product_mrp_price,
+            stock=stock,
+            # minimum_order_quantity=minimum_order_quantity,
+            # maximum_order_quantity=maximum_order_quantity,
+            sku=sku,
+            # barcode=barcode,
+            hsn_code=hsn_code,
+            # weight=weight,
+            # dimensions_length=dimensions_length,
+            # dimensions_width=dimensions_width,
+            # dimensions_height=dimensions_height,
+            # condition=condition,
+            # availability_status=availability_status,
+            # meta_title=meta_title,  
+            # meta_description=meta_description,
+            # tags=tags,
+            is_free_shipping=is_free_shipping,
+            # delivery_time_min=delivery_time_min,
+            # delivery_time_max=delivery_time_max,
+            # is_active=is_active,
+            # is_featured=is_featured,
+            # is_bestseller=is_bestseller,
+            # is_new_arrival=is_new_arrival,
+            # is_trending=is_trending,
+            # is_deal_of_day=is_deal_of_day,
+            is_returnable=is_returnable,
+            # is_replaceable=is_replaceable,
+            is_cod_available=is_cod_available,
+            # warranty_period=warranty_period,
+            # warranty_type=warranty_type,
+            # warranty_description=warranty_description,
+            # return_period=return_period,
+            # return_policy=return_policy
+        )   
+        # Handle product images
+        product_images = request.FILES.getlist('product_images')
+        print("Images count:", len(product_images))
+        for idx, image in enumerate(product_images):
+            ProductImage.objects.create(
+                product=product,
+                image=image,
+                is_primary=(idx == 0)
+            )
+        # Handle product variants
+        variant_sizes = request.POST.getlist('variant_sizes')
+        # If it still comes as a single string like "S,M,L,XL"
+        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
+            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
+
+        variant_mrp = request.POST.get('variant_mrp_price')
+        variant_selling = request.POST.get('variant_selling_price')
+        variant_image = request.FILES.get('variant_image')
+        hex_color_code = request.POST.get('hex_color_code')
+        variant_value = request.POST.get('variant_value')
+        # for size in variant_sizes and hex_color_code:
+        ProductVariant.objects.create(product=product,
+                                    size=variant_sizes,
+                                    variant_value=variant_value,
+                                    hex_color_code=hex_color_code,
+                                    mrp=variant_mrp,
+                                    price=variant_selling,
+                                    variant_image=variant_image,
+                                    sku =sku,   
+                                        )
+        # for color in variant_colors:
+        #     ProductVariant.objects.create(product=product, variant_type='color', hex_color_code=color)
+
+
+
+            
+        messages.success(request, 'Product created successfully!')
+        return redirect('dashboard:mens_products')
+    
+    
+    return render(request, 'dashboard/products/mens_product_create.html', {'categories': categories})
+
+@login_required
+@user_passes_test(is_admin)
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
     categories = Category.objects.all()
