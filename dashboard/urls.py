@@ -23,8 +23,15 @@ urlpatterns = [
     path('womens_products/', views.womens_products, name='womens_products'),
     path('kids_boys_products/', views.kids_boys_products, name='kids_boys_products'),
     path('kids_girls_products/', views.kids_girls_products, name='kids_girls_products'),
+   
     path('product_details/<str:product_id>/', views.product_details, name='product_details'),
     path('products/create/', views.product_create, name='product_create'),
+    
+    path('mens_product_create/', views.mens_product_create, name='mens_product_create'),
+    path('womens_product_create/', views.womens_product_create, name='womens_product_create'),
+    path('kids_boys_product_create/', views.kids_boys_product_create, name='kids_boys_product_create'),
+    path('kids_girls_product_create/', views.kids_girls_product_create, name='kids_girls_product_create'),
+
     path('products/<str:pk>/edit/', views.product_edit, name='product_edit'),
     path('products/<str:pk>/delete/', views.product_delete, name='product_delete'),
     

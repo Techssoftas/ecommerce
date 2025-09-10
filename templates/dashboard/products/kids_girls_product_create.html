@@ -1,7 +1,7 @@
 {% extends 'base.html' %} 
 {% load static %} 
 {% block title %}
-Products Create
+Kids Girls Products Create
 {% endblock title %} 
 {% block content %}
 
@@ -9,7 +9,7 @@ Products Create
 
             <div class="page-content">
                 <div class="container-fluid">
-                    <form action="{% url 'dashboard:product_create' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
+                    <form action="{% url 'dashboard:kids_girls_product_create' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
                         {% csrf_token %}
                         <!-- start page title -->
                         <div class="row">
@@ -40,7 +40,7 @@ Products Create
 
                             <div class="col-12 mt-3">
                                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                    <h4 class="mb-sm-0">Add Product</h4>
+                                    <h4 class="mb-sm-0">Kids Girls Products Create</h4>
 
                                     <div class="page-title-right">
                                         <ol class="breadcrumb m-0">
@@ -77,36 +77,6 @@ Products Create
                                                     <div class="row">
                                                         <div class="col-lg-6">
                                                             <div class="mb-3">
-                                                                <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
-                                                                <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
-                                                                    <option value="">Select categories</option>
-                                                                    {% for category in categories %}
-                                                                        <option value="{{ category.id }}">{{ category.name }}</option>
-                                                                    {% endfor %}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label for="subCategories" class="form-label">Sub Category <span class="text-danger">*</span></label>
-                                                                <select class="form-control" name="subcategory"  id="subCategories" required>
-                                                                    <option value="Men">Mens</option>
-                                                                    <option value="Womens">Womens</option>
-                                                                    <option value="Kids(Boys)">Kids(Boys)</option>
-                                                                    <option value="Kids(Girls)">Kids(Girls)</option>
-                                                                    
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
-                                                        <textarea class="form-control" name="description" id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8"></textarea>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
                                                                 <label for="productBrand" class="form-label">Brand <span class="text-danger">*</span></label>
                                                                 <input type="text" name="brand" class="form-control" value="M2HIT" id="productBrand" placeholder="Enter brand" >
                                                             </div>
@@ -139,7 +109,173 @@ Products Create
                                                         </div><!--end col-->
                                                     
                                                     </div>
+
                                                     
+                                                    
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="productCategories" class="form-label">
+                                                                  Kids(Girls) Set <span class="text-danger">*</span>
+                                                                </label>
+                                                                <select class="form-control" id="productCategories" name="category" required>
+                                                                  <option value="">Select categories</option>
+                                                                  {% for category in categories %}
+                                                                      <option value="{{ category.id }}">{{ category.name }}</option>
+                                                                  {% endfor %}
+                                                                </select>
+
+                                                            </div>
+                                                            
+                                                        </div>
+                                                       
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="productOccasions" class="form-label">Occasions<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="occasion">
+                                                                <option value="Casual">Casual</option>
+                                                                <option value="Festival">Festival</option>
+                                                                <option value="Party">Party</option>
+                                                                <option value="Night Out">Night Out</option>
+                                                                <option value="Formal/Office Casual">Formal / Office Casual</option>
+                                                              </select>
+                                                            </div>
+                                                        </div>
+
+
+                                                    </div>
+                                                    
+                                                    
+                                                      <!-- Dynamic fields wrapper -->
+                                                      <div id="dynamicAttributes">
+
+                                                        <!-- T-shirt fields -->
+                                                        <div id="tshirtFields" class="row d-none">
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="productSleeve" class="form-label">Sleeve<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[Sleeve]">
+                                                                <option value="Full Sleeve">Full Sleeve</option>
+                                                                <option value="Half Sleeve">Half Sleeve</option>
+                                                                <option value="Sleeveless">Sleeveless</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="productNeckType" class="form-label">Neck Type <span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[Neck Type]">
+                                                                <option value="V Neck">V Neck</option>
+                                                                <option value="Round Neck">Round Neck</option>
+                                                                <option value="High Neck">High Neck</option>
+                                                                <option value="Polo Neck">Polo Neck</option>
+                                                                <option value="Dual Collar">Dual Collar</option>
+                                                                <option value="Hooded Collar">Hooded Collar</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="productTSirtFit" class="form-label">TSirt Fit<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[TShirt Fit]">
+                                                                <option value="Regular">Regular</option>
+                                                                <option value="Slim Fit">Slim Fit</option>
+                                                                <option value="Over Size">Over Size</option>
+                                                                <option value="Polo Fit">Polo Fit</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="productHemLine" class="form-label">HemLine<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[HemLine]">
+                                                                <option value="Curved">Curved</option>
+                                                                <option value="Stright">Stright</option>
+                                                                <option value="High-Low">High-Low</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="productTShirtFabric" class="form-label">Fabric<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[TShirt Fabric]">
+                                                                <option value="Cotton">Cotton</option>
+                                                                <option value="Cotton Blend">Cotton Blend</option>
+                                                                <option value="PopCorn">PopCorn</option>
+                                                                <option value="Polyester">Polyester</option>
+                                                                <option value="Lycra">Lycra</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+
+                                                        <!-- Pant fields -->
+                                                        <div id="pantFields" class="row d-none">
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="pantPockets" class="form-label">Pockets<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[Pockets]">
+                                                                <option value="2">2</option>
+                                                                <option value="4">4</option>
+                                                                <option value="6">6</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="pantFit" class="form-label">PantFit<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[PantFit]">
+                                                                <option value="Regular">Regular</option>
+                                                                <option value="Relaxed">Relaxed</option>
+                                                                <option value="Jogger">Jogger</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="pantLenght" class="form-label">Lenght<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[Lenght]">
+                                                                <option value="Full Lenght">Full Lenght</option>
+                                                                <option value="Ankle Lenght">Ankle</option>
+                                                                <option value="3/4th Lenght">3/4th </option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="pantFabric" class="form-label">Fabric<span class="text-danger">*</span></label>
+                                                              <select class="form-select mb-3" name="key_features[PantFabric]">
+                                                                <option value="Cotton">Cotton</option>
+                                                                <option value="Cotton Blend">Cotton Blend</option>
+                                                                <option value="Polyester">Polyester</option>
+                                                                <option value="NS Lycra">NS Lycra</option>
+                                                                <option value="Two Way Lycra">Two Way Lycra</option>
+                                                                <option value="Four Way Lycra">Four Way Lycra</option>
+                                                                <option value="Lycra Denim">Lycra Denim</option>
+                                                                <option value="Loopnet">Loopnet</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                              <label for="pantClosure" class="form-label">Closure</label>
+                                                              <select class="form-select mb-3" name="key_features[Closure]">
+                                                                <option value="Zip">Zip</option>
+                                                                <option value="Button">Button</option>
+                                                                <option value="Elastic">Elastic</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+
+                                                      </div>
+
+
+                                                    <div class="mb-3">
+                                                        <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
+                                                        <textarea class="form-control" name="description" id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8"></textarea>
+                                                    </div>
+                                                  
                                                     <div class="row mt-3">
                                                         <div class="col-lg-6">
                                                             <div class="form-check form-switch mb-3">
@@ -404,7 +540,7 @@ Products Create
         let selectedSizes = [];
 
         $('#button-addon2').click(function () {
-            let newSize = $('#sizeInput').val().trim();
+            let newSize = $('#sizeInput').val().trim().toUpperCase();
             if (newSize !== "" && !selectedSizes.includes(newSize)) {
                 selectedSizes.push(newSize);
 
@@ -467,6 +603,32 @@ document.getElementById("productDropzoneForm").addEventListener("submit", functi
 
 </script>
 
+<script>
+function toggleCategoryFields(selectedCategory) {
+  const tshirtFields = document.getElementById("tshirtFields");
+  const pantFields = document.getElementById("pantFields");
 
+  // Hide + disable both first
+  tshirtFields.classList.add("d-none");
+  pantFields.classList.add("d-none");
+  tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
+  pantFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
+
+  // Show + enable only the chosen one
+  if (selectedCategory === "T-Shirt") {
+    tshirtFields.classList.remove("d-none");
+    tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
+  } else if (selectedCategory === "Pant") {
+    pantFields.classList.remove("d-none");
+    pantFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
+  }
+}
+
+document.getElementById("productCategories").addEventListener("change", function() {
+  const selectedText = this.options[this.selectedIndex].text;
+  toggleCategoryFields(selectedText);
+});
+
+</script>
 
 {% endblock content %}
