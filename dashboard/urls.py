@@ -19,6 +19,10 @@ urlpatterns = [
     
     # Products
     path('products/', views.product_list, name='product_list'),
+    path('mens_products/', views.mens_products, name='mens_products'),
+    path('womens_products/', views.womens_products, name='womens_products'),
+    path('kids_boys_products/', views.kids_boys_products, name='kids_boys_products'),
+    path('kids_girls_products/', views.kids_girls_products, name='kids_girls_products'),
     path('product_details/<str:product_id>/', views.product_details, name='product_details'),
     path('products/create/', views.product_create, name='product_create'),
     path('products/<str:pk>/edit/', views.product_edit, name='product_edit'),

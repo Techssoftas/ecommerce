@@ -1,0 +1,157 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Products {% endblock title %} {% block content %}
+ <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+
+                    <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 class="mb-sm-0">Category</h4>
+
+                                {% comment %} <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Base UI</a></li>
+                                        <li class="breadcrumb-item active">Cards</li>
+                                    </ol>
+                                </div> {% endcomment %}
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end page title -->
+
+                   
+
+                  
+             
+
+                    <div class="row">
+                        <div class="col-12">
+                            {% comment %} <div class="justify-content-between d-flex align-items-center mt-3 mb-4">
+                                <h5 class="mb-0 text-decoration-underline">category</h5>
+                            </div> {% endcomment %}
+                            <div class="row">
+                                <div class="col-xxl-6 col-lg-6">
+                                  
+                                    <div class="card ">
+                                     
+                                        <img class="card-img img-fluid" src="{% static 'dashboard/images/products/mens_products.jpg' %}" alt="Card image">
+                                        <div class="card-img-overlay p-0 d-flex flex-column">
+                                            <div class="card-header bg-transparent">
+                                                <h4 class="card-title text-white mb-0">Mens Products</h4>
+                                            </div>
+                                            <div class="card-body" >
+                                                <p class="card-text text-white mb-2" style="visibility: hidden;">Each design is a new, unique piece of art birthed into this world, and while you have the opportunity to be creative and make your unpleasant for the reader. </p>
+                                                <p class="card-text">
+                                                    <small class="text-white" style="visibility: hidden;">Last updated 3 mins ago</small>
+                                                </p>
+                                            </div>
+                                            <div class="card-footer bg-transparent text-center">
+                                                <a href="{% url 'dashboard:mens_products' %}" class="link-light">View More <i class="ri-arrow-right-s-line align-middle ms-1 lh-1"></i></a>
+                                            </div>
+                                        </div>
+                                      
+                                    </div>
+                                  
+                                </div><!-- end col -->
+                                <div class="col-xxl-6 col-lg-6">
+                                  
+                                    <div class="card ">
+                                      
+                                        <img class="card-img img-fluid" src="{% static 'dashboard/images/products/kids_boys.jpg' %}" alt="Card image">
+                                        <div class="card-img-overlay p-0 d-flex flex-column">
+                                            <div class="card-header bg-transparent">
+                                                <h4 class="card-title text-white mb-0">Kids(Boys)  Products</h4>
+                                            </div>
+                                            <div class="card-body" >
+                                                <p class="card-text text-white mb-2" style="visibility: hidden;">Each design is a new, unique piece of art birthed into this world, and while you have the opportunity to be creative and make your unpleasant for the reader. </p>
+                                                <p class="card-text" style="visibility: hidden;">
+                                                    <small class="text-white">Last updated 3 mins ago</small>
+                                                </p>
+                                            </div>
+                                            <div class="card-footer bg-transparent text-center">
+                                                <a href="{% url 'dashboard:kids_boys_products' %}" class="link-light">View More <i class="ri-arrow-right-s-line align-middle ms-1 lh-1"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  
+                                </div><!-- end col -->
+                                
+                                <div class="col-xxl-6 col-lg-6">
+                                  
+                                    <div class="card ">
+                                        <img class="card-img img-fluid" src="{% static 'dashboard/images/products/womens_products.jpg' %}" alt="Card image">
+                                        <div class="card-img-overlay p-0 d-flex flex-column">
+                                            <div class="card-header bg-transparent">
+                                                <h4 class="card-title text-white mb-0">Womens Products</h4>
+                                            </div>
+                                            <div class="card-body" >
+                                                <p class="card-text text-white mb-2" style="visibility: hidden;">Each design is a new, unique piece of art birthed into this world, and while you have the opportunity to be creative and make your unpleasant for the reader. </p>
+                                                <p class="card-text">
+                                                    <small class="text-white" style="visibility: hidden;">Last updated 3 mins ago</small>
+                                                </p>
+                                            </div>
+                                            <div class="card-footer bg-transparent text-center">
+                                                <a href="{% url 'dashboard:womens_products' %}" class="link-light">View More <i class="ri-arrow-right-s-line align-middle ms-1 lh-1"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- end col -->
+                                
+                                <div class="col-xxl-6 col-lg-6">
+                                  
+                                    <div class="card ">
+                                        <img class="card-img img-fluid" src="{% static 'dashboard/images/products/kids_girls.jpg' %}" alt="Card image">
+                                        <div class="card-img-overlay p-0 d-flex flex-column">
+                                            <div class="card-header bg-transparent">
+                                                <h4 class="card-title text-white mb-0">Kids(Girls)  Products</h4>
+                                            </div>
+                                            <div class="card-body" >
+                                                <p class="card-text text-white mb-2" style="visibility: hidden;">Each design is a new, unique piece of art birthed into this world, and while you have the opportunity to be creative and make your unpleasant for the reader. </p>
+                                                <p class="card-text">
+                                                    <small class="text-white" style="visibility: hidden;">Last updated 3 mins ago</small>
+                                                </p>
+                                            </div>
+                                            <div class="card-footer bg-transparent text-center">
+                                                <a href="{% url 'dashboard:kids_girls_products' %}" class="link-light">View More <i class="ri-arrow-right-s-line align-middle ms-1 lh-1"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  
+                                </div><!-- end col -->
+                                
+                            </div><!-- end row -->
+
+                          
+
+                        </div><!-- end col -->
+                    </div><!-- end row -->
+
+                 
+
+                 
+             
+
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <script>document.write(new Date().getFullYear())</script> © Steex.
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-sm-end d-none d-sm-block">
+                                Design & Develop by Themesbrand
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+{% endblock content %}
