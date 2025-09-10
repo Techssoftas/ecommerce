@@ -325,13 +325,13 @@
                                 <div class="d-flex justify-content-center justify-content-sm-end mt-2">
                                     <div class="pagination-wrap hstack gap-2">
                                         <a class="page-item pagination-prev {% if not page_obj.has_previous %}disabled{% endif %}" href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% else %}javascript:void(0){% endif %}">
-                                            <i class="mdi mdi-chevron-left align-middle"></i>
+                                            <i class="mdi mdi-chevron-left align-middle"  style="color:#002147;"></i>
                                         </a>
                                         <ul class="pagination listjs-pagination mb-0">
                                             <!-- Show first page and ellipsis if needed -->
                                             {% if page_obj.number > 3 %}
                                                 <li class="page-item">
-                                                    <a class="page-link" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}">1</a>
+                                                    <a class="page-link"  style="color:#002147;" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}">1</a>
                                                 </li>
                                                 {% if page_obj.number > 4 %}
                                                     <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -352,13 +352,13 @@
                                                         <li class="page-item disabled"><span class="page-link">...</span></li>
                                                     {% endif %}
                                                     <li class="page-item">
-                                                        <a class="page-link" href="?page={{ total_pages }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ total_pages }}</a>
+                                                        <a class="page-link"  style="color:#002147;" href="?page={{ total_pages }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ total_pages }}</a>
                                                     </li>
                                                 {% endif %}
                                             {% endwith %}
                                         </ul>
                                         <a class="page-item pagination-next {% if not page_obj.has_next %}disabled{% endif %}" href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% else %}javascript:void(0){% endif %}">
-                                            <i class="mdi mdi-chevron-right align-middle"></i>
+                                            <i class="mdi mdi-chevron-right align-middle"  style="color:#002147;"    ></i>
                                         </a>
                                     </div>
                                 </div>

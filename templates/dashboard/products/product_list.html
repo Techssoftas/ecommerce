@@ -598,14 +598,14 @@
             <!-- Previous Page Link -->
             <div class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
                 <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% endif %}" 
-                   class="page-link" id="page-prev">←</a>
+                   class="page-link" id="page-prev" style="color:#002147;" >←</a>
             </div>
 
             <!-- Page Numbers -->
             <span id="page-num" class="pagination">
                 {% for num in page_obj.paginator.page_range %}
                     <div class="page-item {% if page_obj.number == num %}active{% endif %}">
-                        <a class="page-link clickPageNumber" 
+                        <a class="page-link clickPageNumber"    style="background-color:#002147;border-color:#002147;"
                            href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
                             {{ num }}
                         </a>
@@ -616,7 +616,7 @@
             <!-- Next Page Link -->
             <div class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
                 <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% endif %}" 
-                   class="page-link" id="page-next">→</a>
+                   class="page-link" id="page-next" style="color:#002147;" >→</a>
             </div>
         </div>
     </div>
