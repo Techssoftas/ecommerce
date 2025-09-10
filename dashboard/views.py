@@ -136,11 +136,168 @@ def product_list(request):
         'categories': categories,
     }
     
-    return render(request, 'dashboard/products/product_list.html', context)
+    return render(request, 'dashboard/products/sub_category_list.html', context)
 
 @login_required
 @user_passes_test(is_admin)
+def mens_products(request):
+    # Filter products only for 'Mens'
+    products = Product.objects.select_related('category') \
+        .filter(subcategory='Mens') \
+        .order_by('-created_at')
 
+    # Search functionality
+    search = request.GET.get('search')
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) |
+            Q(sku__icontains=search) |
+            Q(category__name__icontains=search)
+        )
+
+    # Get total product count
+    total_products = products.count()
+
+    # Only categories that have Mens products
+    categories = Category.objects.filter(
+        product__subcategory='Mens', is_active=True
+    ).annotate(product_count=Count('product')).distinct()
+
+    # Pagination
+    paginator = Paginator(products, 12)  # 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'products': page_obj,
+        'total_products': total_products,
+        'page_obj': page_obj,
+        'categories': categories,
+    }
+
+    
+    return render(request, 'dashboard/products/mens_products.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def womens_products(request):
+    # Filter products only for 'Mens'
+    products = Product.objects.select_related('category') \
+        .filter(subcategory='Womens') \
+        .order_by('-created_at')
+
+    # Search functionality
+    search = request.GET.get('search')
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) |
+            Q(sku__icontains=search) |
+            Q(category__name__icontains=search)
+        )
+
+    # Get total product count
+    total_products = products.count()
+
+    # Only categories that have Mens products
+    categories = Category.objects.filter(
+        product__subcategory='Womens', is_active=True
+    ).annotate(product_count=Count('product')).distinct()
+
+    # Pagination
+    paginator = Paginator(products, 12)  # 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'products': page_obj,
+        'total_products': total_products,
+        'page_obj': page_obj,
+        'categories': categories,
+    }
+
+    
+    return render(request, 'dashboard/products/womens_products.html', context)
+@login_required
+@user_passes_test(is_admin)
+def kids_boys_products(request):
+    # Filter products only for 'Mens'
+    products = Product.objects.select_related('category') \
+        .filter(subcategory='Kids(Boys)') \
+        .order_by('-created_at')
+
+    # Search functionality
+    search = request.GET.get('search')
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) |
+            Q(sku__icontains=search) |
+            Q(category__name__icontains=search)
+        )
+
+    # Get total product count
+    total_products = products.count()
+
+    # Only categories that have Mens products
+    categories = Category.objects.filter(
+        product__subcategory='Kids(Boys)', is_active=True
+    ).annotate(product_count=Count('product')).distinct()
+
+    # Pagination
+    paginator = Paginator(products, 12)  # 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'products': page_obj,
+        'total_products': total_products,
+        'page_obj': page_obj,
+        'categories': categories,
+    }
+
+    
+    return render(request, 'dashboard/products/kids_boys_products.html', context)
+@login_required
+@user_passes_test(is_admin)
+def kids_girls_products(request):
+    # Filter products only for 'Mens'
+    products = Product.objects.select_related('category') \
+        .filter(subcategory='Kids(Girls)') \
+        .order_by('-created_at')
+
+    # Search functionality
+    search = request.GET.get('search')
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) |
+            Q(sku__icontains=search) |
+            Q(category__name__icontains=search)
+        )
+
+    # Get total product count
+    total_products = products.count()
+
+    # Only categories that have Mens products
+    categories = Category.objects.filter(
+        product__subcategory='Kids(Girls)', is_active=True
+    ).annotate(product_count=Count('product')).distinct()
+
+    # Pagination
+    paginator = Paginator(products, 12)  # 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'products': page_obj,
+        'total_products': total_products,
+        'page_obj': page_obj,
+        'categories': categories,
+    }
+
+    
+    return render(request, 'dashboard/products/kids_girls_products.html', context)
+
+@login_required
+@user_passes_test(is_admin)
 def product_details(request, product_id):
     product = get_object_or_404(
         Product.objects.select_related('category').prefetch_related('images', 'variants', 'reviews'),
