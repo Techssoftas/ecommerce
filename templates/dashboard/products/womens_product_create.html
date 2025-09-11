@@ -313,24 +313,23 @@ Womens Products Create
                                     <div class="card-body">
                                         <div class="row">
                                             
-                                          <div class="col-xxl-12">
-    <div class="mb-3">
-        <label class="form-label">Product Images <span class="text-danger">*</span></label>
+                                            <div class="col-xxl-12">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Product Images <span class="text-danger">*</span></label>
 
-        <!-- Clickable Dropzone -->
-        <div class="dropzone text-center" id="dropzoneArea">
-            <!-- Hidden file input -->
-            <input id="fileInput" name="product_images" type="file" multiple style="display: none;">
+                                                    <!-- Clickable Dropzone -->
+                                                    <div class="dropzone text-center" id="dropzoneArea">
+                                                        <div class="dz-message needsclick">
+                                                            <div class="mb-3">
+                                                                <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                                            </div>
+                                                            <h4>Drop product images here or click to upload.</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-            <div class="dz-message needsclick">
-                <div class="mb-3">
-                    <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
-                </div>
-                <h4>Drop product images here or click to upload.</h4>
-            </div>
-        </div>
-    </div>
-</div>
+                                            <div class="row mt-3" id="previewContainer"></div>
 
                                                 
                                             </div>
@@ -564,44 +563,81 @@ Womens Products Create
     });
 </script>
 
+
 <script>
-Dropzone.autoDiscover = false; // avoid auto init
+$(document).ready(function () {
+    Dropzone.autoDiscover = false;
 
-var myDropzone = new Dropzone("#dropzoneArea", {
-    autoProcessQueue: false,       // don't auto-upload
-    uploadMultiple: true,
-    parallelUploads: 10,
-    maxFiles: 20,
-    paramName: "product_images",   // must match Django field name
-    addRemoveLinks: true
-});
+    var previewContainer = $("#previewContainer");
 
-document.getElementById("productDropzoneForm").addEventListener("submit", function(e) {
-    e.preventDefault(); // stop normal submit
+    var myDropzone = new Dropzone("#dropzoneArea", {
+        url: "#", 
+        autoProcessQueue: false,
+        uploadMultiple: true,
+        parallelUploads: 10,
+        maxFiles: 20,
+        paramName: "product_images",
+        previewsContainer: false,
+        clickable: "#dropzoneArea", // only Dropzone handle clicks
+        init: function () {
+            this.on("addedfile", function (file) {
+                console.log("✅ File added:", file);
 
-    var form = this;
-    var formData = new FormData(form);
-
-    // append Dropzone files into formData
-    myDropzone.files.forEach(function(file) {
-        formData.append("product_images", file, file.name);
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    let imgId = file.upload.uuid;
+                    let html = `
+                        <div class="col-sm-3 col-6 mb-3 image-card" id="image-${imgId}">
+                            <div class="position-relative border rounded p-1">
+                                <button type="button"
+                                    class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 delete-image-btn"
+                                    data-id="${imgId}">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                                <img src="${e.target.result}" 
+                                    alt="${file.name}" 
+                                    class="img-fluid rounded"
+                                    style="height:150px; width:100%; object-fit:contain;">
+                            </div>
+                        </div>
+                    `;
+                    previewContainer.append(html);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
     });
 
-    fetch(form.action, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Success:", data);
-        // optionally redirect or show message
-    })
-    .catch(error => {
-        console.error("Error:", error);
+    // delete button
+    $(document).on("click", ".delete-image-btn", function () {
+        var id = $(this).data("id");
+        var fileToRemove = myDropzone.files.find(f => f.upload.uuid === id);
+        if (fileToRemove) {
+            myDropzone.removeFile(fileToRemove);
+        }
+        $("#image-" + id).remove();
+    });
+
+    // form submit
+   $("#productDropzoneForm").on("submit", function () {
+    myDropzone.files.forEach(function (file, index) {
+        let dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        let fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.name = "product_images";
+        fileInput.files = dataTransfer.files;
+        fileInput.style.display = "none";
+        document.getElementById("productDropzoneForm").appendChild(fileInput);
     });
 });
 
+});
 </script>
+
+
+
+
 
 <script>
 function toggleCategoryFields(selectedCategory) {
