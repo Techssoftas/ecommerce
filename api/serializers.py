@@ -138,7 +138,21 @@ class ProductImageSerializer(serializers.ModelSerializer):
    
 
 
+class ProductVariantImageSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = ProductVariantImage
+        fields = '__all__'
+
+class ProductSizeVariantSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = SizeVariant
+        fields = ['size','price','mrp','stock']
+
 class ProductVariantSerializer(serializers.ModelSerializer):
+    sizes = ProductSizeVariantSerializer(many=True, read_only=True)
+    images = ProductVariantImageSerializer(many=True, read_only=True)
     get_price = serializers.ReadOnlyField()
     get_savings = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()

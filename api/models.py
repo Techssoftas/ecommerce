@@ -47,7 +47,16 @@ class CustomUser(AbstractUser):
         return f"{self.username}"
 
 class Category(models.Model):
+    SUB_CATEGORY = (
+        ('Mens', 'Mens'),
+        ('Womens', 'Womens'),
+        ('Kids(Boys)', 'Kids(Boys)'),
+        ('Kids(Girls)', 'Kids(Girls)'),
+        
+    )
+      
     name = models.CharField(max_length=100)
+    subcategory = models.CharField(choices=SUB_CATEGORY, default='Mens')
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -251,31 +260,21 @@ class ProductImage(models.Model):
         return f"{self.product.name} - {self.product.id} "
 
 class ProductVariant(models.Model):
-  
+    """Main variant (e.g., color)"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
-    variant_value = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    mrp = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    stock = models.PositiveIntegerField(default=0)
-    sku = models.CharField(max_length=100, unique=True)
+    color_name = models.CharField(max_length=100)  # Example: Red, Blue
+    hex_color_code = models.CharField(max_length=7, blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    
-    # Additional variant-specific fields
-    variant_image = models.ImageField(upload_to='variants/', blank=True, null=True)
-    hex_color_code = models.CharField(max_length=7, blank=True, null=True)  # For color variants
-    size_chart = models.TextField(blank=True, null=True)  # Size guide information
-    size = models.JSONField(default=dict, blank=True)  # Extra variant details
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        unique_together = ('product', 'variant_value')
-        ordering = ['-created_at'] 
-    
+        unique_together = ('product', 'color_name')
+        ordering = ['-created_at']
+
     def __str__(self):
-        return f"{self.product.id}: {self.variant_value}"
+        return f"{self.product.name} - {self.color_name}"
     
     @property
     def get_price(self):
@@ -301,7 +300,34 @@ class ProductVariant(models.Model):
         """Check if variant is in stock"""
         return self.stock > 0 and self.is_active
 
+class ProductVariantImage(models.Model):
+    """Multiple images for each color variant"""
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='variants/')
+    is_default = models.BooleanField(default=False)  # optional: mark main image
 
+    def __str__(self):
+        return f"Image of {self.variant}"
+
+
+class SizeVariant(models.Model):
+    """Each size inside a color variant"""
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='sizes')
+    size = models.CharField(max_length=50)  # e.g. S, M, L, XL
+    sku = models.CharField(max_length=100, unique=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    mrp = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    stock = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('variant', 'size')
+
+    def __str__(self):
+        return f"{self.variant} - {self.size}"
 
 
 class Cart(models.Model):

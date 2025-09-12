@@ -6,6 +6,8 @@ admin.site.register(ReviewImage)
 admin.site.register(ShippingAddress)
 admin.site.register(Payment)
 admin.site.register(Category)
+admin.site.register(SizeVariant)
+admin.site.register(ProductVariantImage)
 
 # @admin.register(CustomUser)
 # class CustomUserAdmin(UserAdmin):

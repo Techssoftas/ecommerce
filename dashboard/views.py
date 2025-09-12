@@ -6,7 +6,6 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 from api.models import *
-from .forms import *
 import uuid
 
 def is_admin(user):
@@ -481,6 +480,11 @@ def product_create(request):
 def mens_product_create(request):
     categories = Category.objects.all()
     if request.method == 'POST':
+        for key, value in request.POST.items():
+            print("RAW POST KEY:", key, "=>", value)
+            
+                
+            
         name = request.POST.get('name')
         category_id = request.POST.get('category')
         description = request.POST.get('description')
@@ -593,7 +597,6 @@ def mens_product_create(request):
         )   
         # Handle product images
         product_images = request.FILES.getlist('product_images')
-        print("Images count:", len(product_images))
         for idx, image in enumerate(product_images):
             ProductImage.objects.create(
                 product=product,
@@ -601,29 +604,52 @@ def mens_product_create(request):
                 is_primary=(idx == 0)
             )
         # Handle product variants
-        variant_sizes = request.POST.getlist('variant_sizes')
-        # If it still comes as a single string like "S,M,L,XL"
-        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
-            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
+        
 
-        variant_mrp = request.POST.get('variant_mrp_price')
-        variant_selling = request.POST.get('variant_selling_price')
-        variant_image = request.FILES.get('variant_image')
+
         hex_color_code = request.POST.get('hex_color_code')
         variant_value = request.POST.get('variant_value')
         # for size in variant_sizes and hex_color_code:
-        ProductVariant.objects.create(product=product,
-                                    size=variant_sizes,
-                                    variant_value=variant_value,
+        variant = ProductVariant.objects.create(product=product,
+                                    color_name=variant_value,
                                     hex_color_code=hex_color_code,
-                                    mrp=variant_mrp,
-                                    price=variant_selling,
-                                    variant_image=variant_image,
-                                    sku =sku,   
-                                        )
-        # for color in variant_colors:
-        #     ProductVariant.objects.create(product=product, variant_type='color', hex_color_code=color)
+                                    )
+        
+        sizes_dict = request.POST.dict()  # plain dict
+       
+        # filter only "sizes" related keys
+        for key, value in request.POST.items():
+            
+            if key.startswith("sizes[") and key.endswith("][size]"):
+                print("size_key",size_key)
+                size_key = key.split("[")[1].split("]")[0]   # e.g. "M"
+                size = request.POST.get(f"sizes[{size_key}][size]")
+                mrp = request.POST.get(f"sizes[{size_key}][mrp]")
+                price = request.POST.get(f"sizes[{size_key}][price]")
+                discount_price = request.POST.get(f"sizes[{size_key}][discount_price]")
+                stock = request.POST.get(f"sizes[{size_key}][stock]")
 
+                print(size_key,size,mrp,price,stock)
+                # save in model
+                SizeVariant.objects.create(
+                    variant=variant,
+                    size=size,
+                    sku=f"{product.id}-{variant.id}-{size}", 
+                    mrp=mrp,
+                    price=price,
+                    discount_price=discount_price if discount_price else None,
+                    stock=stock
+                )
+
+        # Step 4: Variant Images save (Dropzone)
+        variant_images = request.FILES.getlist("variant_images")
+
+        for idx, image in enumerate(variant_images):
+            ProductVariantImage.objects.create(
+                variant=variant,
+                image=image,
+                is_default=True if idx == 0 else False  # first image default
+            )
 
 
             
