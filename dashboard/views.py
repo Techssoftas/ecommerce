@@ -474,15 +474,28 @@ def product_create(request):
     
     
     return render(request, 'dashboard/products/product_create.html', {'categories': categories})
-
+import json
 @login_required
 @user_passes_test(is_admin)
 def mens_product_create(request):
     categories = Category.objects.all()
     if request.method == 'POST':
+        print(request.POST) 
         for key, value in request.POST.items():
             print("RAW POST KEY:", key, "=>", value)
-            
+        
+        sizes_json = request.POST.get("sizes_json")
+        if sizes_json:
+            try:
+                sizes = json.loads(sizes_json)
+                print("✅ Sizes received:", sizes)
+                # Example access
+                for row in sizes:
+                    print(row["size"], row["mrp"], row["price"], row["stock"])
+            except json.JSONDecodeError as e:
+
+                print("JSON parse error:", e)
+        print("Parsed sizes:", sizes_json)
                 
             
         name = request.POST.get('name')
@@ -615,32 +628,24 @@ def mens_product_create(request):
                                     hex_color_code=hex_color_code,
                                     )
         
-        sizes_dict = request.POST.dict()  # plain dict
-       
-        # filter only "sizes" related keys
-        for key, value in request.POST.items():
-            
-            if key.startswith("sizes[") and key.endswith("][size]"):
-                print("size_key",size_key)
-                size_key = key.split("[")[1].split("]")[0]   # e.g. "M"
-                size = request.POST.get(f"sizes[{size_key}][size]")
-                mrp = request.POST.get(f"sizes[{size_key}][mrp]")
-                price = request.POST.get(f"sizes[{size_key}][price]")
-                discount_price = request.POST.get(f"sizes[{size_key}][discount_price]")
-                stock = request.POST.get(f"sizes[{size_key}][stock]")
-
-                print(size_key,size,mrp,price,stock)
-                # save in model
-                SizeVariant.objects.create(
-                    variant=variant,
-                    size=size,
-                    sku=f"{product.id}-{variant.id}-{size}", 
-                    mrp=mrp,
-                    price=price,
-                    discount_price=discount_price if discount_price else None,
-                    stock=stock
-                )
-
+        # ✅ Handle sizes from JSON
+        sizes_json = request.POST.get("sizes_json")
+        if sizes_json:
+            try:
+                sizes = json.loads(sizes_json)
+                for row in sizes:
+                    SizeVariant.objects.create(
+                        variant=variant,
+                        size=row["size"],
+                        sku=f"{product.id}-{variant.id}-{row['size']}",
+                        mrp=row["mrp"],
+                        price=row["price"],
+                        discount_price=row["discount_price"] or None,
+                        stock=row["stock"]
+                    )
+            except json.JSONDecodeError as e:
+                print("❌ JSON parse error:", e)
+                
         # Step 4: Variant Images save (Dropzone)
         variant_images = request.FILES.getlist("variant_images")
 

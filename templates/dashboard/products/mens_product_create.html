@@ -383,8 +383,7 @@ Mens Products Create
 
                             <div class="col-lg-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Color <span
-                                            class="text-danger">*</span></label>
+                                    <label class="form-label">Color <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <label class="input-group-text" for="inputGroupSelect01">Colors</label>
                                         <select class="form-select" id="inputGroupSelect01" name="variant_value">
@@ -427,8 +426,8 @@ Mens Products Create
                                         <input type="color" name="hex_color_code"
                                             class="form-control form-control-color w-100" id="productColor"
                                             value="#000000" required>
-                                        <input type="text" class="form-control" name="hex_color_code"
-                                            id="colorHexDisplay" readonly style="max-width: 120px;">
+                                        <input type="text" class="form-control" id="colorHexDisplay" readonly
+                                            style="max-width: 120px;">
 
                                     </div>
                                 </div>
@@ -635,37 +634,20 @@ Mens Products Create
 <!-- init js -->
 <script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
 
-
-<script>
-    const colorInput = document.getElementById('productColor');
-    const colorHexDisplay = document.getElementById('colorHexDisplay');
-
-    function updateColorCode() {
-        colorHexDisplay.value = colorInput.value;
-    }
-
-    // Initialize
-    updateColorCode();
-
-    // Update on change
-    colorInput.addEventListener('input', updateColorCode);
-</script>
-
-<!-- jQuery + Dropzone JS include -->
+<!-- jQuery + Dropzone -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
 
 <script>
     Dropzone.autoDiscover = false;
-</script>
 
+    let myDropzone, variantDropzone;
+    let selectedSizes = [];
 
-
-<!-- Product Images Script -->
-<script>
-    Dropzone.autoDiscover = false;
-
-    var myDropzone = new Dropzone("#productDropzone", {
+    // ========================
+    // 1. Product Dropzone
+    // ========================
+    myDropzone = new Dropzone("#productDropzone", {
         url: "#",
         autoProcessQueue: false,
         uploadMultiple: true,
@@ -680,10 +662,10 @@ Mens Products Create
                     let html = `
                 <div class="col-sm-3 col-6 mb-3" id="product-${imgId}">
                     <div class="position-relative border rounded p-1">
-                    <button type="button" class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 remove-product-btn" data-id="${imgId}">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                    <img src="${e.target.result}" class="img-fluid rounded" style="height:150px; width:100%; object-fit:contain;">
+                        <button type="button" class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 remove-product-btn" data-id="${imgId}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height:150px; width:100%; object-fit:contain;">
                     </div>
                 </div>`;
                     $("#productPreview").append(html);
@@ -693,44 +675,21 @@ Mens Products Create
         }
     });
 
-
     // remove product image
     $(document).on("click", ".remove-product-btn", function () {
         var id = $(this).data("id");
         var fileToRemove = myDropzone.files.find(f => f.upload.uuid === id);
-        if (fileToRemove) {
-            myDropzone.removeFile(fileToRemove);
-        }
+        if (fileToRemove) myDropzone.removeFile(fileToRemove);
         $("#product-" + id).remove();
     });
 
-    // attach product files before submit
-    $("#productDropzoneForm").on("submit", function (e) {
-        console.log("Submitting form...");
-        myDropzone.files.forEach(function (file) {
-            let dt = new DataTransfer();
-            dt.items.add(file);
-            let input = document.createElement("input");
-            input.type = "file";
-            input.name = "product_images";
-            input.files = dt.files;
-            input.style.display = "none";
-            document.getElementById("productDropzoneForm").appendChild(input);
-        });
-    });
-</script>
-
-
-<!-- Variant image Script -->
-<script>
-    Dropzone.autoDiscover = false;
-
-    var variantDropzone = new Dropzone("#variantDropzone", {
+    // ========================
+    // 2. Variant Dropzone
+    // ========================
+    variantDropzone = new Dropzone("#variantDropzone", {
         url: "#",
         autoProcessQueue: false,
         uploadMultiple: true,
-        parallelUploads: 10,
-        maxFiles: 10,
         paramName: "variant_images",
         previewsContainer: false,
         clickable: "#variantDropzone",
@@ -740,17 +699,14 @@ Mens Products Create
                 reader.onload = function (e) {
                     let imgId = file.upload.uuid;
                     let html = `
-          <div class="col-sm-3 col-6 mb-3" id="variant-${imgId}">
-            <div class="position-relative border rounded p-1">
-              <button type="button"
-                class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 remove-variant-btn"
-                data-id="${imgId}">
-                <i class="bi bi-x-lg"></i>
-              </button>
-              <img src="${e.target.result}" class="img-fluid rounded" 
-                   style="height:150px; width:100%; object-fit:contain;">
-            </div>
-          </div>`;
+                <div class="col-sm-3 col-6 mb-3" id="variant-${imgId}">
+                    <div class="position-relative border rounded p-1">
+                        <button type="button" class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 remove-variant-btn" data-id="${imgId}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height:150px; width:100%; object-fit:contain;">
+                    </div>
+                </div>`;
                     $("#variantPreview").append(html);
                 };
                 reader.readAsDataURL(file);
@@ -762,97 +718,37 @@ Mens Products Create
     $(document).on("click", ".remove-variant-btn", function () {
         var id = $(this).data("id");
         var fileToRemove = variantDropzone.files.find(f => f.upload.uuid === id);
-        if (fileToRemove) {
-            variantDropzone.removeFile(fileToRemove);
-        }
+        if (fileToRemove) variantDropzone.removeFile(fileToRemove);
         $("#variant-" + id).remove();
     });
 
-    // Final form validation
-    $("#productDropzoneForm").on("submit", function (e) {
-        let valid = true;
-
-        // size rows check
-        if ($("#sizeVariantTable tbody tr").length === 0) {
-            e.preventDefault();
-            alert("⚠️ Please select at least one size.");
-            return false;
-        }
-
-        // check all size table inputs required
-        $("#sizeVariantTable tbody input").each(function () {
-            console.log("INPUT:", $(this).attr("name"), "=>", $(this).val());
-            if ($(this).val().trim() === "") {
-                valid = false;
-                $(this).addClass("is-invalid");
-            } else {
-                $(this).removeClass("is-invalid");
-            }
-        });
-
-        if (!valid) {
-            e.preventDefault();
-            alert("⚠️ Please fill all required fields in size table.");
-            return false;
-        }
-
-        // variant images required
-        if (variantDropzone.files.length === 0) {
-            e.preventDefault();
-            alert("⚠️ Please upload at least 1 variant image.");
-            return false;
-        }
-
-        // attach variant files
-        variantDropzone.files.forEach(function (file) {
-            let dt = new DataTransfer();
-            dt.items.add(file);
-            let input = document.createElement("input");
-            input.type = "file";
-            input.name = "variant_images";
-            input.files = dt.files;
-            input.style.display = "none";
-            document.getElementById("productDropzoneForm").appendChild(input);
-        });
-    });
-</script>
-
-
-
-
-
-<script>
-
-
-
+    // ========================
+    // 3. Size selection logic
+    // ========================
     $(document).ready(function () {
-        let selectedSizes = [];
-
         // Show dropdown on focus
         $('#sizeInput').on('focus', function () {
             $('#sizeDropdown').show();
         });
 
-        // Hide dropdown when clicking outside
+        // Hide dropdown outside click
         $(document).click(function (e) {
             if (!$(e.target).closest('#sizeInput, #sizeDropdown').length) {
                 $('#sizeDropdown').hide();
             }
         });
 
-        // Checkbox selection
+        // Checkbox select
         $('.size-option').change(function () {
             let size = $(this).val();
             if ($(this).is(':checked')) {
-                if (!selectedSizes.includes(size)) {
-                    selectedSizes.push(size);
-                }
+                if (!selectedSizes.includes(size)) selectedSizes.push(size);
             } else {
                 selectedSizes = selectedSizes.filter(s => s !== size);
             }
         });
 
-        // Apply button → update UI
+        // Apply button
         $('#applySizes').click(function () {
             updateSelectedSizes();
             $('#sizeDropdown').hide();
@@ -865,9 +761,9 @@ Mens Products Create
             updateSelectedSizes();
         });
 
-        // Manual entry with Enter key
+        // Manual entry
         $('#sizeInput').keypress(function (e) {
-            if (e.which === 13) {  // Enter
+            if (e.which === 13) {
                 e.preventDefault();
                 let newSize = $(this).val().trim().toUpperCase();
                 if (newSize !== "" && !selectedSizes.includes(newSize)) {
@@ -878,57 +774,49 @@ Mens Products Create
             }
         });
 
-        // Function to update hidden input + table rows
+        // Update size table
         function updateSelectedSizes() {
             $("#sizeVariantTable tbody").empty();
-
             if (selectedSizes.length > 0) {
-                $("#sizeVariantTable").removeClass("d-none");  // show table
-                selectedSizes.forEach(size => {
-                    addSizeRow(size);
-                });
+                $("#sizeVariantTable").removeClass("d-none");
+                selectedSizes.forEach(size => addSizeRow(size));
             } else {
-                $("#sizeVariantTable").addClass("d-none"); // hide if empty
+                $("#sizeVariantTable").addClass("d-none");
             }
         }
 
         function addSizeRow(size) {
             if ($("#sizeVariantTable tbody tr[data-size='" + size + "']").length > 0) return;
-
             let row = `
-            <tr data-size="${size}">
-            <td>
-                <input type="hidden" name="sizes[${size}][size]" value="${size}">
-                ${size}
-            </td>
+        <tr data-size="${size}">
+            <td><input type="hidden" name="sizes[${size}][size]" value="${size}">${size}</td>
             <td><input type="number" name="sizes[${size}][mrp]" class="form-control" required></td>
             <td><input type="number" name="sizes[${size}][price]" class="form-control" required></td>
             <td><input type="number" name="sizes[${size}][discount_price]" class="form-control"></td>
             <td><input type="number" name="sizes[${size}][stock]" class="form-control" required></td>
             <td><button type="button" class="btn btn-sm btn-danger remove-size-row">X</button></td>
-            </tr>`;
+        </tr>`;
             $("#sizeVariantTable tbody").append(row);
         }
 
-        // remove button
+        // remove row
         $(document).on("click", ".remove-size-row", function () {
             $(this).closest("tr").remove();
         });
     });
-</script>
 
-<script>
+    // ========================
+    // 4. Category toggle
+    // ========================
     function toggleCategoryFields(selectedCategory) {
         const tshirtFields = document.getElementById("tshirtFields");
         const pantFields = document.getElementById("pantFields");
 
-        // Hide + disable both first
         tshirtFields.classList.add("d-none");
         pantFields.classList.add("d-none");
         tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
         pantFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
 
-        // Show + enable only the chosen one
         if (selectedCategory === "T-Shirt") {
             tshirtFields.classList.remove("d-none");
             tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
@@ -942,6 +830,86 @@ Mens Products Create
         const selectedText = this.options[this.selectedIndex].text;
         toggleCategoryFields(selectedText);
     });
+
+    // ========================
+    // 5. Final Form Submit
+    // ========================
+    $("#productDropzoneForm").off("submit").on("submit", function (e) {
+        console.log("🔍 Form submit started...");
+        let valid = true;
+
+        // 1) Size table validation
+        if ($("#sizeVariantTable tbody tr").length === 0) {
+            alert("⚠️ Please select at least one size.");
+            return false;
+        }
+
+        $("#sizeVariantTable tbody input").each(function () {
+            if ($(this).val().trim() === "") {
+                valid = false;
+                $(this).addClass("is-invalid");
+            } else {
+                $(this).removeClass("is-invalid");
+            }
+        });
+
+        if (!valid) {
+            alert("⚠️ Please fill all required fields in size table.");
+            return false;
+        }
+
+        // 2) Attach product images
+        myDropzone.files.forEach(function (file) {
+            let dt = new DataTransfer();
+            dt.items.add(file);
+            let input = document.createElement("input");
+            input.type = "file";
+            input.name = "product_images";
+            input.files = dt.files;
+            input.style.display = "none";
+            document.getElementById("productDropzoneForm").appendChild(input);
+        });
+
+        // 3) Attach variant images
+        variantDropzone.files.forEach(function (file) {
+            let dt = new DataTransfer();
+            dt.items.add(file);
+            let input = document.createElement("input");
+            input.type = "file";
+            input.name = "variant_images";
+            input.files = dt.files;
+            input.style.display = "none";
+            document.getElementById("productDropzoneForm").appendChild(input);
+        });
+
+        // 4) Collect sizes → JSON
+        let sizes = [];
+        $("#sizeVariantTable tbody tr").each(function () {
+            let size = $(this).data("size");
+            let mrp = $(this).find("input[name='sizes[" + size + "][mrp]']").val();
+            let price = $(this).find("input[name='sizes[" + size + "][price]']").val();
+            let stock = $(this).find("input[name='sizes[" + size + "][stock]']").val();
+            let discount = $(this).find("input[name='sizes[" + size + "][discount_price]']").val();
+
+            sizes.push({
+                size: size,
+                mrp: mrp,
+                price: price,
+                stock: stock,
+                discount_price: discount
+            });
+        });
+
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "sizes_json";
+        input.value = JSON.stringify(sizes);
+        document.getElementById("productDropzoneForm").appendChild(input);
+
+        console.log("✅ Sizes JSON added:", input.value);
+        console.log("✅ Final form ready for submit...");
+    });
+
 
 </script>
 
