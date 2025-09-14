@@ -367,7 +367,8 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 # Cart Views
 class CartView(APIView):
-    permission_classes =[permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         """View Cart"""
         cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -376,26 +377,36 @@ class CartView(APIView):
 
     def post(self, request):
         """Add to Cart"""
+        print(request.data)
         serializer = AddToCartSerializer(data=request.data)
         if serializer.is_valid():
             product_id = serializer.validated_data['product_id']
-            variant_id = serializer.validated_data.get('variant_id')
-            varient_size = serializer.validated_data.get('varient_size')  
+            variant_id = serializer.validated_data.get('variant_id')   # color
+            size_variant_id = serializer.validated_data.get('size_variant_id')  # size
             quantity = serializer.validated_data['quantity']
 
             try:
                 product = Product.objects.get(id=product_id, is_active=True)
                 cart, _ = Cart.objects.get_or_create(user=request.user)
 
-                cart_item_filter = {'cart': cart, 'product': product}
+                # validate variant
+                variant = None
                 if variant_id:
-                    variant = ProductVariant.objects.get(id=variant_id, is_active=True)
-                    cart_item_filter['variant'] = variant
+                    variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+
+                # validate size_variant
+                size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+
+                cart_item_filter = {
+                    'cart': cart,
+                    'product': product,
+                    'variant': variant,
+                    'varient_size': size_variant,
+                }
 
                 cart_item, created = CartItem.objects.get_or_create(
                     **cart_item_filter,
                     defaults={'quantity': quantity},
-                    varient_size=varient_size  # Set the size for clothing variants
                 )
 
                 if not created:
@@ -406,13 +417,14 @@ class CartView(APIView):
             except Product.DoesNotExist:
                 return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
             except ProductVariant.DoesNotExist:
-                return Response({'error': 'Product variant not found'}, status=status.HTTP_404_NOT_FOUND)
-
+                return Response({'error': 'Product variant (color) not found'}, status=status.HTTP_404_NOT_FOUND)
+            except SizeVariant.DoesNotExist:
+                return Response({'error': 'Size variant not found'}, status=status.HTTP_404_NOT_FOUND)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request,item_id):
+    def put(self, request, item_id):
         """Update Cart Item Quantity"""
-        item_id = item_id
         quantity = request.data.get('quantity')
 
         if item_id is None or quantity is None:
@@ -430,7 +442,7 @@ class CartView(APIView):
 
             cart = cart_item.cart
             total = sum(
-                (item.variant.get_price if item.variant else item.product.get_price) * item.quantity
+                (item.varient_size.get_price if item.varient_size else item.product.get_price) * item.quantity
                 for item in cart.items.all()
             )
 
@@ -442,10 +454,8 @@ class CartView(APIView):
         except CartItem.DoesNotExist:
             return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request,item_id):
+    def delete(self, request, item_id):
         """Remove item from cart"""
-        item_id = item_id
-
         if not item_id:
             return Response({'error': 'item_id is required'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -454,11 +464,10 @@ class CartView(APIView):
             cart_item.delete()
             cart, _ = Cart.objects.get_or_create(user=request.user)
             serializer = CartSerializer(cart)
-            
-            return Response({'data':serializer.data,'message': 'Item removed from cart'}, status=status.HTTP_200_OK)
+
+            return Response({'data': serializer.data, 'message': 'Item removed from cart'}, status=status.HTTP_200_OK)
         except CartItem.DoesNotExist:
             return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
-
 
 
 
@@ -602,42 +611,60 @@ class PendingOrderApiView(APIView):
 
 class BuyNowCheckoutView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request):
+        print("BuyNowCheckoutView",request.data)
         product_id = request.data.get("product_id")
-        variant_id = request.data.get("variant_id")
+        variant_id = request.data.get("variant_id")      # color
+        size_variant_id = request.data.get("size_variant_id")  # ✅ size
         quantity = int(request.data.get("quantity", 1))
 
         try:
-            product = Product.objects.get(id=product_id)
+            product = Product.objects.get(id=product_id, is_active=True)
         except Product.DoesNotExist:
-            return Response({"detail": "Product not found"}, status=404)
+            return Response({"detail": "Product not found"}, status=400)
 
+        # get color variant (optional)
         variant = None
         if variant_id:
-            variant = ProductVariant.objects.filter(id=variant_id, product=product).first()
+            try:
+                variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+            except ProductVariant.DoesNotExist:
+                return Response({"detail": "Product variant not found"}, status=400)
 
-        # Price
-        price = Decimal(product.get_price)
-        if variant:
-            price = Decimal(variant.get_price)
+        # get size variant (mandatory)
+        try:
+            size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+        except SizeVariant.DoesNotExist:
+            return Response({"detail": "Size variant not found"}, status=400)
 
-     
+        # effective price
+        price = Decimal(size_variant.get_price)
+
         data = {
             "items": [
                 {
                     "product": {
                         "id": product.id,
                         "name": product.name,
-                        
                     },
                     "variant": {
-                        "id": variant.id,
-                        "size": variant.size,
-                        "color": variant.variant_value,
-                        "price": float(variant.get_price),
-                        "variant_image": variant.variant_image.url if variant.variant_image else None
+                        "id": variant.id if variant else None,
+                        "color_name": variant.color_name if variant else None,
+                        "hex_color_code": variant.hex_color_code if variant else None,
+                        "images": variant.images.first().image.url if variant.images.first() else None,
+
                     } if variant else None,
+                    "varient_size": {
+                        "id": size_variant.id,
+                        "size": size_variant.size,
+                        "sku": size_variant.sku,
+                        "price": float(size_variant.price),
+                        "discount_price": float(size_variant.discount_price) if size_variant.discount_price else None,
+                        "mrp": float(size_variant.mrp) if size_variant.mrp else None,
+                        "get_price": float(size_variant.get_price),
+                        "stock": size_variant.stock,
+                    },
                     "quantity": quantity,
                     "subtotal": float(price * quantity),
                 }
@@ -645,8 +672,11 @@ class BuyNowCheckoutView(APIView):
             "total_items": quantity,
             "total_price": float(price * quantity),
         }
-     
+        # print("checkout",data)
         return Response(data)
+
+
+
 
 class CartCheckoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -669,121 +699,128 @@ client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_S
 
 @api_view(['POST'])
 def create_order(request):
-    user = request.user  # Assuming authentication middleware sets request.user
+    user = request.user  
     if not user.is_authenticated:
         return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
-    
+
     data = request.data
-    type = data.get('type')  # 'cart' or 'buynow' from frontend
-    
-    if type == 'cart':
-        # Get user's cart
+    print("data",data)
+    order_type = data.get('type')  # 'cart' or 'buynow'
+
+    if order_type == 'cart':
         try:
             cart = Cart.objects.get(user=user)
             if not cart.items.exists():
                 return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             # Calculate total
-            total_amount = cart.total_price  # Uses your @property
-            
+            total_amount = cart.total_price  # from CartSerializer / property
+
             # Create Order
             order = Order.objects.create(
                 user=user,
                 total_amount=total_amount,
-                billing_address='',  # Fill if needed
-                phone=user.phone or '',  # From user profile?
+                billing_address='',
+                phone=user.phone or '',
                 email=user.email,
                 notes='',
-                source=type  # 'cart' or 'buynow'
+                source=order_type
             )
-            
+
             # Create OrderItems from CartItems
             for cart_item in cart.items.all():
                 OrderItem.objects.create(
                     order=order,
                     product=cart_item.product,
-                    variant=cart_item.variant,
-                    size=cart_item.varient_size or '',
+                    variant=cart_item.variant,  # color
+                    size_variant=cart_item.varient_size,  # ✅ FK to SizeVariant
                     quantity=cart_item.quantity,
-                    price=cart_item.variant.price if cart_item.variant else cart_item.product.get_price
+                    price=cart_item.varient_size.get_price if cart_item.varient_size else cart_item.product.get_price
                 )
-            
-            # (Optional: Don't clear cart yet, do it after payment success)
-        
+
+            # Optional: clear cart after payment success
+
         except Cart.DoesNotExist:
             return Response({"error": "No cart found"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    elif type == 'buynow':
+
+    elif order_type == 'buynow':
         product_id = data.get('product_id')
-        variant_id = data.get('variant_id')
-        quantity = data.get('quantity', 1)
-        
-        if not (product_id and variant_id and quantity):
-            return Response({"error": "Missing product/variant/quantity"}, status=status.HTTP_400_BAD_REQUEST)
-        
+        variant_id = data.get('variant_id')          # color
+        size_variant_id = data.get('size_variant_id')  # ✅ size
+        quantity = int(data.get('quantity', 1))
+
+        if not (product_id and variant_id and size_variant_id):
+      
+            return Response({"error": "Missing product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            product = Product.objects.get(id=product_id)
-            variant = ProductVariant.objects.get(id=variant_id)
-            
-            price = variant.price
-            total_amount = price * int(quantity)
-            
+            product = Product.objects.get(id=product_id, is_active=True)
+            variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+            size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+
+            price = size_variant.get_price
+            total_amount = price * quantity
+
             # Create Order
             order = Order.objects.create(
                 user=user,
                 total_amount=total_amount,
-                billing_address='',  # Fill if needed
+                billing_address='',
                 phone=user.phone or '',
                 email=user.email,
                 notes='',
-                source=type  # 'cart' or 'buynow'
+                source=order_type
             )
-            
+
             # Create single OrderItem
             OrderItem.objects.create(
                 order=order,
                 product=product,
-                variant=variant,
-                size='',  # If applicable
+                variant=variant,           # color
+                size_variant=size_variant, # ✅ size
                 quantity=quantity,
                 price=price
             )
-        
-        except (Product.DoesNotExist, ProductVariant.DoesNotExist):
-            return Response({"error": "Invalid product/variant"}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+        except (Product.DoesNotExist, ProductVariant.DoesNotExist, SizeVariant.DoesNotExist):
+            print("error Invalid product/var")
+            return Response({"error": "Invalid product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+
     else:
+        print()
         return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Now create Razorpay order
+
+    # Razorpay Order creation
     try:
-        
         payment_order = client.order.create({
-           
-            "amount": int(order.total_amount * 100),  # In paise
+            "amount": int(order.total_amount * 100),  # in paise
             "currency": "INR",
-            "payment_capture": "1",  # Auto capture
-            "notes": {"order_id": order.order_number}  # Link to your Order
+            "payment_capture": "1",
+            "notes": {"order_id": order.order_number}
         })
-        
-        # Create Payment record (pending)
+
         Payment.objects.create(
             order=order,
-            payment_method='razorpay',  # Or from data
+            payment_method='razorpay',
             amount=order.total_amount,
             transaction_id=payment_order['id'],
             gateway_response=payment_order
         )
-        
+
         return Response({
             "id": payment_order['id'],
             "amount": payment_order['amount'],
             "currency": payment_order['currency'],
-            "order_id": order.order_number  # Your Django order.order_number, for later use
+            "order_id": order.order_number
         })
-    
+
     except razorpay.errors.BadRequestError as e:
+        print(e)
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 
 @api_view(['POST'])
 def verify_payment(request):

@@ -185,7 +185,7 @@ class Product(models.Model):
         prices = [self.get_price]
         
         # Add variant prices
-        variant_prices = [v.get_price for v in self.variants.filter(is_active=True)]
+        variant_prices = [s.get_price for v in self.variants.filter(is_active=True) for s in v.sizes.all()]
         if variant_prices:
             prices.extend(variant_prices)
         
@@ -276,29 +276,7 @@ class ProductVariant(models.Model):
     def __str__(self):
         return f"{self.product.name} - {self.color_name}"
     
-    @property
-    def get_price(self):
-        """Get the effective selling price"""
-        return self.discount_price if self.discount_price else self.price
     
-    @property
-    def get_savings(self):
-        """Calculate savings from MRP"""
-        if self.mrp and self.get_price:
-            return self.mrp - self.get_price
-        return 0
-    
-    @property
-    def discount_percentage(self):
-        """Calculate discount percentage"""
-        if self.mrp and self.price:
-            return ((self.mrp - self.get_price) / self.mrp) * 100
-        return 0
-    
-    @property
-    def is_in_stock(self):
-        """Check if variant is in stock"""
-        return self.stock > 0 and self.is_active
 
 class ProductVariantImage(models.Model):
     """Multiple images for each color variant"""
@@ -328,7 +306,29 @@ class SizeVariant(models.Model):
 
     def __str__(self):
         return f"{self.variant} - {self.size}"
-
+    @property
+    def get_price(self):
+        """Get the effective selling price"""
+        return self.price if self.price else self.mrp
+    
+    @property
+    def get_savings(self):
+        """Calculate savings from MRP"""
+        if self.mrp and self.get_price:
+            return self.mrp - self.get_price
+        return 0
+    
+    @property
+    def discount_percentage(self):
+        """Calculate discount percentage"""
+        if self.mrp and self.price:
+            return ((self.mrp - self.get_price) / self.mrp) * 100
+        return 0
+    
+    @property
+    def is_in_stock(self):
+        """Check if variant is in stock"""
+        return self.stock > 0 and self.is_active
 
 class Cart(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -345,12 +345,17 @@ class Cart(models.Model):
     @property
     def total_price(self):
         return sum(item.subtotal for item in self.items.all())
+    
+    @property
+    def total_stock(self):
+        return sum(size.stock for v in self.variants.all() for size in v.sizes.all())
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, blank=True, null=True)
-    varient_size = models.CharField(max_length=100, blank=True, null=True)  # Size for clothing variants
+    varient_size = models.ForeignKey(SizeVariant, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
     
     def __str__(self):
@@ -360,19 +365,19 @@ class CartItem(models.Model):
     def subtotal(self):
         price = self.product.get_price
         if self.variant:
-            price = self.variant.get_price
+            price = self.varient_size.get_price if self.varient_size else self.product.get_price
         return price * self.quantity
 
 class Wishlist(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, blank=True, null=True)
-    varient_size = models.CharField(max_length=100, blank=True, null=True)  # Size for clothing variants
-
+    size_variant  = models.ForeignKey(SizeVariant, on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('user', 'product', 'variant', 'varient_size')
+        unique_together = ('user', 'product', 'variant', 'size_variant')
+
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
 
@@ -462,7 +467,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, blank=True, null=True)
-    size = models.CharField(max_length=10,null=True,blank=True)
+    size_variant = models.ForeignKey(SizeVariant, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     
@@ -471,15 +476,15 @@ class OrderItem(models.Model):
     
     @property
     def subtotal(self):
-        if self.variant and self.variant.mrp is not None:
-            return Decimal(self.quantity) * self.variant.mrp
-        return Decimal('0.00')  # Fallback if variant or mrp is None
+        if self.size_variant:
+            return Decimal(self.quantity) * self.size_variant.mrp
+        return Decimal('0.00')
     
     @property
     def subselling_price(self):
-        if self.variant and self.variant.price is not None:
-            return Decimal(self.quantity) * self.variant.price
-        return Decimal('0.00')  # Fallback if variant or mrp is None
+        if self.size_variant:
+            return Decimal(self.quantity) * self.size_variant.get_price
+        return Decimal('0.00')
 
 
 class Payment(models.Model):

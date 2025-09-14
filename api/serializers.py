@@ -145,25 +145,25 @@ class ProductVariantImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductSizeVariantSerializer(serializers.ModelSerializer):
-   
-    class Meta:
-        model = SizeVariant
-        fields = ['size','price','mrp','stock']
-
-class ProductVariantSerializer(serializers.ModelSerializer):
-    sizes = ProductSizeVariantSerializer(many=True, read_only=True)
-    images = ProductVariantImageSerializer(many=True, read_only=True)
     get_price = serializers.ReadOnlyField()
     get_savings = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
     is_in_stock = serializers.ReadOnlyField()
-    
-   
+
+    class Meta:
+        model = SizeVariant
+        fields = ['id', 'size', 'sku', 'price', 'discount_price', 'mrp', 'stock',
+                  'get_price', 'get_savings', 'discount_percentage', 'is_in_stock']
+
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    sizes = ProductSizeVariantSerializer(many=True, read_only=True)
+    images = ProductVariantImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = ProductVariant
-        fields = '__all__'
-
-   
+        fields = ['id', 'product', 'color_name', 'hex_color_code', 'is_active',
+                  'created_at', 'updated_at', 'sizes', 'images']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -230,36 +230,43 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
-    variant = ProductVariantSerializer(read_only=True,allow_null=True)
-    
+    variant = ProductVariantSerializer(read_only=True, allow_null=True)
+    varient_size = ProductSizeVariantSerializer(read_only=True, allow_null=True)  # FIX
+
     class Meta:
         model = CartItem
         fields = '__all__'
+
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True)
     
     # Add total field
     total = serializers.SerializerMethodField()
-
+    
     class Meta:
         model = Cart
         fields = ['id', 'items', 'created_at', 'updated_at', 'user', 'total']
 
     def get_total(self, obj):
-        total = 0
+        total = Decimal(0)
         for item in obj.items.all():
-            # Use variant.get_price if variant exists, else product.get_price
-            price = item.variant.get_price if item.variant else item.product.get_price
-            total += price * item.quantity
-        return Decimal(total)
+            if item.varient_size:  # ✔ Correct name now
+                price = item.varient_size.get_price
+            else:
+                price = item.product.get_price
+            total += Decimal(price) * item.quantity
+        return total
+
+
     
 
 class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
-    variant_id = serializers.IntegerField(required=True)
-    varient_size = serializers.CharField(required=True)
+    variant_id = serializers.IntegerField(required=True)  # still needed (color)
+    size_variant_id = serializers.IntegerField(required=True)  # NEW
     quantity = serializers.IntegerField(min_value=1, default=1)
+
 
 class CartCheckoutSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True)
@@ -272,10 +279,12 @@ class CartCheckoutSerializer(serializers.ModelSerializer):
 
 class WishlistSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
-    
+    size_variant = ProductSizeVariantSerializer(read_only=True)
+
     class Meta:
         model = Wishlist
         fields = '__all__'
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
