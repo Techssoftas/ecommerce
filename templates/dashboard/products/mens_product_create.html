@@ -30,6 +30,14 @@ Mens Products Create
 
                     </div>
 
+                    <div class="col-12 mt-3">
+                        <div id="categoryAlert" class="alert alert-dismissible fade d-none" role="alert">
+                            <strong id="alertMessage"></strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+
+
 
                     <div class="col-12 mt-3">
                         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
@@ -593,7 +601,7 @@ Mens Products Create
         <div class="modal-content">
             <div class="modal-body text-center p-5">
                 <h5 class="mb-3">Add New Category</h5>
-                <form action="{% url 'dashboard:add_category' %}" method="post" class="row g-3"
+                <div  id="addCategoryForm" class="row g-3"
                     accept="multipart/form-data">
                     {% csrf_token %}
                     <div class="col-md-12">
@@ -602,6 +610,19 @@ Mens Products Create
                         </label>
                         <input type="text" class="form-control" id="fullnameInput" name="name" placeholder="Enter name"
                             required>
+                    </div>
+                    <div class="col-md-12">
+                        <label for="fullnameInput" class="form-label">Gender
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-control" id="productCategories" name="subcategory"
+                            required>
+                            <option value="Mens">Mens</option>
+                            <option value="Womens">Womens</option>
+                            <option value="Kids(Boys)">Kids(Boys)</option>
+                            <option value="Kids(Girls)">Kids(Girls)</option>
+                            
+                        </select>
                     </div>
 
                     <div class="col-12">
@@ -617,10 +638,10 @@ Mens Products Create
 
                     <div class="col-12">
                         <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Create</button>
+                            <button type="submit" id="submitCategoryBtn" class="btn btn-primary">Create</button>
                         </div>
                     </div>
-                </form>
+                </div>
 
             </div>
         </div><!-- /.modal-content -->
@@ -912,5 +933,65 @@ Mens Products Create
 
 
 </script>
+
+
+<!--  category form --> 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const submitBtn = document.getElementById('submitCategoryBtn');
+    const alertBox = document.getElementById('categoryAlert');
+    const alertMessage = document.getElementById('alertMessage');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    submitBtn.addEventListener('click', function () {
+    const formContainer = document.getElementById('addCategoryForm');
+    const formData = new FormData();
+
+    formData.append('name', formContainer.querySelector('[name=name]').value);
+    formData.append('subcategory', formContainer.querySelector('[name=subcategory]').value);
+    formData.append('description', formContainer.querySelector('[name=description]').value);
+    const imageInput = formContainer.querySelector('[name=image]');
+    if (imageInput.files.length > 0) {
+        formData.append('image', imageInput.files[0]);
+    }
+
+    fetch("{% url 'dashboard:api_add_category' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+        },
+        body: formData
+    })
+    .then(response => response.json())  // ✅ Make sure this is chained directly to fetch
+    .then(data => {
+    const alertBox = document.getElementById('categoryAlert');
+    const alertMessage = document.getElementById('alertMessage');
+
+    if (!alertBox || !alertMessage) {
+        console.warn('Alert box or message element not found.');
+        return;
+    }
+
+    if (data.status === 'success') {
+        alertBox.className = 'alert alert-success alert-dismissible fade show';
+    } else {
+        alertBox.className = 'alert alert-danger alert-dismissible fade show';
+    }
+
+    alertMessage.textContent = data.message;
+    alertBox.classList.remove('d-none');
+
+    setTimeout(() => {
+        alertBox.classList.add('d-none');
+    }, 5000);
+})
+
+});
+
+});
+</script>
+
+<!--  category form --> 
+
 
 {% endblock content %}

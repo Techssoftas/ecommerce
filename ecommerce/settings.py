@@ -74,16 +74,18 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'ecommerce',
-#         'USER': 'root',
-#         'PASSWORD': 'Qwerty@123',
-#         'HOST': 'localhost',
+#         'NAME': 'mtexdb',
+#         'USER': 'admin',
+#         'PASSWORD': 'L3g7#R83s$X#',
+#         'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
 #         'PORT': '3306',
 #     }
 # }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -207,3 +209,4 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 RAZORPAY_KEY_ID = "rzp_test_RCJ4LxmMOSnvyB"
 RAZORPAY_KEY_SECRET = "eB8kvT0n5XI2fQyk9QrmVPJu"
 
+#DELHIVERY_API_TOKEN = "d7c1fdb1b8ca98d9fd3fc884a771fd4e96ffaf1e"
