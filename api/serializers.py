@@ -61,7 +61,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'email',  'phone', 
+        fields = ['username','first_name', 'email',  'phone', 
                  'address', 'password', 'password_confirm']
     
     def validate(self, data):
@@ -82,6 +82,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Add custom claims
         refresh['user_type'] = user.user_type
         refresh['first_name'] = user.first_name
+        refresh['username'] = user.email
         refresh['email'] = user.email
         
         return user
