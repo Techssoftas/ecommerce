@@ -45,6 +45,7 @@ urlpatterns = [
     # Categories
     path('categories/', views.variant_delete, name='category_list'),
     path('add_category/', views.add_category, name='add_category'),
+    path('api_add_category/', views.api_add_category, name='api_add_category'),
 
     # Orders
     path('orders_list/', views.orders_list, name='orders_list'),

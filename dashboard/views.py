@@ -1823,6 +1823,25 @@ def add_category(request):
             messages.error(request, 'Category name is required.')        
 
 
+from django.http import JsonResponse
+
+def api_add_category(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        image = request.FILES.get('image')  # Use FILES for image uploads
+        subcategory = request.POST.get('subcategory')
+
+        if name:
+            category = Category.objects.create(
+                name=name, 
+                description=description, 
+                image=image,
+                subcategory=subcategory  # if you store subcategory
+            )
+            return JsonResponse({'status': 'success', 'message': f'Category "{category.name}" created successfully!'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Category name is required.'})
 
 
 

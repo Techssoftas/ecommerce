@@ -286,6 +286,20 @@ class WishlistSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+class TrackingScanSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = TrackingScan
+        fields = '__all__'
+
+class OrderTrackingSerializer(serializers.ModelSerializer):
+    scans = TrackingScanSerializer(many=True,read_only=True)
+    
+    class Meta:
+        model = OrderTracking
+        fields = '__all__'
+
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     variant = ProductVariantSerializer(read_only=True)
@@ -296,7 +310,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    
+    tracking = OrderTrackingSerializer(many=True, read_only=True)
     class Meta:
         model = Order
         fields = '__all__'
