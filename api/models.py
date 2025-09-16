@@ -55,8 +55,8 @@ class Category(models.Model):
         
     )
       
-    name = models.CharField(max_length=100)
-    subcategory = models.CharField(choices=SUB_CATEGORY, default='Mens')
+    name = models.CharField(max_length=100, blank=True, null=True)
+    subcategory = models.CharField(max_length=100,choices=SUB_CATEGORY, default='Mens')
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -100,7 +100,7 @@ class Product(models.Model):
     specifications = models.JSONField(default=dict, blank=True)  # Store detailed specs
     key_features = models.JSONField(default=list, blank=True)  # Array of key features
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    subcategory = models.CharField(choices=SUB_CATEGORY, default='Mens')
+    subcategory = models.CharField(max_length=100,choices=SUB_CATEGORY, default='Mens')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -442,12 +442,12 @@ class Order(models.Model):
     @property
     def total_mrp(self):
         return self.items.aggregate(
-            total=Sum(F('quantity') * F('variant__mrp'), output_field=DecimalField(max_digits=10, decimal_places=2))
+            total=Sum(F('quantity') * F('size_variant__mrp'), output_field=DecimalField(max_digits=10, decimal_places=2))
         )['total'] or Decimal('0.00')
     @property
     def total_selling(self):
         return self.items.aggregate(
-            total=Sum(F('quantity') * F('variant__price'), output_field=DecimalField(max_digits=10, decimal_places=2))
+            total=Sum(F('quantity') * F('size_variant__price'), output_field=DecimalField(max_digits=10, decimal_places=2))
         )['total'] or Decimal('0.00')
     @property
     def total_discount(self):
@@ -485,6 +485,33 @@ class OrderItem(models.Model):
         if self.size_variant:
             return Decimal(self.quantity) * self.size_variant.get_price
         return Decimal('0.00')
+
+from django.db import models
+from django.utils import timezone
+
+class OrderTracking(models.Model):
+    order = models.OneToOneField("Order", on_delete=models.CASCADE, related_name="tracking")
+    awb_number = models.CharField(max_length=50, unique=True)
+    current_status = models.CharField(max_length=100, blank=True, null=True)
+    last_event_id = models.CharField(max_length=200, blank=True, null=True)  # idempotency
+    raw_data = models.JSONField(blank=True, null=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.awb_number} ({self.current_status})"
+
+class TrackingScan(models.Model):
+    tracking = models.ForeignKey(OrderTracking, on_delete=models.CASCADE, related_name="scans")
+    status = models.CharField(max_length=200)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    scan_time = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("scan_time",)
+
+    def __str__(self):
+        return f"{self.status} @ {self.scan_time}"
 
 
 class Payment(models.Model):
@@ -548,6 +575,9 @@ class ShippingAddress(models.Model):
     )
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='shipping_addresses')
     type_of_address = models.CharField(max_length=20, choices=ADDRESS_TYPE, default='home')
+    state = models.CharField(max_length=100, blank=True, null=True)
+    contact_person_name = models.CharField(max_length=100, blank=True, null=True)
+    contact_person_number = models.CharField(max_length=100, blank=True, null=True)
     address_line1 = models.CharField(max_length=255, blank=True, null=True)
     address_line2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)

@@ -290,9 +290,11 @@ Products Create
                                                 {% for variant in product.variants.all %}
                                                     <div class="col-xxl-3 col-lg-4 col-md-6">
                                                         <div class="card ribbon-box ribbon-fill">
-                                                            {% if variant.discount_percentage > 0 %}
-                                                                <div class="ribbon ribbon-danger">Sale</div>
-                                                            {% endif %}
+                                                            {% with discount_sizes=variant.sizes.all %}
+                                                                {% if discount_sizes|length > 0 and discount_sizes.0.discount_percentage > 0  %}
+                                                                    <div class="ribbon ribbon-danger">Sale</div>
+                                                                {% endif %}
+                                                            {% endwith %}
 
                                                             <div class="card-body p-4 m-4">
                                                                 <button type="button"
@@ -355,18 +357,19 @@ Products Create
                                                                         </div>
                                                                         <!-- /deleteRecordModal -->
 
-
-                                                                {% if variant.variant_image %}
-                                                                    <img src="{{ variant.variant_image.url }}"
-                                                                        alt="{{ variant.variant_value }}"
-                                                                        class="img-fluid"
-                                                                        style="height: 82px;width: 120px;"/>
-                                                                {% else %}
-                                                                    <img src="{% static 'dashboard/images/products/img-1.png' %}"
-                                                                        alt="{{ product.name }}"
-                                                                        class="img-fluid"
-                                                                        style="height: 82px;width: 120px;"/>
-                                                                {% endif %}
+                                                                {% with default_image=variant.images.first %}
+                                                                    {% if default_image  %}
+                                                                        <img src="{{ default_image.image.url }}"
+                                                                            alt="{{ variant.color_name  }}"
+                                                                            class="img-fluid"
+                                                                            style="height: 82px;width: 120px;"/>
+                                                                    {% else %}
+                                                                        <img src="{% static 'dashboard/images/products/img-1.png' %}"
+                                                                            alt="{{ product.name }}"
+                                                                            class="img-fluid"
+                                                                            style="height: 82px;width: 120px;"/>
+                                                                    {% endif %}
+                                                                {% endwith %}
                                                             </div>
 
                                                             <div class="card-body pt-0">
@@ -377,14 +380,16 @@ Products Create
                                                                     </span>
                                                                 {% endif %}
 
-                                                                <h5 class="fs-lg mb-3">
-                                                                    ₹{{ variant.price }}
-                                                                    {% if variant.mrp and variant.discount_percentage > 0 %}
-                                                                        <small class="fs-sm fw-normal text-decoration-line-through text-muted">
-                                                                            ₹{{ variant.mrp }}
-                                                                        </small>
-                                                                    {% endif %}
-                                                                </h5>
+                                                                {% for size in variant.sizes.all %}
+                                                                    <h5 class="fs-lg mb-1">
+                                                                        ₹{{ size.get_price }}
+                                                                        {% if size.mrp and size.discount_percentage > 0 %}
+                                                                            <small class="text-decoration-line-through text-muted">₹{{ size.mrp }}</small>
+                                                                        {% endif %}
+                                                                    </h5>
+                                                                    <button type="button" class="btn btn-primary btn-sm">{{ size.size }}</button>
+                                                                    <span class="badge bg-info">{{ size.stock }} in stock</span>
+                                                                {% endfor %}
 
 
                                                                     {% for size_val in variant.size %}
@@ -409,7 +414,7 @@ Products Create
                                                                         <div class="modal-dialog modal-dialog-centered">
                                                                             <div class="modal-content">
                                                                                 <div class="modal-body text-center p-5">
-                                                                                    <h5 class="mb-3">Edit Variant -  {{variant.variant_value }}</h5>
+                                                                                    <h5 class="mb-3">Edit Variant -  {{variant.color_name }}</h5>
                                                                                     <form action="{% url 'dashboard:variant_edit' product.id variant.id %}" method="post" class="row g-3" enctype="multipart/form-data">
                                                                                     {% csrf_token %}
                                                                                         <div class="row mt-3">
@@ -420,7 +425,7 @@ Products Create
                                                                                                     <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
                                                                                                     <div class="input-group has-validation">
                                                                                                         <span class="input-group-text" id="product-price-addon">₹</span>
-                                                                                                        <input type="number" class="form-control" name="variant_mrp_price" value="{{variant.mrp}}" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                                                                                        <input type="number" class="form-control" name="variant_mrp_price" value="{{variant.sizes.mrp}}" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
                                                                                                         <div class="invalid-feedback">Please Enter a MRP price.</div>
                                                                                                     </div>
                                                                                                 </div>

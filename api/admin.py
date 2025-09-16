@@ -8,7 +8,8 @@ admin.site.register(Payment)
 admin.site.register(Category)
 admin.site.register(SizeVariant)
 admin.site.register(ProductVariantImage)
-
+admin.site.register(OrderTracking)
+admin.site.register(TrackingScan)
 # @admin.register(CustomUser)
 # class CustomUserAdmin(UserAdmin):
 #     list_display = ('username', 'email', 'user_type', 'is_active', 'date_joined')

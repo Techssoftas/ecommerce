@@ -179,7 +179,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'name', 'category','subcategory', 'price','mrp', 'discount_price', 'brand',
-            'variants','description','new_variant','is_bestseller','is_new_arrival',
+            'variants','description','new_variant','is_bestseller','is_new_arrival','key_features',
             'discount_percentage', 'stock', 'images', 'primary_image',
             'availability_status', 'is_active', 'is_featured'
         ]
@@ -212,7 +212,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'brand', 'short_description', 'price', 'discount_price', 
-                 'mrp', 'discount_percentage', 'stock', 'is_active', 'category_name', 
+                 'mrp', 'discount_percentage', 'stock', 'is_active', 'category_name','key_features', 
                  'primary_image', 'get_price', 'get_savings', 'stock_status', 
                  'average_rating', 'total_reviews', 'is_featured', 'is_bestseller', 
                  'is_new_arrival', 'is_trending', 'is_deal_of_day', 'is_free_shipping',
@@ -346,7 +346,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ShippingAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShippingAddress
-        fields = ['id', 'user', 'address_line1', 'address_line2', 'city', 'state','country', 'postal_code','type_of_address', 'phone', 'is_default', 'created_at', 'updated_at']
+        fields = ['id', 'user',"contact_person_number","contact_person_name" ,'address_line1', 'address_line2', 'city', 'state','country', 'postal_code','type_of_address', 'phone', 'is_default', 'created_at', 'updated_at']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
     def validate(self, data):
