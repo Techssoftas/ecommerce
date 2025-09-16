@@ -1,7 +1,7 @@
 media/
 *.pyc
-*.jpg
-*.png
+# *.jpg
+# *.png
 # .gitignore
 local_settings.py
 # staticfiles/
