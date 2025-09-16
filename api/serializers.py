@@ -309,7 +309,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
+    items = OrderItemSerializer(read_only=True)
     tracking = OrderTrackingSerializer(many=True, read_only=True)
     class Meta:
         model = Order

@@ -46,7 +46,7 @@ class EmailLoginView(APIView):
             return Response({
                 "message": "Login Successfully..!",
                 "token": token.key,
-                'username':user.username,
+                'username':user.first_name,
                
             }, status=status.HTTP_200_OK)
 
