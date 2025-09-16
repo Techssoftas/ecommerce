@@ -30,12 +30,7 @@ Mens Products Create
 
                     </div>
 
-                    <div class="col-12 mt-3">
-                        <div id="categoryAlert" class="alert alert-dismissible fade d-none" role="alert">
-                            <strong id="alertMessage"></strong>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
+                    
 
 
 
@@ -139,7 +134,7 @@ Mens Products Create
                                                         required>
                                                         <option value="">Select categories</option>
                                                         {% for category in categories %}
-                                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                                        <option value="{{ category.id }}">{{ category.name }}-{{category.subcategory}}</option>
                                                         {% endfor %}
                                                     </select>
 
@@ -604,6 +599,13 @@ Mens Products Create
                 <div  id="addCategoryForm" class="row g-3"
                     accept="multipart/form-data">
                     {% csrf_token %}
+
+                    <div  id="categoryAlertWrapper"  class="col-12 mt-3">
+                        
+
+                    </div>
+
+
                     <div class="col-md-12">
                         <label for="fullnameInput" class="form-label">Name
                             <span class="text-danger">*</span>
@@ -939,57 +941,89 @@ Mens Products Create
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const submitBtn = document.getElementById('submitCategoryBtn');
-    const alertBox = document.getElementById('categoryAlert');
-    const alertMessage = document.getElementById('alertMessage');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    submitBtn.addEventListener('click', function () {
-    const formContainer = document.getElementById('addCategoryForm');
-    const formData = new FormData();
+    // ✅ Function to show alert
+    function showAlert(message, status = 'success') {
+        const parentDiv = document.getElementById('categoryAlertWrapper');
 
-    formData.append('name', formContainer.querySelector('[name=name]').value);
-    formData.append('subcategory', formContainer.querySelector('[name=subcategory]').value);
-    formData.append('description', formContainer.querySelector('[name=description]').value);
-    const imageInput = formContainer.querySelector('[name=image]');
-    if (imageInput.files.length > 0) {
-        formData.append('image', imageInput.files[0]);
+        // Remove existing alert if any
+        const existing = document.getElementById('categoryAlert');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Create alert div
+        const alertBox = document.createElement('div');
+        alertBox.id = 'categoryAlert';
+        alertBox.className = `alert alert-${status} alert-dismissible fade show`;
+        alertBox.setAttribute('role', 'alert');
+
+        alertBox.innerHTML = `
+            <strong>${message}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        parentDiv.appendChild(alertBox);
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            alertBox.classList.remove('show');
+            alertBox.classList.add('d-none');
+            
+
+        // ✅ Reload page ONLY if success
+        if (status === 'success') {
+            location.reload();
+        }
+
+        }, 5000);
     }
 
-    fetch("{% url 'dashboard:api_add_category' %}", {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken,
-        },
-        body: formData
-    })
-    .then(response => response.json())  // ✅ Make sure this is chained directly to fetch
-    .then(data => {
-    const alertBox = document.getElementById('categoryAlert');
-    const alertMessage = document.getElementById('alertMessage');
+    submitBtn.addEventListener('click', function (e) {
+        e.preventDefault(); // 🔐 Stop default action
 
-    if (!alertBox || !alertMessage) {
-        console.warn('Alert box or message element not found.');
-        return;
-    }
+        const formContainer = document.getElementById('addCategoryForm');
+        const formData = new FormData();
 
-    if (data.status === 'success') {
-        alertBox.className = 'alert alert-success alert-dismissible fade show';
-    } else {
-        alertBox.className = 'alert alert-danger alert-dismissible fade show';
-    }
+        // Append form fields
+        formData.append('name', formContainer.querySelector('[name=name]').value);
+        formData.append('subcategory', formContainer.querySelector('[name=subcategory]').value);
+        formData.append('description', formContainer.querySelector('[name=description]').value);
 
-    alertMessage.textContent = data.message;
-    alertBox.classList.remove('d-none');
+        const imageInput = formContainer.querySelector('[name=image]');
+        if (imageInput.files.length > 0) {
+            formData.append('image', imageInput.files[0]);
+        }
 
-    setTimeout(() => {
-        alertBox.classList.add('d-none');
-    }, 5000);
-})
-
-});
-
+        // 🔁 Send request
+        fetch("{% url 'dashboard:api_add_category' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showAlert(data.message, 'success');
+                formContainer.querySelector('[name=name]').value = '';
+                formContainer.querySelector('[name=subcategory]').value = '';
+                formContainer.querySelector('[name=description]').value = '';
+                formContainer.querySelector('[name=image]').value = '';
+            } else {
+                showAlert(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Something went wrong. Please try again.', 'danger');
+        });
+    });
 });
 </script>
+
 
 <!--  category form --> 
 

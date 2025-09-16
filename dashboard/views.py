@@ -1825,24 +1825,42 @@ def add_category(request):
 
 from django.http import JsonResponse
 
+from django.db import IntegrityError
+
 def api_add_category(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description', '')
-        image = request.FILES.get('image')  # Use FILES for image uploads
+        image = request.FILES.get('image')
         subcategory = request.POST.get('subcategory')
 
-        if name:
-            category = Category.objects.create(
-                name=name, 
-                description=description, 
-                image=image,
-                subcategory=subcategory  # if you store subcategory
-            )
-            return JsonResponse({'status': 'success', 'message': f'Category "{category.name}" created successfully!'})
-        else:
+        if not name:
             return JsonResponse({'status': 'error', 'message': 'Category name is required.'})
 
+        try:
+            # Try to create the category
+            category = Category.objects.create(
+                name=name,
+                description=description,
+                image=image,
+                subcategory=subcategory
+            )
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Category "{category.name}" created successfully!'
+            })
+
+        except IntegrityError:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Category with name "{name}" and subcategory "{subcategory}" already exists.'
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Unexpected error: {str(e)}'
+            })
 
 
 

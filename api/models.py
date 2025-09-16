@@ -55,7 +55,7 @@ class Category(models.Model):
         
     )
       
-    name = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=100)
     subcategory = models.CharField(max_length=100,choices=SUB_CATEGORY, default='Mens')
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
@@ -64,9 +64,16 @@ class Category(models.Model):
     
     class Meta:
         verbose_name_plural = "Categories"
-    
+        unique_together = ('name', 'subcategory')  # Uniqueness here
+        ordering = ['-created_at']
+
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.subcategory})"
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.title()  # Auto Title Case conversion
+        super(Category, self).save(*args, **kwargs)
+
 
 class Product(models.Model):
     CONDITION_CHOICES = (
