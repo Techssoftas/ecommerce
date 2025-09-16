@@ -505,7 +505,7 @@ class AddToWishlistView(APIView):
                             user=request.user,
                             product=product,
                             variant_id=variant_id,
-                            varient_size=variant_size
+                            size_variant_id=variant_size
                         )
                 except IntegrityError:
                     return Response({'message': 'Item already in wishlist'}, status=status.HTTP_200_OK)
