@@ -280,6 +280,10 @@ class ProductVariant(models.Model):
         unique_together = ('product', 'color_name')
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        self.name = self.color_name.title()  # Auto Title Case conversion
+        super(ProductVariant, self).save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.product.name} - {self.color_name}"
     
@@ -390,13 +394,13 @@ class Wishlist(models.Model):
 
 class Order(models.Model):
     ORDER_STATUS = (
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('processing', 'Processing'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
+        ('Pending', 'Pending'),
+        ('Confirmed', 'Confirmed'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+        ('Refunded', 'Refunded'),
     )
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

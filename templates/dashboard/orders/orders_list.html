@@ -170,10 +170,14 @@
                           data-products="{% for item in order.items.all %}
                             {{ item.product.name }}{% if item.variant %}
                               
+                              
                                ({{ item.variant.variant_value }})
+
 
                             {% endif %}
                             
+                            
+
 
                             {% if not forloop.last %}, {% endif %}
                           {% endfor %}"
@@ -182,7 +186,9 @@
                             {{ order.payment.get_payment_method_display }}
                           {% else %}
                             
+                            
                             COD
+
 
                           {% endif %}"
                           data-amount="{{ order.total_amount }}"
@@ -236,41 +242,18 @@
                             </h5>
                           </td> {% endcomment %}
                           <td class="status">
-                            <span class="badge bg-{% if order.status == 'delivered' %}
-                                
-                                success
-
-                              {% elif order.status == 'cancelled' or order.status == 'refunded' %}
-                                
-                                danger
-
-                              {% elif order.status == 'confirmed' %}
-                                
-                                success
-
-                              {% else %}
-                                
-                                warning
-
-                              {% endif %}-subtle text-{% if order.status == 'delivered' %}
-                                
-                                success
-
-                              {% elif order.status == 'cancelled' or order.status == 'refunded' %}
-                                
-                                danger
-
-                              {% elif order.status == 'confirmed' %}
-                                
-                                success
-
-                              {% else %}
-                                
-                                warning
-
-                              {% endif %}">
-                              {{ order.get_status_display }}
+                            <span class="badge
+                                {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
+                                    bg-success-subtle text-success
+                                {% elif order.status == 'Cancelled' or order.status == 'Refunded' %}
+                                    bg-danger-subtle text-danger
+                                {% else %}
+                                    bg-warning-subtle text-warning
+                                {% endif %}">
+                                {{ order.status }}
                             </span>
+
+
                           </td>
                           <td>
                             <ul class="d-flex gap-2 list-unstyled mb-0">
@@ -452,13 +435,17 @@
                     <a class="page-item pagination-prev {% if not page_obj.has_previous %}disabled{% endif %}"
                       href="{% if page_obj.has_previous %}
                         
+                        
                         ?page={{ page_obj.previous_page_number }}{% if current_status %}
+                          
                           
                           &status={{ current_status }}
                         {% endif %}
                       {% else %}
                         
+                        
                         javascript:void(0)
+
 
                       {% endif %}">
                       <i class="mdi mdi-chevron-left align-middle" style="color:#002147;"></i>
@@ -470,6 +457,7 @@
                           <a class="page-link"
                             style="color:#002147;"
                             href="?page=1{% if current_status %}
+                              
                               
                               &status={{ current_status }}
                             {% endif %}">
@@ -491,6 +479,7 @@
                               style="background-color:#002147;border-color:#002147;"
                               href="?page={{ num }}{% if current_status %}
                                 
+                                
                                 &status={{ current_status }}
                               {% endif %}">
                               {{ num }}
@@ -501,8 +490,8 @@
 
                       <!-- Show ellipsis and last page if needed -->
                       {% with total_pages=page_obj.paginator.num_pages %}
-                        {% if page_obj.number < total_pages|add:"- 2" %}
-                          {% if page_obj.number < total_pages|add:"- 3" %}
+                        {% if page_obj.number < total_pages|add:'- 2' %}
+                          {% if page_obj.number < total_pages|add:'- 3' %}
                             <li class="page-item disabled">
                               <span class="page-link">...</span>
                             </li>
@@ -511,6 +500,7 @@
                             <a class="page-link"
                               style="color:#002147;"
                               href="?page={{ total_pages }}{% if current_status %}
+                                
                                 
                                 &status={{ current_status }}
                               {% endif %}">
@@ -523,13 +513,17 @@
                     <a class="page-item pagination-next {% if not page_obj.has_next %}disabled{% endif %}"
                       href="{% if page_obj.has_next %}
                         
+                        
                         ?page={{ page_obj.next_page_number }}{% if current_status %}
+                          
                           
                           &status={{ current_status }}
                         {% endif %}
                       {% else %}
                         
+                        
                         javascript:void(0)
+
 
                       {% endif %}">
                       <i class="mdi mdi-chevron-right align-middle" style="color:#002147;"></i>

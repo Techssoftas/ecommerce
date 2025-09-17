@@ -227,13 +227,13 @@
                     <div class="text-center border border-dashed p-3 rounded">
                       <p class="text-muted mb-2">Order Status</p>
 
-                      {% if order.status == 'pending' %}
+                      {% if order.status == 'Pending' %}
                         <span class="badge bg-warning-subtle text-warning mb-0">Pending</span>
-                      {% elif order.status == 'confirmed' %}
+                      {% elif order.status == 'Confirmed' %}
                         <span class="badge bg-success-subtle text-success mb-0">Confirmed</span>
-                      {% elif order.status == 'shipped' %}
+                      {% elif order.status == 'Shipped' %}
                         <span class="badge bg-dark-subtle text-dark mb-0">Shipped</span>
-                      {% elif order.status == 'delivered' %}
+                      {% elif order.status == 'Delivered' %}
                         <span class="badge bg-success-subtle text-success mb-0">Delivered</span>
                       {% else %}
                         <span class="badge bg-danger-subtle text-danger mb-0">{{ order.status }}</span>
