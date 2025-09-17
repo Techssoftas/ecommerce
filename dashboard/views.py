@@ -1648,46 +1648,64 @@ def update_stock(request, pk):
 # Product Variant Management
 @login_required
 @user_passes_test(is_admin)
+
 def variant_create(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
-    
-    if request.method == 'POST':
-        
-        variant_mrp = request.POST.get('variant_mrp_price')
-        variant_selling = request.POST.get('variant_selling_price')
-        variant_image = request.FILES.get('variant_image')
-        hex_color_code = request.POST.get('hex_color_code')
-        variant_value = request.POST.get('variant_value')
-        variant_sizes = request.POST.getlist('variant_sizes')
-        print("variant_image",variant_image)
-        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
-            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
 
-        sku = request.POST.get('sku')
-        if not sku:
-            sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
-        # for size in variant_sizes and hex_color_code:
-        if ProductVariant.objects.filter(product=product,variant_value = variant_value).exists():
-            messages.warning(request, "Variant Values & Colour Alredy Created...")
+    if request.method == 'POST':
+        # Main variant (color)
+        color_name = request.POST.get('color_name')
+        hex_color_code = request.POST.get('hex_color_code')
+
+        # Images (can be multiple)
+        variant_images = request.FILES.getlist('variant_images')
+
+        # Sizes (multiple with pricing)
+        sizes = request.POST.getlist('variant_sizes[]')  # e.g. ["M,499,699,10", "L,599,799,5"]
+
+        # Check duplicate variant (same product + color)
+        if ProductVariant.objects.filter(product=product, color_name=color_name).exists():
+            messages.warning(request, "This color variant already exists for this product.")
             return redirect('dashboard:product_edit', pk=product_id)
-        else:
-            
-            ProductVariant.objects.create(product=product,
-                                        size=variant_sizes,
-                                        hex_color_code=hex_color_code,
-                                        variant_value = variant_value,
-                                        mrp=variant_mrp,
-                                        price=variant_selling,
-                                        variant_image=variant_image,
-                                        sku =sku,   
-                                            )
-            messages.success(request, "Variant Created successfully..")
+
+        # Create Variant (color-level)
+        variant = ProductVariant.objects.create(
+            product=product,
+            color_name=color_name,
+            hex_color_code=hex_color_code
+        )
+
+        # Save Variant Images
+        for i, image in enumerate(variant_images):
+            ProductVariantImage.objects.create(
+                variant=variant,
+                image=image,
+                is_default=(i == 0)  # first image = default
+            )
+
+        # Save Size Variants
+        for size_data in sizes:
+            try:
+                size, price, mrp, stock = size_data.split(",")  
+                sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+                SizeVariant.objects.create(
+                    variant=variant,
+                    size=size.strip(),
+                    price=price,
+                    mrp=mrp,
+                    stock=stock,
+                    sku=sku
+                )
+            except ValueError:
+                continue  # skip invalid entries
+
+        messages.success(request, "Variant created successfully.")
         return redirect('dashboard:product_edit', pk=product_id)
-    
+
     return render(request, 'dashboard/products/variant_create.html', {
-        
         'product': product
     })
+
 
 @login_required
 @user_passes_test(is_admin)
