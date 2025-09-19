@@ -1656,12 +1656,13 @@ def variant_create(request, product_id):
         # Main variant (color)
         color_name = request.POST.get('color_name')
         hex_color_code = request.POST.get('hex_color_code')
-
+        print("Color Name:", color_name)
+        print("Hex Color Code:", hex_color_code)
         # Images (can be multiple)
         variant_images = request.FILES.getlist('variant_images')
-
+        print("Variant Images:", variant_images)
         # Sizes (multiple with pricing)
-        sizes = request.POST.getlist('variant_sizes[]')  # e.g. ["M,499,699,10", "L,599,799,5"]
+       
 
         # Check duplicate variant (same product + color)
         if ProductVariant.objects.filter(product=product, color_name=color_name).exists():
@@ -1682,23 +1683,23 @@ def variant_create(request, product_id):
                 image=image,
                 is_default=(i == 0)  # first image = default
             )
-
-        # Save Size Variants
-        for size_data in sizes:
+        sizes_json = request.POST.get("sizes_json")
+        if sizes_json:
             try:
-                size, price, mrp, stock = size_data.split(",")  
-                sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
-                SizeVariant.objects.create(
-                    variant=variant,
-                    size=size.strip(),
-                    price=price,
-                    mrp=mrp,
-                    stock=stock,
-                    sku=sku
-                )
-            except ValueError:
-                continue  # skip invalid entries
-
+                sizes = json.loads(sizes_json)  # list of dict
+                for size_data in sizes:
+                    sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+                    SizeVariant.objects.create(
+                        variant=variant,
+                        size=size_data["size"],
+                        mrp=size_data["mrp"],
+                        price=size_data["price"],
+                        discount_price=size_data.get("discount_price", 0),
+                        stock=size_data["stock"],
+                        sku=sku
+                    )
+            except json.JSONDecodeError:
+                pass  # invalid JSON skip
         messages.success(request, "Variant created successfully.")
         return redirect('dashboard:product_edit', pk=product_id)
 
@@ -1933,7 +1934,7 @@ class CustomerDeleteView(DeleteView):
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
-from .services.delhivery_service import DelhiveryService
+# from .services.delhivery_service import DelhiveryService
 import json
 import logging
 
