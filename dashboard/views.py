@@ -1928,3 +1928,112 @@ class CustomerDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'Customer deleted successfully.')
         return super().delete(request, *args, **kwargs)
+    
+
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.admin.views.decorators import staff_member_required
+from .services.delhivery_service import DelhiveryService
+import json
+import logging
+
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+def create_shipping_label(request, order_id):
+    """Create shipping label for an order"""
+    if request.method == 'POST':
+        try:
+            logger.info(f"Creating shipping label for order {order_id}")
+            
+            delhivery = DelhiveryService()
+            result = delhivery.create_shipment(order_id)
+            
+            if result['success']:
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Shipping label created successfully',
+                    'waybill': result['waybill'],
+                    'tracking_id': result['tracking_id'],
+                    'label_generated': result['label_generated']
+                })
+            else:
+                logger.error(f"Failed to create shipping label: {result['error']}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': result['error'],
+                    'details': result.get('response', {})
+                }, status=400)
+                
+        except Exception as e:
+            logger.error(f"Exception in create_shipping_label: {str(e)}")
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+ 
+def download_shipping_label(request, tracking_id):
+    """Download shipping label PDF"""
+    try:
+        tracking = OrderTracking.objects.get(id=tracking_id)
+        
+        if tracking.label_file:
+            response = HttpResponse(
+                tracking.label_file.read(),
+                content_type='application/pdf'
+            )
+            response['Content-Disposition'] = f'attachment; filename="shipping_label_{tracking.awb_number}.pdf"'
+            return response
+        else:
+            return HttpResponse('Label file not found', status=404)
+            
+    except OrderTracking.DoesNotExist:
+        return HttpResponse('Tracking record not found', status=404)
+    except Exception as e:
+        logger.error(f"Error downloading label: {str(e)}")
+        return HttpResponse(f'Error: {str(e)}', status=500)
+
+def track_order(request, order_id):
+    """Track order status from Delhivery"""
+    try:
+        order = Order.objects.get(id=order_id)
+        tracking = OrderTracking.objects.get(order=order)
+        
+        delhivery = DelhiveryService()
+        track_data = delhivery.track_shipment(tracking.awb_number)
+        
+        if track_data:
+            # Update tracking status
+            tracking.raw_data = track_data
+            tracking.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'waybill': tracking.awb_number,
+                'tracking_data': track_data
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Failed to fetch tracking data from Delhivery'
+            })
+            
+    except Order.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Order not found'
+        }, status=404)
+    except OrderTracking.DoesNotExist:
+        return JsonResponse({
+            'status': 'error', 
+            'message': 'Tracking record not found for this order'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error tracking order: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

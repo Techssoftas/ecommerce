@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 app_name = 'dashboard'
 
 urlpatterns = [
@@ -66,5 +68,16 @@ urlpatterns = [
     path('customers/<int:pk>/edit/', views.CustomerEditView.as_view(), name='customer_edit'),
     path('customers/<int:pk>/delete/', views.CustomerDeleteView.as_view(), name='customer_delete'),
         # Reviews
-    path('review/delete/<str:review_id>/', views.delete_review, name='delete_review')
+    path('review/delete/<str:review_id>/', views.delete_review, name='delete_review'),
+    
+    
+    path('create-shipping-label/<int:order_id>/', views.create_shipping_label, name='create_shipping_label'),
+    path('download-label/<int:tracking_id>/', views.download_shipping_label, name='download_shipping_label'),
+    path('track-order/<int:order_id>/', views.track_order, name='track_order'),
+
+
+
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

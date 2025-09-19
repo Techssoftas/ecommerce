@@ -150,7 +150,7 @@
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                         {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
-                       <th scope="col" class="cursor-pointer fs-lg" data-sort="delivery_date" style="font-family:serif; color:#002147;">Label</th>
+                       <th scope="col" class="cursor-pointer fs-lg" data-sort="label" style="font-family:serif; color:#002147;">Label</th>
                         <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
                       </tr>
                     </thead>
@@ -249,8 +249,11 @@
                           </td>
                            <td class="status">
                             <!-- Load More Buttons -->
+                            <form action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-outline-primary" style="font-family:serif; color:#002147;">Generate Label</button>
 
-                            <button class="btn btn-outline-primary btn-load">
+                            </form>
+                            <!-- <button class="btn btn-outline-primary btn-load">
                                 <span class="d-flex align-items-center">
                                     <span class="spinner-border flex-shrink-0" role="status">
                                         <span class="visually-hidden">Loading...</span>
@@ -259,7 +262,7 @@
                                         Loading...
                                     </span>
                                 </span>
-                            </button>
+                            </button> -->
                            </td>
                           <td>
                             <ul class="d-flex gap-2 list-unstyled mb-0">

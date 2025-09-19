@@ -119,7 +119,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where static files are co
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -205,8 +205,72 @@ LOGOUT_REDIRECT_URL = '/dashboard/login/'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 
+
+
+import logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # keeps the default Django loggers
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',  # Or INFO in production
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'django_app.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # Logger for your app/module
+        'myapp': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    }
+}
+
+
+
+
+
+
+
+
+
 #Test Key
 RAZORPAY_KEY_ID = "rzp_test_RCJ4LxmMOSnvyB"
 RAZORPAY_KEY_SECRET = "eB8kvT0n5XI2fQyk9QrmVPJu"
 
+
 DELHIVERY_API_TOKEN = "d7c1fdb1b8ca98d9fd3fc884a771fd4e96ffaf1e"
+
+# settings.py (example)
+DELHIVERY_PROD_URL = "https://track.delhivery.com/api/cmu/create.json"
+DELHIVERY_STAGING_URL = "https://staging-express.delhivery.com/api/cmu/create.json"
+DELHIVERY_TOKEN = "d7c1fdb1b8ca98d9fd3fc884a771fd4e96ffaf1e"     # get from Delhivery portal
+DELHIVERY_PICKUP_LOCATION = "2/227 D, ANGALAPARMESHWARI NAGAR, Mudalipalayam, Tiruppur, 641606"  # case-sensitive
+DELHIVERY_SELLER_GST_TIN = "33FLMPM1010A1ZY"   # if you pass GST from API
+DELHIVERY_CLIENT_GST_TIN = "M TEX"
+DELHIVERY_COMPANY_NAME = "M TEX"
+DELHIVERY_BASE_URL ="https://track.delhivery.com/api/cmu/create.json"

@@ -505,6 +505,9 @@ class OrderTracking(models.Model):
     awb_number = models.CharField(max_length=50, unique=True)
     current_status = models.CharField(max_length=100, blank=True, null=True)
     last_event_id = models.CharField(max_length=200, blank=True, null=True)  # idempotency
+
+    label_file = models.FileField(upload_to="shipping_labels/", null=True, blank=True)
+
     raw_data = models.JSONField(blank=True, null=True)
     last_updated = models.DateTimeField(auto_now=True)
 
