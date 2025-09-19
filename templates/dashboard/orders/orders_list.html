@@ -144,13 +144,13 @@
                         </th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif; color:#002147;">Order ID</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Order Date</th>
-                        <th scope="col" class="cursor-pointer fs-lg" data-sort="delivery_date" style="font-family:serif; color:#002147;">Delivery Date</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="products" style="font-family:serif;color:#002147;">Products</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                         {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
+                       <th scope="col" class="cursor-pointer fs-lg" data-sort="delivery_date" style="font-family:serif; color:#002147;">Label</th>
                         <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
                       </tr>
                     </thead>
@@ -203,15 +203,7 @@
                             <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_number }}</a>
                           </td>
                           <td class="order_date">{{ order.created_at|date:'d M, Y' }}</td>
-                          <td class="delivery_date" style="font-family:sans-serif;">
-                            {% if order.items.first %}
-                              {% with delivery_date=order.created_at|add_days:order.items.first.product.delivery_time_max %}
-                                {{ delivery_date|date:'Y-m-d' }}
-                              {% endwith %}
-                            {% else %}
-                              {{ order.created_at|date:'Y-m-d' }}
-                            {% endif %}
-                          </td>
+                          
                           <td class="products" style="font-family:sans-serif;">
                             {% with item=order.items.all.0 %}
                               {{ item.product.name|slice:':30' }}{% if item.variant.sizes %}
@@ -255,6 +247,20 @@
 
 
                           </td>
+                           <td class="status">
+                            <!-- Load More Buttons -->
+
+                            <button class="btn btn-outline-primary btn-load">
+                                <span class="d-flex align-items-center">
+                                    <span class="spinner-border flex-shrink-0" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </span>
+                                    <span class="flex-grow-1 ms-2">
+                                        Loading...
+                                    </span>
+                                </span>
+                            </button>
+                           </td>
                           <td>
                             <ul class="d-flex gap-2 list-unstyled mb-0">
                               <li>

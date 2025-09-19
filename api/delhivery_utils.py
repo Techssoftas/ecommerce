@@ -7,16 +7,15 @@ from django.utils.dateparse import parse_datetime
 
 def fetch_and_update_tracking(awb_number):
     url = f"https://track.delhivery.com/api/v1/packages/json/?waybill={awb_number}"
-    headers = {
-        "Authorization": f"Token {settings.DELHIVERY_API_TOKEN}"
-    }
+    headers = {"Authorization": f"Token {settings.DELHIVERY_API_TOKEN}"}
 
     response = requests.get(url, headers=headers)
-
+    print('response',response)
     if response.status_code != 200:
         return False, f"Failed to fetch for {awb_number}"
 
     data = response.json()
+    print('data',data)
     shipment_data = data.get("ShipmentData", [])[0].get("Shipment", {})
 
     try:
@@ -33,16 +32,21 @@ def fetch_and_update_tracking(awb_number):
     # Parse scan events
     scan_events = shipment_data.get("Scans", [])
     for scan in scan_events:
-        scan_id = scan.get("ScanType", "") + scan.get("ScanDatetime", "")
+        scan_detail = scan.get("ScanDetail", {})  # 👈 unwrap
+
+        scan_datetime = scan_detail.get("ScanDateTime")
+        scan_time = parse_datetime(scan_datetime) if scan_datetime else None
+
+        scan_id = scan_detail.get("ScanType", "") + str(scan_datetime or "")
+
         if scan_id == tracking.last_event_id:
             continue  # Already processed this event
 
-        # New scan
         TrackingScan.objects.create(
             tracking=tracking,
-            status=scan.get("ScanType", ""),
-            location=scan.get("ScannedLocation", ""),
-            scan_time=parse_datetime(scan.get("ScanDatetime"))
+            status=scan_detail.get("Scan", ""),            # 👈 use "Scan" for actual status
+            location=scan_detail.get("ScannedLocation", ""),
+            scan_time=scan_time,
         )
 
         tracking.last_event_id = scan_id

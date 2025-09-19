@@ -515,7 +515,7 @@ class TrackingScan(models.Model):
     tracking = models.ForeignKey(OrderTracking, on_delete=models.CASCADE, related_name="scans")
     status = models.CharField(max_length=200)
     location = models.CharField(max_length=200, blank=True, null=True)
-    scan_time = models.DateTimeField()
+    scan_time = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
