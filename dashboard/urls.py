@@ -44,6 +44,10 @@ urlpatterns = [
     
     path("product_image/delete/<int:image_id>/", delete_product_image, name="delete_product_image"),
 
+    #Variants Size
+    path("product/<int:product_id>/variant/size/<int:pk>/edit/", size_variant_edit, name="size_variant_edit"),
+    path("product/<int:product_id>/variant/size/<int:pk>/delete/",size_variant_delete,name="size_variant_delete",),
+
     # Categories
     path('categories/', variant_delete, name='category_list'),
     path('add_category/', add_category, name='add_category'),

@@ -1917,7 +1917,50 @@ class CustomerDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'Customer deleted successfully.')
         return super().delete(request, *args, **kwargs)
-    
+
+
+def size_variant_edit(request, product_id, pk):
+    size_variant = get_object_or_404(SizeVariant, pk=pk)
+
+    if request.method == "POST":
+        sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+        price = request.POST.get("price")
+        discount_price = request.POST.get("discount_price")
+        mrp = request.POST.get("mrp")
+        stock = request.POST.get("stock")
+
+  
+        size_variant.sku = sku
+        size_variant.price = price or 0
+        size_variant.discount_price = discount_price or None
+        size_variant.mrp = mrp or None
+        size_variant.stock = stock or 0
+        size_variant.save()
+
+        messages.success(request, "Size variant updated successfully!")
+        return redirect('dashboard:product_edit', pk=product_id)
+        # 👆 change redirect according to your flow
+
+    return render(request, "dashboard/size_variant_edit.html", {"size_variant": size_variant})
+
+
+def size_variant_delete(request, product_id, pk):
+    # validate product exists
+    product = get_object_or_404(Product, pk=product_id)
+
+    # ensure this size variant belongs to this product
+    size_variant = get_object_or_404(SizeVariant, pk=pk)
+
+    if request.method == "POST":
+        size_variant.delete()
+        messages.success(request, "Size variant deleted successfully!")
+        return redirect('dashboard:product_edit', pk=product_id)
+
+    # optional: confirm deletion page
+    return render(request, "dashboard/size_variant_confirm_delete.html", {
+        "product": product,
+        "size_variant": size_variant,
+    })
 
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt

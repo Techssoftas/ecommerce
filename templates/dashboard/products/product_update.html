@@ -242,7 +242,7 @@ Products Create
                                       
                                         <div class="hstack gap-2 justify-content-end mb-3">
                                             <button type="submit" class="btn btn-primary">Submit</button>
-                                            <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                            <button type="reset" data-bs-dismiss="modal" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
                                             
                                         </div>
 
@@ -391,90 +391,32 @@ Products Create
                                                                     <div class="modal-content">
                                                                         <div class="modal-body text-center p-5">
                                                                             <h5 class="mb-3">Edit Size -  {{size.size }}</h5>
-                                                                            <form action="{% url 'dashboard:variant_edit' product.id variant.id %}" method="post" class="row g-3" enctype="multipart/form-data">
+                                                                            <form id="EditSizeForm-{{ size.id }}" action="{% url 'dashboard:size_variant_edit'  product.id size.id %}" method="post" class="row g-3" enctype="multipart/form-data">
                                                                             {% csrf_token %}
                                                                                 <div class="row mt-3">
-                                                                                                    
-                                                                                    
-
-
-                                                                                    
-                                                                                    <div class="col-lg-12">
-                                                                                        <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
-                                                                                            
-                                                                                        <div class="input-group">
-                                                                                            <label class="input-group-text" for="inputGroupSelect01">Colors</label>
-                                                                                            <select class="form-select" id="inputGroupSelect01" name="variant_value">
-
-                                                                                                <option value="{{variant.color_name}}">{{variant.color_name}}</option>
-                                                                                                <option value="black">Black</option>
-                                                                                                <option value="red">Red</option>
-                                                                                                <option value="green">Green</option>
-                                                                                                <option value="blue">Blue</option>
-                                                                                                <option value="yellow">Yellow</option>
-                                                                                                <option value="orange">Orange</option>
-                                                                                                <option value="purple">Purple</option>
-                                                                                                <option value="pink">Pink</option>
-                                                                                                <option value="white">White</option>
-                                                                                                <option value="gray">Gray</option>
-                                                                                                <option value="brown">Brown</option>
-                                                                                                <option value="violet">Violet</option>
-                                                                                                <option value="indigo">Indigo</option>
-                                                                                                <option value="cyan">Cyan</option>
-                                                                                                <option value="magenta">Magenta</option>
-                                                                                                <option value="gold">Gold</option>
-                                                                                                <option value="silver">Silver</option>
-                                                                                                <option value="beige">Beige</option>
-                                                                                                <option value="maroon">Maroon</option>
-                                                                                                <option value="navy">Navy</option>
-                                                                                                <option value="teal">Teal</option>
-                                                                                                <option value="lime">Lime</option>
-                                                                                                <option value="olive">Olive</option>
-                                                                                            </select>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
-                                                                                
-                                                                                    <div class="col-lg-12 mt-2">
-                                                                                        <div class="mb-3 ">
-                                                                                            <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
-                                                                                            <div class="d-flex align-items-center">
-                                                                                                <input type="color" 
-                                                                                                    name="hex_color_code" 
-                                                                                                    class="form-control form-control-color w-100 color-picker" 
-                                                                                                    id="productColor-{{ variant.id }}" 
-                                                                                                    value="{{ variant.hex_color_code }}" required>
-
-                                                                                                <input type="text" 
-                                                                                                    class="form-control color-display" 
-                                                                                                    id="colorHexDisplay-{{ variant.id }}" 
-                                                                                                    value="{{ variant.hex_color_code }}" readonly 
-                                                                                                    style="max-width: 120px;">
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <div class="mb-3 ">
-                                                                                            <label for="sizeInput-{{ variant.id }}" class="form-label">Size <span class="text-danger">*</span></label>
-                                                                                        <div class="input-group">
-                                                                                                <input type="text" class="form-control" style="text-transform: uppercase;" id="sizeInput-{{ variant.id }}" aria-label="Recipient's username" aria-describedby="button-addon2">
-                                                                                                <button class="btn btn-info add-size-btn" type="button" data-variant="{{ variant.id }}">Add</button>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <div class="mb-3">
-                                                                                            <label for="productBrand" class="form-label">Selected Size <span class="text-danger">*</span></label>
-                                                                                            <br/>
-                                                                                            <input type="hidden" name="variant_sizes" value="" id="selectedSize-{{ variant.id }}" required>
-                                                                                            <div id="selectedSizeContainer-{{ variant.id }}"></div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    
+                                                                                   
                                                                                     <div class="col-lg-12">
                                                                                         <div class="mb-3">
-                                                                                            <label for="productBrand" class="form-label">Image <span class="text-danger">*</span></label>
-                                                                                            <input type="file" name="variant_image" accept=".png,.jpg,.jpeg" class="form-control" id="productBrand" >
+                                                                                            <label for="productBrand" class="form-label">Mrp <span class="text-danger">*</span></label>
+                                                                                            <input type="number" name="mrp" value="{{size.mrp}}" class="form-control"  >
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-lg-12">
+                                                                                        <div class="mb-3">
+                                                                                            <label for="productBrand" class="form-label">Selling Price <span class="text-danger">*</span></label>
+                                                                                            <input type="number" name="price" value="{{size.price}}" class="form-control"  >
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-lg-12">
+                                                                                        <div class="mb-3">
+                                                                                            <label for="productBrand" class="form-label">Discount Price <span class="text-danger">*</span></label>
+                                                                                            <input type="number" name="discount_price" value="{{size.discount_price}}"  class="form-control"  >
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-lg-12">
+                                                                                        <div class="mb-3">
+                                                                                            <label for="productBrand" class="form-label">Stock  <span class="text-danger">*</span></label>
+                                                                                            <input type="number" name="stock" value="{{size.stock}}"  class="form-control"  >
                                                                                         </div>
                                                                                     </div>
                                                                                     
@@ -484,7 +426,7 @@ Products Create
 
                                                                                 <div class="hstack gap-2 justify-content-end mb-3">
                                                                                     <button type="submit" class="btn btn-primary">Submit</button>
-                                                                                    <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                                                                    <button data-bs-dismiss="modal" type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
                                                                                     
                                                                                 </div>
                                                                             </form>
@@ -659,7 +601,7 @@ Products Create
                                                                                 <div class="row">
                                                                                     <div class="hstack gap-2 justify-content-end mb-3">
                                                                                         <button type="submit" class="btn btn-primary">Submit</button>
-                                                                                        <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                                                                        <button type="reset" class="btn btn-danger" data-bs-dismiss="modal"><i class="ph-x align-middle"></i> Cancel</button>
                                                                                         
                                                                                     </div>
                                                                                 </div>
@@ -873,7 +815,7 @@ Products Create
 
                     <div class="hstack gap-2 justify-content-end mb-3">
                         <button type="submit" class="btn btn-primary">Submit</button>
-                        <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                        <button data-bs-dismiss="modal" type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
                         
                     </div>
                 </form>
