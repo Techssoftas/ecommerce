@@ -1710,50 +1710,38 @@ def variant_create(request, product_id):
 
 @login_required
 @user_passes_test(is_admin)
+
 def variant_edit(request, product_id, variant_id):
     product = get_object_or_404(Product, pk=product_id)
     variant = get_object_or_404(ProductVariant, pk=variant_id, product=product)
 
     if request.method == 'POST':
-        variant_mrp = request.POST.get('variant_mrp_price')
-        variant_selling = request.POST.get('variant_selling_price')
-        hex_color_code = request.POST.get('hex_color_code')
-        variant_value = request.POST.get('variant_value')
-        variant_image = request.FILES.get('variant_image')  # ✅ file handling
-        variant_sizes = request.POST.getlist('variant_sizes')
-        print("variant_sizes",variant_sizes)
-        variant_sizes = [s.strip() for s in variant_sizes if s.strip()]  # remove empty strings
-
-        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
-            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
-
-        sku = request.POST.get('sku')
-        if not sku:
-            sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
-
+        # Get form fields
+        color_name = request.POST.get('color_name', '').strip()
+        hex_color_code = request.POST.get('hex_color_code', '').strip()
+        variant_images = request.FILES.getlist('variant_images')  # multiple files
+        print("variant_images", variant_images)
+        # Update fields
+        variant.color_name = color_name
         variant.hex_color_code = hex_color_code
-        variant.variant_value = variant_value
-        variant.mrp = variant_mrp
-        
-        variant.price = variant_selling
-        if variant_image:  # only update if new image uploaded
-            variant.variant_image = variant_image
-
-        if variant_sizes:
-            variant.size = variant_sizes
-            print("variant size update")
-        variant.sku = sku
-
         variant.save()
+
+        # Handle image uploads
+        if variant_images:
+            for image_file in variant_images:
+                ProductVariantImage.objects.create(
+                    variant=variant,
+                    image=image_file
+                )
+
         messages.success(request, 'Product variant updated successfully!')
         return redirect('dashboard:product_edit', pk=product_id)
-    
-    
+
     return render(request, 'dashboard/products/variant_edit.html', {
-       
         'product': product,
         'variant': variant
     })
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -1934,13 +1922,11 @@ class CustomerDeleteView(DeleteView):
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
-# from .services.delhivery_service import DelhiveryService
+from .services.delhivery_service import DelhiveryService
 import json
 import logging
 
 logger = logging.getLogger(__name__)
-
-@csrf_exempt
 def create_shipping_label(request, order_id):
     """Create shipping label for an order"""
     if request.method == 'POST':
@@ -1949,7 +1935,7 @@ def create_shipping_label(request, order_id):
             
             delhivery = DelhiveryService()
             result = delhivery.create_shipment(order_id)
-            
+
             if result['success']:
                 return JsonResponse({
                     'status': 'success',
@@ -1975,7 +1961,7 @@ def create_shipping_label(request, order_id):
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
- 
+  
 def download_shipping_label(request, tracking_id):
     """Download shipping label PDF"""
     try:
@@ -1996,6 +1982,7 @@ def download_shipping_label(request, tracking_id):
     except Exception as e:
         logger.error(f"Error downloading label: {str(e)}")
         return HttpResponse(f'Error: {str(e)}', status=500)
+
 
 def track_order(request, order_id):
     """Track order status from Delhivery"""

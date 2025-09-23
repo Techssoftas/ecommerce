@@ -249,20 +249,33 @@
                           </td>
                            <td class="status">
                             <!-- Load More Buttons -->
-                            <form action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-outline-primary" style="font-family:serif; color:#002147;">Generate Label</button>
+                            
+                            {% if order.tracking.label_file %}
+                              <a href="{{ order.tracking.label_file.url }}" 
+                                  class="btn btn-success btn-label right rounded-pill" 
+                                  download>
+                                  <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
+                                  Download
+                                </a>
+                            {% else %}
+                              <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
+                                 {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
 
-                            </form>
-                            <!-- <button class="btn btn-outline-primary btn-load">
-                                <span class="d-flex align-items-center">
+                                <button class="btn btn-outline-primary btn-load d-none" type="button" disabled>
+                                  <span class="d-flex align-items-center">
                                     <span class="spinner-border flex-shrink-0" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                                      <span class="visually-hidden">Loading...</span>
                                     </span>
                                     <span class="flex-grow-1 ms-2">
-                                        Loading...
+                                      Loading...
                                     </span>
-                                </span>
-                            </button> -->
+                                  </span>
+                                </button>
+                              </form>
+
+                            {% endif %}
+                            
                            </td>
                           <td>
                             <ul class="d-flex gap-2 list-unstyled mb-0">
@@ -716,4 +729,49 @@
       }, 200)
     })
   </script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".create-label-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      let generateBtn = form.querySelector(".generate-btn");
+      let loadingBtn = form.querySelector(".btn-load");
+
+      // Switch buttons
+      generateBtn.classList.add("d-none");
+      loadingBtn.classList.remove("d-none");
+
+      let url = form.getAttribute("action");
+      let csrfToken = form.querySelector("input[name=csrfmiddlewaretoken]").value;
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "success") {
+            location.reload(); // refresh page
+          } else {
+            alert("❌ " + data.message);
+            generateBtn.classList.remove("d-none");
+            loadingBtn.classList.add("d-none");
+          }
+        })
+        .catch((error) => {
+          alert("⚠️ Error: " + error);
+          generateBtn.classList.remove("d-none");
+          loadingBtn.classList.add("d-none");
+        });
+    });
+  });
+});
+
+</script>
 {% endblock %}

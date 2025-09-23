@@ -17,13 +17,13 @@ from django.db.models import Sum, F, DecimalField
 
 class AlphaNumericFieldfive(models.CharField):
     def __init__(self, *args, **kwargs):
-        kwargs["max_length"] = 5  # Set fixed max_length for alphanumeric field
+        kwargs["max_length"] = 7  # Set fixed max_length for alphanumeric field
         super().__init__(*args, **kwargs)
 
     @staticmethod
     def generate_alphanumeric():
         alphanumeric = "".join(
-            random.choices(string.ascii_letters + string.digits, k=5)
+            random.choices(string.ascii_letters + string.digits, k=7)
         )
         return alphanumeric.upper()
 
@@ -405,7 +405,7 @@ class Order(models.Model):
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     order_number =  AlphaNumericFieldfive(unique=True, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=ORDER_STATUS, default='pending')
+    status = models.CharField(max_length=20, choices=ORDER_STATUS, default='Pending')
     source = models.CharField(max_length=10,choices=(('cart', 'Cart'), ('buynow', 'Buy Now')),default='cart')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_address = models.ForeignKey('api.ShippingAddress', on_delete=models.SET_NULL, null=True, related_name='orders')

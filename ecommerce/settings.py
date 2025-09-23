@@ -273,4 +273,5 @@ DELHIVERY_PICKUP_LOCATION = "2/227 D, ANGALAPARMESHWARI NAGAR, Mudalipalayam, Ti
 DELHIVERY_SELLER_GST_TIN = "33FLMPM1010A1ZY"   # if you pass GST from API
 DELHIVERY_CLIENT_GST_TIN = "M TEX"
 DELHIVERY_COMPANY_NAME = "M TEX"
-DELHIVERY_BASE_URL ="https://track.delhivery.com/api/cmu/create.json"
+DELHIVERY_BASE_URL ="https://track.delhivery.com/api/cmu/create.json" #production url
+# DELHIVERY_BASE_URL ="https://staging-express.delhivery.com/api/cmu/create.json" #testing url

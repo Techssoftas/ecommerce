@@ -264,273 +264,423 @@ Products Create
                                         <div class="row">
                                             
                                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                    <h4 class="mb-sm-0">Edit Variant</h4>
+                                            <h4 class="mb-sm-0">Edit Variant</h4>
 
-                                    <div class="page-title-right">
-                                        <ol class="breadcrumb m-0">
-                                            <li class="breadcrumb-item">
-                                            
-                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#AddVariantModal">
-                                                <i class="bi bi-plus-circle align-baseline me-1"></i>
-                                                    Add Variant
-                                                </button>
-                                                
-                                               
-                                            </li>
-                                        </ol>
-                                    </div>
+                                            <div class="page-title-right">
+                                                <ol class="breadcrumb m-0">
+                                                    <li class="breadcrumb-item">
+                                                    
+                                                        <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#AddVariantModal">
+                                                        <i class="bi bi-plus-circle align-baseline me-1"></i>
+                                                            Add Variant
+                                                        </button>
+                                                        
+                                                    
+                                                    </li>
+                                                </ol>
+                                            </div>
 
-                                </div>
+                                        </div>
 
+                                        {% for variant in product.variants.all %}
+                                            <div class="col-xxl-3 col-lg-4 col-md-6">
+                                                <div class="card ribbon-box ribbon-fill">
+                                                    {% with discount_sizes=variant.sizes.all %}
+                                                        {% if discount_sizes|length > 0 and discount_sizes.0.discount_percentage > 0  %}
+                                                            <div class="ribbon ribbon-danger">Sale</div>
+                                                        {% endif %}
+                                                    {% endwith %}
 
-
-
-
-
-                                                {% for variant in product.variants.all %}
-                                                    <div class="col-xxl-3 col-lg-4 col-md-6">
-                                                        <div class="card ribbon-box ribbon-fill">
-                                                            {% with discount_sizes=variant.sizes.all %}
-                                                                {% if discount_sizes|length > 0 and discount_sizes.0.discount_percentage > 0  %}
-                                                                    <div class="ribbon ribbon-danger">Sale</div>
-                                                                {% endif %}
-                                                            {% endwith %}
-
-                                                            <div class="card-body p-4 m-4">
-                                                                <button type="button"
-                                                                    class="btn btn-sm btn-icon btn-subtle-danger position-absolute top-0 end-0 m-3 remove-list"
-                                                                    data-remove-id="{{ variant.id }}"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#deleteRecordModal">
-                                                                    <i class="ph-trash"></i>
-                                                                </button>
+                                                    <div class="card-body p-4 m-4">
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-icon btn-subtle-danger position-absolute top-0 end-0 m-3 remove-list"
+                                                            data-remove-id="{{ variant.id }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteRecordModal">
+                                                            <i class="ph-trash"></i>
+                                                        </button>
 
 
-                                                                <!-- deleteRecordModal -->
-                                                                        <div
-                                                                            id="deleteRecordModal"
-                                                                            class="modal fade zoomIn"
-                                                                            tabindex="-1"
-                                                                            aria-hidden="true"
-                                                                        >
-                                                                            <div class="modal-dialog modal-dialog-centered">
-                                                                            <div class="modal-content">
-                                                                                <div class="modal-header">
-                                                                                <button
-                                                                                    type="button"
-                                                                                    class="btn-close"
-                                                                                    id="close-removemodal"
-                                                                                    data-bs-dismiss="modal"
-                                                                                    aria-label="Close"
-                                                                                ></button>
-                                                                                </div>
-                                                                                <div class="modal-body p-md-5">
-                                                                                <div class="text-center">
-                                                                                    <div class="text-danger">
-                                                                                    <i class="bi bi-trash display-5"></i>
-                                                                                    </div>
-                                                                                    <div class="mt-4">
-                                                                                    <h4 class="mb-2">Are you sure ?</h4>
-                                                                                    <p class="text-muted mx-3 mb-0">
-                                                                                        Are you sure you want to remove this variant ?
-                                                                                    </p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
-                                                                                    <button
-                                                                                    type="button"
-                                                                                    class="btn w-sm btn-light btn-hover"
-                                                                                    data-bs-dismiss="modal"
-                                                                                    >
-                                                                                    Close
-                                                                                    </button>
-                                                                                    <form method="POST" action="{% url 'dashboard:variant_delete' product.id  variant.id %}"   style="display:inline;">
-                                                                                        {% csrf_token %}
-                                                                                        <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
-                                                                                    </form>
-                                                                                </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <!-- /.modal-content -->
-                                                                            </div>
-                                                                            <!-- /.modal-dialog -->
+                                                        <!-- deleteRecordModal -->
+                                                                <div
+                                                                    id="deleteRecordModal"
+                                                                    class="modal fade zoomIn"
+                                                                    tabindex="-1"
+                                                                    aria-hidden="true"
+                                                                >
+                                                                    <div class="modal-dialog modal-dialog-centered">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                        <button
+                                                                            type="button"
+                                                                            class="btn-close"
+                                                                            id="close-removemodal"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close"
+                                                                        ></button>
                                                                         </div>
-                                                                        <!-- /deleteRecordModal -->
-
-                                                                {% with default_image=variant.images.first %}
-                                                                    {% if default_image  %}
-                                                                        <img src="{{ default_image.image.url }}"
-                                                                            alt="{{ variant.color_name  }}"
-                                                                            class="img-fluid"
-                                                                            style="height: 82px;width: 120px;"/>
-                                                                    {% else %}
-                                                                        <img src="{% static 'dashboard/images/products/img-1.png' %}"
-                                                                            alt="{{ product.name }}"
-                                                                            class="img-fluid"
-                                                                            style="height: 82px;width: 120px;"/>
-                                                                    {% endif %}
-                                                                {% endwith %}
-                                                            </div>
-
-                                                            <div class="card-body pt-0">
-                                                                {% if product.average_rating > 0 %}
-                                                                    <span class="badge bg-warning-subtle text-warning float-end">
-                                                                        <i class="bi bi-star-fill align-baseline me-1"></i>
-                                                                        <span class="rate">{{ product.average_rating }}</span>
-                                                                    </span>
-                                                                {% endif %}
-
-                                                                {% for size in variant.sizes.all %}
-                                                                    <h5 class="fs-lg mb-1">
-                                                                        ₹{{ size.get_price }}
-                                                                        {% if size.mrp and size.discount_percentage > 0 %}
-                                                                            <small class="text-decoration-line-through text-muted">₹{{ size.mrp }}</small>
-                                                                        {% endif %}
-                                                                    </h5>
-                                                                    <button type="button" class="btn btn-primary btn-sm">{{ size.size }}</button>
-                                                                    <span class="badge bg-info">{{ size.stock }} in stock</span>
-                                                                {% endfor %}
-
-
-                                                                    {% for size_val in variant.size %}
-                                                                        <button type="button" class="btn rounded-pill btn-primary">{{ size_val }}</button>
-                                                                    {% endfor %}
-                                                                <br>
-                                                                <button type="button"
-                                                                            class="btn rounded-pill mt-2"
-                                                                            style="background-color: {{ variant.hex_color_code }}; border: 1px solid #ccc;">
-                                                                    </button>
-
-
-                                                                <div class="mt-3 hstack gap-2">
-                                                                    
-                                                                    <a type="button" data-bs-toggle="modal" data-edit-id="{{ variant.id }}" data-bs-target="#EditVariantModal-{{ variant.id }}" class="btn btn-secondary w-100">
-                                                                        <i class="ph-pencil me-1 align-middle"></i> Edit
-                                                                    </a>
-
-
-                                                                    <!-- EditVariantModal  --> 
-                                                                    <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="EditVariantModal-{{ variant.id }}" aria-labelledby="EditVariantModal-{{ variant.id }}" aria-hidden="true">
-                                                                        <div class="modal-dialog modal-dialog-centered">
-                                                                            <div class="modal-content">
-                                                                                <div class="modal-body text-center p-5">
-                                                                                    <h5 class="mb-3">Edit Variant -  {{variant.color_name }}</h5>
-                                                                                    <form action="{% url 'dashboard:variant_edit' product.id variant.id %}" method="post" class="row g-3" enctype="multipart/form-data">
-                                                                                    {% csrf_token %}
-                                                                                        <div class="row mt-3">
-                                                                                                            
-                                                                                            
-
-
-                                                                                            
-                                                                                            <div class="col-lg-12">
-                                                                                                <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
-                                                                                                    
-                                                                                                <div class="input-group">
-                                                                                                    <label class="input-group-text" for="inputGroupSelect01">Colors</label>
-                                                                                                    <select class="form-select" id="inputGroupSelect01" name="variant_value">
-
-                                                                                                        <option value="{{variant.color_name}}">{{variant.color_name}}</option>
-                                                                                                        <option value="black">Black</option>
-                                                                                                        <option value="red">Red</option>
-                                                                                                        <option value="green">Green</option>
-                                                                                                        <option value="blue">Blue</option>
-                                                                                                        <option value="yellow">Yellow</option>
-                                                                                                        <option value="orange">Orange</option>
-                                                                                                        <option value="purple">Purple</option>
-                                                                                                        <option value="pink">Pink</option>
-                                                                                                        <option value="white">White</option>
-                                                                                                        <option value="gray">Gray</option>
-                                                                                                        <option value="brown">Brown</option>
-                                                                                                        <option value="violet">Violet</option>
-                                                                                                        <option value="indigo">Indigo</option>
-                                                                                                        <option value="cyan">Cyan</option>
-                                                                                                        <option value="magenta">Magenta</option>
-                                                                                                        <option value="gold">Gold</option>
-                                                                                                        <option value="silver">Silver</option>
-                                                                                                        <option value="beige">Beige</option>
-                                                                                                        <option value="maroon">Maroon</option>
-                                                                                                        <option value="navy">Navy</option>
-                                                                                                        <option value="teal">Teal</option>
-                                                                                                        <option value="lime">Lime</option>
-                                                                                                        <option value="olive">Olive</option>
-                                                                                                    </select>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            
-                                                                                        
-                                                                                            <div class="col-lg-12 mt-2">
-                                                                                                <div class="mb-3 ">
-                                                                                                    <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
-                                                                                                    <div class="d-flex align-items-center">
-                                                                                                        <input type="color" 
-                                                                                                            name="hex_color_code" 
-                                                                                                            class="form-control form-control-color w-100 color-picker" 
-                                                                                                            id="productColor-{{ variant.id }}" 
-                                                                                                            value="{{ variant.hex_color_code }}" required>
-
-                                                                                                        <input type="text" 
-                                                                                                            class="form-control color-display" 
-                                                                                                            id="colorHexDisplay-{{ variant.id }}" 
-                                                                                                            value="{{ variant.hex_color_code }}" readonly 
-                                                                                                            style="max-width: 120px;">
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <div class="col-lg-6">
-                                                                                                <div class="mb-3 ">
-                                                                                                    <label for="sizeInput-{{ variant.id }}" class="form-label">Size <span class="text-danger">*</span></label>
-                                                                                                <div class="input-group">
-                                                                                                        <input type="text" class="form-control" style="text-transform: uppercase;" id="sizeInput-{{ variant.id }}" aria-label="Recipient's username" aria-describedby="button-addon2">
-                                                                                                        <button class="btn btn-info add-size-btn" type="button" data-variant="{{ variant.id }}">Add</button>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <div class="col-lg-6">
-                                                                                                <div class="mb-3">
-                                                                                                    <label for="productBrand" class="form-label">Selected Size <span class="text-danger">*</span></label>
-                                                                                                    <br/>
-                                                                                                    <input type="hidden" name="variant_sizes" value="" id="selectedSize-{{ variant.id }}" required>
-                                                                                                    <div id="selectedSizeContainer-{{ variant.id }}"></div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            
-                                                                                            <div class="col-lg-12">
-                                                                                                <div class="mb-3">
-                                                                                                    <label for="productBrand" class="form-label">Image <span class="text-danger">*</span></label>
-                                                                                                    <input type="file" name="variant_image" accept=".png,.jpg,.jpeg" class="form-control" id="productBrand" >
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            
-
-                                                                                            
-                                                                                        </div><!--end row-->
-
-                                                                                        <div class="hstack gap-2 justify-content-end mb-3">
-                                                                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                                                                            <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
-                                                                                            
-                                                                                        </div>
-                                                                                    </form>
-                                                                                    
-                                                                                </div>
-                                                                            </div><!-- /.modal-content -->
-                                                                        </div><!-- /.modal-dialog -->
-                                                                    </div><!-- /.modal -->
-
-                                                                  
+                                                                        <div class="modal-body p-md-5">
+                                                                        <div class="text-center">
+                                                                            <div class="text-danger">
+                                                                            <i class="bi bi-trash display-5"></i>
+                                                                            </div>
+                                                                            <div class="mt-4">
+                                                                            <h4 class="mb-2">Are you sure ?</h4>
+                                                                            <p class="text-muted mx-3 mb-0">
+                                                                                Are you sure you want to remove this variant ?
+                                                                            </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
+                                                                            <button
+                                                                            type="button"
+                                                                            class="btn w-sm btn-light btn-hover"
+                                                                            data-bs-dismiss="modal"
+                                                                            >
+                                                                            Close
+                                                                            </button>
+                                                                            <form method="POST" action="{% url 'dashboard:variant_delete' product.id  variant.id %}"   style="display:inline;">
+                                                                                {% csrf_token %}
+                                                                                <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
+                                                                            </form>
+                                                                        </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- /.modal-content -->
+                                                                    </div>
+                                                                    <!-- /.modal-dialog -->
                                                                 </div>
-                                                            </div>
-                                                        </div>
+                                                                <!-- /deleteRecordModal -->
+
+                                                        {% with default_image=variant.images.first %}
+                                                            {% if default_image  %}
+                                                                <img src="{{ default_image.image.url }}"
+                                                                    alt="{{ variant.color_name  }}"
+                                                                    class="img-fluid"
+                                                                    style="height: 82px;width: 120px;"/>
+                                                            {% else %}
+                                                                <img src="{% static 'dashboard/images/products/img-1.png' %}"
+                                                                    alt="{{ product.name }}"
+                                                                    class="img-fluid"
+                                                                    style="height: 82px;width: 120px;"/>
+                                                            {% endif %}
+                                                        {% endwith %}
                                                     </div>
 
+                                                    <div class="card-body pt-0">
+                                                        {% if product.average_rating > 0 %}
+                                                            <span class="badge bg-warning-subtle text-warning float-end">
+                                                                <i class="bi bi-star-fill align-baseline me-1"></i>
+                                                                <span class="rate">{{ product.average_rating }}</span>
+                                                            </span>
+                                                        {% endif %}
 
-                                                     
-                                                {% endfor %}
+                                                        {% for size in variant.sizes.all %}
+                                                            
+                                                            <button type="button" class="btn btn-primary btn-sm"   data-bs-toggle="modal" data-edit-id="{{ size.id }}" data-bs-target="#EditSizeModal-{{ size.id }}">{{ size.size }}</button> -
+                                                            <span class="">   ₹{{ size.get_price }} </span>
+                                                            <span class="badge bg-danger mb-3">{{ size.stock }} in stock</span>
+                                                            <br>  
+
+                                                        
+
+
+                                                            <!-- EditVariantModal  --> 
+                                                            <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="EditSizeModal-{{ size.id }}" aria-labelledby="EditSizeModal-{{ size.id }}" aria-hidden="true">
+                                                                <div class="modal-dialog modal-dialog-centered">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-body text-center p-5">
+                                                                            <h5 class="mb-3">Edit Size -  {{size.size }}</h5>
+                                                                            <form action="{% url 'dashboard:variant_edit' product.id variant.id %}" method="post" class="row g-3" enctype="multipart/form-data">
+                                                                            {% csrf_token %}
+                                                                                <div class="row mt-3">
+                                                                                                    
+                                                                                    
+
+
+                                                                                    
+                                                                                    <div class="col-lg-12">
+                                                                                        <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
+                                                                                            
+                                                                                        <div class="input-group">
+                                                                                            <label class="input-group-text" for="inputGroupSelect01">Colors</label>
+                                                                                            <select class="form-select" id="inputGroupSelect01" name="variant_value">
+
+                                                                                                <option value="{{variant.color_name}}">{{variant.color_name}}</option>
+                                                                                                <option value="black">Black</option>
+                                                                                                <option value="red">Red</option>
+                                                                                                <option value="green">Green</option>
+                                                                                                <option value="blue">Blue</option>
+                                                                                                <option value="yellow">Yellow</option>
+                                                                                                <option value="orange">Orange</option>
+                                                                                                <option value="purple">Purple</option>
+                                                                                                <option value="pink">Pink</option>
+                                                                                                <option value="white">White</option>
+                                                                                                <option value="gray">Gray</option>
+                                                                                                <option value="brown">Brown</option>
+                                                                                                <option value="violet">Violet</option>
+                                                                                                <option value="indigo">Indigo</option>
+                                                                                                <option value="cyan">Cyan</option>
+                                                                                                <option value="magenta">Magenta</option>
+                                                                                                <option value="gold">Gold</option>
+                                                                                                <option value="silver">Silver</option>
+                                                                                                <option value="beige">Beige</option>
+                                                                                                <option value="maroon">Maroon</option>
+                                                                                                <option value="navy">Navy</option>
+                                                                                                <option value="teal">Teal</option>
+                                                                                                <option value="lime">Lime</option>
+                                                                                                <option value="olive">Olive</option>
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    
+                                                                                
+                                                                                    <div class="col-lg-12 mt-2">
+                                                                                        <div class="mb-3 ">
+                                                                                            <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
+                                                                                            <div class="d-flex align-items-center">
+                                                                                                <input type="color" 
+                                                                                                    name="hex_color_code" 
+                                                                                                    class="form-control form-control-color w-100 color-picker" 
+                                                                                                    id="productColor-{{ variant.id }}" 
+                                                                                                    value="{{ variant.hex_color_code }}" required>
+
+                                                                                                <input type="text" 
+                                                                                                    class="form-control color-display" 
+                                                                                                    id="colorHexDisplay-{{ variant.id }}" 
+                                                                                                    value="{{ variant.hex_color_code }}" readonly 
+                                                                                                    style="max-width: 120px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-lg-6">
+                                                                                        <div class="mb-3 ">
+                                                                                            <label for="sizeInput-{{ variant.id }}" class="form-label">Size <span class="text-danger">*</span></label>
+                                                                                        <div class="input-group">
+                                                                                                <input type="text" class="form-control" style="text-transform: uppercase;" id="sizeInput-{{ variant.id }}" aria-label="Recipient's username" aria-describedby="button-addon2">
+                                                                                                <button class="btn btn-info add-size-btn" type="button" data-variant="{{ variant.id }}">Add</button>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-lg-6">
+                                                                                        <div class="mb-3">
+                                                                                            <label for="productBrand" class="form-label">Selected Size <span class="text-danger">*</span></label>
+                                                                                            <br/>
+                                                                                            <input type="hidden" name="variant_sizes" value="" id="selectedSize-{{ variant.id }}" required>
+                                                                                            <div id="selectedSizeContainer-{{ variant.id }}"></div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    
+                                                                                    <div class="col-lg-12">
+                                                                                        <div class="mb-3">
+                                                                                            <label for="productBrand" class="form-label">Image <span class="text-danger">*</span></label>
+                                                                                            <input type="file" name="variant_image" accept=".png,.jpg,.jpeg" class="form-control" id="productBrand" >
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    
+
+                                                                                    
+                                                                                </div><!--end row-->
+
+                                                                                <div class="hstack gap-2 justify-content-end mb-3">
+                                                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                                                    <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                                                                    
+                                                                                </div>
+                                                                            </form>
+                                                                            
+                                                                        </div>
+                                                                    </div><!-- /.modal-content -->
+                                                                </div><!-- /.modal-dialog -->
+                                                            </div><!-- /.modal -->
+
+                                                        {% endfor %}
+
+
+                                                            {% for size_val in variant.size %}
+                                                                <button type="button" class="btn rounded-pill btn-primary">{{ size_val }}</button>
+                                                            {% endfor %}
+                                                        <br>
+                                                        <button type="button"
+                                                                    class="btn rounded-pill mt-2"
+                                                                    style="background-color: {{ variant.hex_color_code }}; border: 1px solid #ccc;">
+                                                            </button>
+
+
+                                                        <div class="mt-3 hstack gap-2">
+                                                            
+                                                            <a type="button" data-bs-toggle="modal" data-edit-id="{{ variant.id }}" data-bs-target="#EditVariantModal-{{ variant.id }}" class="btn btn-secondary w-100">
+                                                                <i class="ph-pencil me-1 align-middle"></i> Edit
+                                                            </a>
+
+
+                                                            <!-- EditVariantModal  --> 
+                                                            <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="EditVariantModal-{{ variant.id }}" aria-labelledby="EditVariantModal-{{ variant.id }}" aria-hidden="true">
+                                                                <div class="modal-dialog modal-dialog-centered">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-body text-center p-5">
+                                                                            <h5 class="mb-3">Edit Variant -  {{variant.color_name }}</h5>
+                                                                            <form id="EditVariantForm-{{ variant.id }}" action="{% url 'dashboard:variant_edit' product.id variant.id %}" method="post" class="row g-3" enctype="multipart/form-data">
+                                                                            {% csrf_token %}
+                                                                                <div class="row mt-3">
+                                                                                                                                                
+                                                                                    <div class="col-lg-12">
+                                                                                        <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
+                                                                                            
+                                                                                        <div class="input-group">
+                                                                                            <label class="input-group-text" for="inputGroupSelect01">Colors</label>
+                                                                                            <select class="form-select" id="inputGroupSelect01" name="color_name">
+
+                                                                                                <option value="{{variant.color_name}}">{{variant.color_name}}</option>
+                                                                                                <option value="Black">Black</option>
+                                                                                                <option value="Red">Red</option>
+                                                                                                <option value="Green">Green</option>
+                                                                                                <option value="Blue">Blue</option>
+                                                                                                <option value="Yellow">Yellow</option>
+                                                                                                <option value="Orange">Orange</option>
+                                                                                                <option value="Purple">Purple</option>
+                                                                                                <option value="Pink">Pink</option>
+                                                                                                <option value="White">White</option>
+                                                                                                <option value="Gray">Gray</option>
+                                                                                                <option value="Brown">Brown</option>
+                                                                                                <option value="Violet">Violet</option>
+                                                                                                <option value="Indigo">Indigo</option>
+                                                                                                <option value="Cyan">Cyan</option>
+                                                                                                <option value="Magenta">Magenta</option>
+                                                                                                <option value="Gold">Gold</option>
+                                                                                                <option value="Silver">Silver</option>
+                                                                                                <option value="Beige">Beige</option>
+                                                                                                <option value="Maroon">Maroon</option>
+                                                                                                <option value="Navy">Navy</option>
+                                                                                                <option value="Teal">Teal</option>
+                                                                                                <option value="Lime">Lime</option>
+                                                                                                <option value="Olive">Olive</option>
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    
+                                                                                
+                                                                                    <div class="col-lg-12 mt-2">
+                                                                                        <div class="mb-3 ">
+                                                                                            <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
+                                                                                            <div class="d-flex align-items-center">
+                                                                                                <input type="color" 
+                                                                                                    name="hex_color_code" 
+                                                                                                    class="form-control form-control-color w-100 color-picker" 
+                                                                                                    id="productColor-{{ variant.id }}" 
+                                                                                                    value="{{ variant.hex_color_code }}" required>
+
+                                                                                                <input type="text" 
+                                                                                                    class="form-control color-display" 
+                                                                                                    id="colorHexDisplay-{{ variant.id }}" 
+                                                                                                    value="{{ variant.hex_color_code }}" readonly 
+                                                                                                    style="max-width: 120px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                </div><!--end row-->
+
+
+                                                                                <div class="row">
+                                                                                    <div class="col-xxl-12">
+                                                                                        <div class="mb-3">
+                                           
+
+                                                                                            <div class="col-lg-12 mt-3">
+                                                                                                <label class="form-label">Variant Images <span class="text-danger">*</span></label>
+                                                                                                <div class="dropzone text-center" id="EditvariantDropzone-{{ variant.id }}">
+                                                                                                    <div class="dz-message needsclick">
+                                                                                                        <div class="mb-3">
+                                                                                                            <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                                                                                        </div>
+                                                                                                        <h4>Drop product images here or click to upload.</h4>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <ul class="list-unstyled mb-0" id="variantdropzone-preview-{{ variant.id }}">
+                                                                                        <li class="mt-2" id="variantdropzone-preview-list-{{ variant.id }}">
+                                                                                            <!-- This is used as the file preview template -->
+                                                                                            <div class="border rounded">
+                                                                                                <div class="d-flex p-2">
+                                                                                                    <div class="flex-shrink-0 me-3">
+                                                                                                        <div class="avatar-sm bg-light rounded">
+                                                                                                            <img data-dz-thumbnail class="img-fluid rounded d-block" src="assets/images/new-document.png" alt="Dropzone-Image" >
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="flex-grow-1">
+                                                                                                        <div class="pt-1">
+                                                                                                            <h5 class="fs-md mb-1" data-dz-name>&nbsp;</h5>
+                                                                                                            <p class="fs-sm text-muted mb-0" data-dz-size></p>
+                                                                                                            <strong class="error text-danger" data-dz-errormessage></strong>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="flex-shrink-0 ms-3">
+                                                                                                        <button data-dz-remove class="btn btn-sm btn-danger">Delete</button>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </li>
+                                                                                    </ul>
+
+                                                                                    <!-- Show existing product images -->
+                                                                                    <div class="row mt-3">
+                                                                                        {% for img in variant.images.all %}
+                                                                                            <div class="col-sm-4 col-6 mb-4 image-card" id="image-{{ img.id }}">
+                                                                                                <div class="position-relative border rounded p-1">
+                                                                                                    <!-- Delete Button -->
+                                                                                                    <button type="button" 
+                                                                                                            class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 delete-image-btn" 
+                                                                                                            data-id="{{ img.id }}">
+                                                                                                        <i class="bi bi-x-lg"></i>
+                                                                                                    </button>
+                                                                                                    <!-- Image -->
+                                                                                                    <img src="{{ img.image.url }}" 
+                                                                                                        alt="{{ variant.color_name }}" 
+                                                                                                        class="img-fluid rounded"
+                                                                                                        style="height:150px; width:100%; object-fit:contain;">
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        {% empty %}
+                                                                                            <div class="col-12">
+                                                                                                <p>No images available for this product.</p>
+                                                                                            </div>
+                                                                                        {% endfor %}
+                                                                                    </div>
+
+                                                                                </div>
+
+
+
+                                                                                <div class="row">
+                                                                                    <div class="hstack gap-2 justify-content-end mb-3">
+                                                                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                                                                        <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                                                                        
+                                                                                    </div>
+                                                                                </div>
+                                                                            </form>
+                                                                            
+                                                                        </div>
+                                                                    </div><!-- /.modal-content -->
+                                                                </div><!-- /.modal-dialog -->
+                                                            </div><!-- /.modal -->
+
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        {% endfor %}
                               
 
                                             
-                                        </div><!--end row-->
+                                    </div><!--end row-->
 
                                        
                                     </div>
@@ -843,6 +993,9 @@ document.getElementById("productDropzoneForm").addEventListener("submit", functi
     });
 });
 
+
+
+
 </script>
 
 
@@ -1035,5 +1188,55 @@ document.getElementById("variantForm").addEventListener("submit", function() {
     });
 });
 </script>
+
+<!-- edit varient dropzone image priview -->
+
+<script>
+Dropzone.autoDiscover = false;
+
+document.querySelectorAll("form[id^='EditVariantForm-']").forEach(function(form) {
+    let variantId = form.id.split("-")[1];  // form id → variant.id extract
+
+    // Template setup
+    let previewNode = document.querySelector("#variantdropzone-preview-list-" + variantId);
+    previewNode.id = "";
+    let previewTemplate = previewNode.outerHTML;
+    previewNode.parentNode.removeChild(previewNode);
+
+    // Dropzone init
+    let dz = new Dropzone("#EditvariantDropzone-" + variantId, {
+        url: form.action, // not used because we submit manually
+        autoProcessQueue: false,   // don't auto-upload
+        addRemoveLinks: true,
+        maxFilesize: 5,
+        acceptedFiles: "image/*",
+        previewTemplate: previewTemplate,
+        previewsContainer: "#variantdropzone-preview-" + variantId,
+        clickable: "#EditvariantDropzone-" + variantId
+    });
+
+    // Attach Dropzone files into form before submit
+    form.addEventListener("submit", function(e) {
+        // Important → don’t preventDefault (because we want native submit)
+        // But we need to inject Dropzone files
+        let dzFiles = dz.getAcceptedFiles();
+
+        dzFiles.forEach(file => {
+            let dt = new DataTransfer();
+            dt.items.add(file);
+
+            let input = document.createElement("input");
+            input.type = "file";
+            input.name = "variant_images";   // Django -> request.FILES.getlist("variant_images")
+            input.files = dt.files;
+            input.style.display = "none";
+
+            form.appendChild(input);
+        });
+    });
+});
+
+</script>
+<!-- edit varient dropzone image priview -->
 
 {% endblock content %}
