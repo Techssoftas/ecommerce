@@ -37,6 +37,14 @@
           </div>
         </div>
 
+        <!-- JS will inject alert Start -->
+          <div class="row mb-2">
+            <div class="col-12" id="shipmentalert">
+              <!-- JS will inject alert here -->
+            </div>
+          </div>
+        <!-- JS will inject alert end -->
+
         <div class="row row-cols-xxl-5 row-cols-lg-3 row-cols-md-2 row-cols-1">
           <div class="col">
             <div class="card border-bottom border-3 card-animate border-secondary">
@@ -57,8 +65,8 @@
                   <i class="ph-trend-up align-middle me-1"></i>
                   20.8%
                 </span>
-                <h4 class="mb-4"><span class="counter-value" data-target="{{ new_orders }}" style="font-family:sans-serif;">0</span></h4>
-                <p class="fw-bold text-uppercase mb-0" style="font-family:serif;  color:#002147;">New Orders</p>
+                <h4 class="mb-4"><span class="counter-value" data-target="{{ processing }}" style="font-family:sans-serif;">0</span></h4>
+                <p class="fw-bold text-uppercase mb-0" style="font-family:serif;  color:#002147;">Ready to Pickup</p>
               </div>
             </div>
           </div>
@@ -237,6 +245,8 @@
                             <span class="badge
                                 {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
                                     bg-success-subtle text-success
+                                {% elif order.status == 'Processing' or order.status == 'Ready to Ship' %}
+                                    bg-info-subtle text-info
                                 {% elif order.status == 'Cancelled' or order.status == 'Refunded' %}
                                     bg-danger-subtle text-danger
                                 {% else %}
@@ -250,14 +260,9 @@
                            <td class="status">
                             <!-- Load More Buttons -->
                             
-                            {% if order.tracking.label_file %}
-                              <a href="{{ order.tracking.label_file.url }}" 
-                                  class="btn btn-success btn-label right rounded-pill" 
-                                  download>
-                                  <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
-                                  Download
-                                </a>
-                            {% else %}
+                            
+                               
+                            {% if order.status == 'Pending' %}
                               <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
                                  {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
@@ -273,6 +278,20 @@
                                   </span>
                                 </button>
                               </form>
+                            {% elif order.status == 'Ready to Ship' %}
+                             <form class="create-pickup-form" action="{% url 'dashboard:create_pickup' order.id %}" method="post" style="display:inline;">
+                                  {% csrf_token %}
+                                <button type="button" class="btn btn-secondary custom-toggle active" ><i class="ri-shopping-cart-2-fill align-bottom me-1"></i> &nbsp;Create Pickup
+                                     
+                                </button>
+                             </form>
+                            {% else %}
+                                <a href="{{ order.tracking.label_file.url }}" 
+                                  class="btn btn-success btn-label right rounded-pill" 
+                                  download>
+                                  <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
+                                  Download
+                                </a>
 
                             {% endif %}
                             
@@ -732,16 +751,42 @@
 
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".create-label-form").forEach(function (form) {
+document.addEventListener("DOMContentLoaded", function () {
+
+  function showAlert(message, status) {
+    console.log("Showing alert:", message, status);
+    let alertBox = document.createElement("div");
+    alertBox.className = `alert ${status === "success" ? "alert-success" : "alert-danger"} alert-dismissible fade show`;
+    alertBox.role = "alert";
+    alertBox.innerHTML = `
+      <strong>${message}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    let alertContainer = document.getElementById("shipmentalert");
+    if (alertContainer) {
+      alertContainer.innerHTML = "";
+      alertContainer.appendChild(alertBox);
+    }
+
+    setTimeout(() => {
+      if (alertBox) {
+        alertBox.classList.remove("show");
+        alertBox.classList.add("hide");
+        alertBox.remove();
+      }
+    }, 500000);
+  }
+
+  // 🔁 Generic form handler
+  function handleFormSubmit(form, submitBtnClass, loadingBtnClass) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      let generateBtn = form.querySelector(".generate-btn");
-      let loadingBtn = form.querySelector(".btn-load");
+      let submitBtn = form.querySelector(submitBtnClass);
+      let loadingBtn = form.querySelector(loadingBtnClass);
 
-      // Switch buttons
-      generateBtn.classList.add("d-none");
+      submitBtn.classList.add("d-none");
       loadingBtn.classList.remove("d-none");
 
       let url = form.getAttribute("action");
@@ -756,22 +801,76 @@
       })
         .then((response) => response.json())
         .then((data) => {
+          showAlert(data.message, data.status);
+
           if (data.status === "success") {
-            location.reload(); // refresh page
+            location.reload();
           } else {
-            alert("❌ " + data.message);
-            generateBtn.classList.remove("d-none");
+            submitBtn.classList.remove("d-none");
             loadingBtn.classList.add("d-none");
           }
         })
         .catch((error) => {
-          alert("⚠️ Error: " + error);
-          generateBtn.classList.remove("d-none");
+          showAlert("⚠️ Error: " + error, "fail");
+          submitBtn.classList.remove("d-none");
+          loadingBtn.classList.add("d-none");
+        });
+    });
+  }
+
+  // ✅ Bind label form
+  document.querySelectorAll(".create-label-form").forEach(function (form) {
+    handleFormSubmit(form, ".generate-btn", ".btn-load");
+  });
+
+  // ✅ Bind pickup form
+  document.querySelectorAll(".create-pickup-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) { e.preventDefault(); }); // prevent default
+
+    let submitBtn = form.querySelector(".custom-toggle");
+    let loadingBtn = document.createElement("button");
+
+    loadingBtn.className = "btn btn-secondary d-none";
+    loadingBtn.disabled = true;
+    loadingBtn.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      Processing...
+    `;
+    form.appendChild(loadingBtn);
+
+    submitBtn.addEventListener("click", function () {
+      submitBtn.classList.add("d-none");
+      loadingBtn.classList.remove("d-none");
+
+      let url = form.getAttribute("action");
+      let csrfToken = form.querySelector("input[name=csrfmiddlewaretoken]").value;
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          showAlert(data.message, data.status);
+
+          if (data.status === "success") {
+            location.reload();
+          } else {
+            submitBtn.classList.remove("d-none");
+            loadingBtn.classList.add("d-none");
+          }
+        })
+        .catch((error) => {
+          showAlert("⚠️ Error: " + error, "fail");
+          submitBtn.classList.remove("d-none");
           loadingBtn.classList.add("d-none");
         });
     });
   });
 });
-
 </script>
+
 {% endblock %}

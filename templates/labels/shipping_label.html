@@ -4,88 +4,210 @@
 <meta charset="utf-8"/>
 <style>
   @page { size: A4; margin: 10mm; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color:#000; }
-  .top { display:flex; justify-content:space-between; align-items:flex-start; }
-  .addr-box { width:42%; border:1px solid #000; padding:8px; }
-  .right-block { width:48%; text-align:right; }
-  .qr { width:120px; height:120px; }
-  .barcode { width:100%; height:40px; object-fit:contain; margin-top:6px; }
-  .big-awb { font-weight:700; font-size:14px; margin-top:6px; }
-  .products { width:100%; border-collapse:collapse; margin-top:12px; }
-  .products th, .products td { border:1px solid #000; padding:6px; font-size:10px; }
-  .invoice { margin-top:12px; border:1px solid #000; padding:8px; font-size:10px; }
-  .two-col { display:flex; gap:12px; }
-  .col { flex:1; }
-  /* adjust as needed for exact look */
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color:#000; margin: 0; padding: 0; }
+ .wrapper { padding: 8px; }
+ .top-section { display: flex; justify-content: space-between; align-items:stretch; }
+ .address-block { width: 45%;display: flex; flex-direction: column;}
+ .customer-address-box,.return-address-box { border: 1px solid #000; padding: 11px; font-size: 15px; flex: 1; }
+ .right-block {    width: 55%;
+  border: 1px solid #000;
+  display: flex;
+  flex-direction: column;}
+ .delhivery-logo { display: block; margin-left: auto; width: 100px; }
+ .qr-code { width: 150px; height: 150px; }
+ .awb-info { margin-top: 8px; }
+ .awb-number { font-weight: 700; font-size: 16px; margin-top: 14px; }
+ .barcode-image { width: 50%; height: 25px; object-fit: contain; }
+ .product-details-table { width: 100%; border-collapse: collapse;}
+ .product-details-table th,.product-details-table td { border: 1px solid #000; padding: 6px; font-size: 10px; }
+ .invoice-details { border: 1px solid #000; padding: 8px; font-size: 10px; margin-top: 12px; }
+ .invoice-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+ .invoice-address-col { width: 33%; }
+ .invoice-seller-info { text-align: right; font-size: 10px; }
+ .invoice-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+ .invoice-table th,.invoice-table td { border: 1px solid #000; padding: 4px 6px; font-size: 10px; }
+ .invoice-table td { vertical-align: top; }
+ .invoice-table th { background-color: #f0f0f0; } /* Subtle gray for headers */
+ .invoice-footer { margin-top: 8px; font-size: 9px; }
+ .text-right { text-align: right; }
+ .text-center { text-align: center; }
+ .no-border-left { border-left: none!important; }
+ .no-border-right { border-right: none!important; }
 </style>
 </head>
 <body>
-  <div class="top">
-    <div class="addr-box">
-      <strong>Customer Address</strong><br/>
-      {{ name }}<br/>
+  <div class="wrapper">
+    <div class="top-section">
+      <div class="address-block">
+        <div class="customer-address-box" >
+           <strong>Customer Address</strong><br/>
+          {{ name }}<br/>
       {{ addr_line1 }}<br/>
       {% if addr_line2 %}{{ addr_line2 }}<br/>{% endif %}
       {{ city }} {{ postal }}<br/>
       {{ state }}
+         
+         </div>
+         <div class="return-address-box">
+           <strong>If undelivered, return to:</strong><br/>
+            M Tex<br/>
+            Mudalipalayam Branch Post Office,<br/>
+            2/227D Angalaparmeshwari Nagar, Mudalipalayam,<br/>
+            Tiruppur - 641606<br/>
+            Tamilnadu.
+        </div>
+      </div>
+      
+      <div class="right-block">
+         <div class="cod-label"   style="text-align:left;
+              font-weight:700;
+              border-bottom:1px solid black;
+              background-color:black;
+              color:white;
+              width:97%;
+              padding:6px;">COD: Check the payable amount on the app</div>
+
+        <div class="right-block-content" style="display:flex;align-items-center;justify-content-space-between; margin-top:10px; gap:90px;">
+      
+           <div style="text-align:left;padding-left:40px;padding-top:40px;">
+         <strong style="font-size:15px">Delhivery</strong><br/>
+        <br/> <strong>Destination Code</strong>
+         <br/>{{ postal }}<br/>
+         <strong>Return Code</strong><br/>
+          641606
+          </div>
+
+          <div >
+             <img src="{{ qr_datauri }}" class="qr" alt="QR"/>
+          <!-- src="{{ qr_datauri }}" -->
+          </div>
+        </div>
+
+
+       <div>
+        <div class="awb-info" style="text-align:center;">
+          <div class="awb-number text-center">{{ awb }}</div>
+          <img src="{{ barcode_datauri }}" class="barcode" style="height: 90px !important;width:300px !important;" alt="barcode"/> 
+        </div>
+        </div>
+        
+      </div>
     </div>
 
-    <div class="right-block">
-      <div style="display:flex; justify-content:flex-end;">
-        <img src="{{ qr_datauri }}" class="qr" alt="QR"/>
-      </div>
-      <div style="margin-top:8px;">
-        <img src="{{ barcode_datauri }}" class="barcode" alt="barcode"/>
-        <div class="big-awb">{{ awb }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- product details table -->
-  <table class="products">
-    <thead>
-      <tr>
-        <th>SKU</th>
+    <table class="product-details-table">
+    
+      <thead>
+        <tr>
+           <th>SKU</th>
         <th>Size</th>
         <th>Qty</th>
         <th>Color</th>
         <th>Order No</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.sku }}</td>
-        <td>{{ item.size }}</td>
-        <td style="text-align:center">{{ item.qty }}</td>
-        <td>{{ item.color }}</td>
+        </tr>
+      </thead>
+      <tbody>
+       {% for item in order_items.items.all %}
+        <tr>
+          <td>{{ item.product.sku }}</td>
+        <td>{{ item.size_variant.size }}</td>
+        <td style="text-align:center">{{ item.quantity }}</td>
+        <td>{{ item.variant.color_name }}</td>
         <td>{{ order_no }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        </tr>
+       {% empty %}
+            <tr>
+                <td colspan="8">No items in this order.</td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-  <!-- invoice block (example) -->
-  <div class="invoice">
-    <div class="two-col">
-      <div class="col">
-        <strong>BILL TO</strong><br/>
-        {{ name }}<br/>
+    <div class="invoice-details">
+      <div class="invoice-top-row">
+        <span style="font-weight:bold; font-size:12px;">TAX INVOICE</span>
+        <span style="font-weight:bold; font-size:12px;">Original For Recipient</span>
+      </div>
+
+      <div class="invoice-addresses-row" style="display:flex; justify-content:space-between;">
+        <div class="invoice-address-col">
+          <strong>BILL TO</strong><br/>
+           {{ name }}<br/>
         {{ addr_line1 }}<br/>
         {{ city }} {{ postal }}<br/>
-      </div>
-      <div class="col">
-        <strong>SHIP TO</strong><br/>
-        {{ name }}<br/>
+        </div>
+        <div class="invoice-address-col">
+          <strong>SHIP TO</strong><br/>
+            {{ name }}<br/>
         {{ addr_line1 }}<br/>
         {{ city }} {{ postal }}<br/>
+        </div>
+        <div class="invoice-address-col invoice-seller-info">
+          Sold by: M-TEX<br/>
+          GSTIN: 33FLMPM1010A1ZU<br/>
+          Purchase Order No: &nbsp;{{ order_number }}<br/>
+          Invoice No: &nbsp; {{ invoice_no }}<br/>
+          Order Date:&nbsp;{{ order_date }} &nbsp;&nbsp;<br/>
+          Invoice Date:&nbsp; {{ order_date }}<br/>
+          Place of Supply:&nbsp; TIRUPUR
+        </div>
       </div>
-    </div>
 
-    <div style="margin-top:8px;">
-      <strong>Order Date:</strong> {{ order_date }} &nbsp;&nbsp;
-      <strong>Invoice No:</strong> {{ invoice_no }}
+      
+      
+      
     </div>
+     <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>HSN</th>
+            <th>Qty</th>
+            <th>Gross Amount</th>
+            <th>Discount</th>
+            <th>Taxable Value</th>
+            <th>Taxes</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in invoice.items %}
+          <tr>
+            <td>{{ item.description }}</td>
+            <td class="text-center">{{ item.hsn_code }}</td>
+            <td class="text-center">{{ item.qty }}</td>
+            <td class="text-right">{{ item.gross_amount  }}</td>
+            <td class="text-right">{{ item.discount  }}</td>
+            <td class="text-right">{{ item.taxable_value  }}</td>
+            <td class="text-right">
+              {% for tax in item.taxes %}
+                {{ tax.type }}@{{ tax.rate }}%<br/>
+              {% endfor %}
+            </td>
+            <td class="text-right">{{ item.total  }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="no-border-right"></td>
+            <td class="text-right"><strong>Total:</strong></td>
+            <td class="text-right"><strong>Rs.{{ invoice.totals.total_payable  }}</strong></td>
+          </tr>
+          <tr>
+            <td colspan="8" class=""><p>Tax is not payable on reverse charge basis. This is a computer generated invoice and does not require signature. Other charges are charges that are applicable to your order and include charges for logistics fee (where applicable). Includes discounts for your city and/or for online payments (as applicable).</p></td>
+            
+           
+          </tr>
+
+        </tfoot>
+
+         
+      </table>
+     
+   
   </div>
+   <div class="invoice-footer">
+        
+      </div>
 </body>
 </html>

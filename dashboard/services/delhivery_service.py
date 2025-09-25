@@ -21,36 +21,36 @@ class DelhiveryService:
     def __init__(self):
         self.token = settings.DELHIVERY_TOKEN
         self.base_url = "https://track.delhivery.com/api/cmu/create.json" # production URL  
+        # self.base_url = "https://staging-express.delhivery.com/api/cmu/create.json" # staging URL  
         self.pickup_location = settings.DELHIVERY_PICKUP_LOCATION
         self.company_name = settings.DELHIVERY_COMPANY_NAME
         self.gst_tin = settings.DELHIVERY_SELLER_GST_TIN
-        
+
+   
     def create_shipment(self, order_id):
-        """Create shipment and get waybill number"""
         try:
             order = Order.objects.get(id=order_id)
-            
-            # Calculate total weight
+
+            # Calculate total weight & quantity
             total_weight = 0
             total_quantity = 0
-            
             for item in order.items.all():
-                weight = float(item.product.weight or 0.5)  # Default 0.5 kg if no weight
+                weight = float(item.product.weight or 0.5)
                 total_weight += weight * item.quantity
                 total_quantity += item.quantity
-            
-            # Minimum weight 0.5 kg
+
+            # Enforce minimum weight
             if total_weight < 0.5:
                 total_weight = 0.5
-                
-            # Get first product dimensions (or default)
+
+            # Get dimensions (using first product or defaults)
             first_item = order.items.first()
             dimensions = {
-                'length': float( 27),
-                'width': float( 250), 
-                'height': float( 1)
+                'length': float(27),
+                'width': float(250),
+                'height': float(1)
             }
-            
+
             # Prepare shipment data
             shipment_data = {
                 'shipments': [{
@@ -62,73 +62,70 @@ class DelhiveryService:
                     'country': order.shipping_address.country or 'India',
                     'phone': order.shipping_address.contact_person_number or order.shipping_address.phone or order.phone,
                     'order': str(order.order_number),
-                    'payment_mode': 'Prepaid',  # Change to 'COD' if cash on delivery
-                    'return_pin': '641606',  # Tiruppur pincode
+                    'payment_mode': 'Prepaid',  # Change if COD
+                    'return_pin': '641606',
                     'return_city': 'Tiruppur',
-                    'return_phone': '9876543210',  # Your phone number
+                    'return_phone': '9876543210',
                     'return_add': self.pickup_location,
                     'return_state': 'Tamil Nadu',
                     'return_country': 'India',
                     'products_desc': 'Clothing Items',
-                    'hsn_code': first_item.product.hsn_code or '6109',  # Default HSN for textiles
-                    'cod_amount': '0',  # Set to order amount if COD
+                    'hsn_code': first_item.product.hsn_code or '6109',
+                    'cod_amount': '0',
                     'order_date': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                     'total_amount': str(order.total_amount),
                     'seller_add': self.pickup_location,
                     'seller_name': self.company_name,
                     'seller_cst': self.gst_tin,
                     'quantity': total_quantity,
-                    'waybill': '',  # Delhivery will auto-generate
+                    'waybill': '',
                     'shipment_width': dimensions['width'],
                     'shipment_height': dimensions['height'],
                     'shipment_length': dimensions['length'],
                     'weight': total_weight,
                     'seller_gst_tin': self.gst_tin,
-                    'shipping_mode': 'Surface',  # or 'Express'
-                    'address_type':  f"{order.shipping_address.type_of_address}",
+                    'shipping_mode': 'Surface',
+                    'address_type': f"{order.shipping_address.type_of_address}",
                 }],
-            "pickup_location": {
-                    "name": "M TEX"  # Must match exactly with your warehouse name in Delhivery
+                "pickup_location": {
+                    "name": "M TEX"
                 }
             }
-            
-            # Format data as required by Delhivery API
-            # format=json&data={shipment_data}
+
+            # API request payload
             payload = {
                 'format': 'json',
                 'data': json.dumps(shipment_data)
             }
-            
-            # API Headers
+
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': f'Token {self.token}'
             }
-            
-            # Make API call with form-encoded data
+
             logger.info(f"Creating Delhivery shipment for order {order.order_number}")
             logger.info(f"Payload: {payload}")
-            
+
             response = requests.post(
                 self.base_url,
                 headers=headers,
                 data=payload,
                 timeout=30
             )
-            
+
             logger.info(f"Delhivery API response status: {response.status_code}")
             logger.info(f"Delhivery API response: {response.text}")
-            
+
             if response.status_code == 200:
                 result = response.json()
-                print("result",result)
                 if result.get('success'):
-                    # Extract waybill number
                     packages = result.get('packages', [])
                     if packages:
                         waybill = packages[0].get('waybill')
-                        
-                        # Create or update OrderTracking
+
+                        order.status = 'Ready to Ship'
+                        order.save()
+                        # Track the shipment
                         tracking, created = OrderTracking.objects.get_or_create(
                             order=order,
                             defaults={
@@ -137,18 +134,18 @@ class DelhiveryService:
                                 'raw_data': result
                             }
                         )
-                        
+
                         if not created:
                             tracking.awb_number = waybill
                             tracking.current_status = 'Shipment Created'
                             tracking.raw_data = result
                             tracking.save()
-                        
+
                         logger.info(f"Shipment created successfully. Waybill: {waybill}")
-                        
-                        # Generate shipping label
+
+                        # Generate label
                         label_success = render_label_html_and_save(tracking)
-                        print("response",response)
+
                         return {
                             'success': True,
                             'waybill': waybill,
@@ -156,10 +153,11 @@ class DelhiveryService:
                             'label_generated': label_success,
                             'message': 'Shipment created successfully'
                         }
+
                     else:
                         return {
                             'success': False,
-                            'error': 'No packages found in response',
+                            'error': 'No packages found in Delhivery response',
                             'response': result
                         }
                 else:
@@ -168,18 +166,20 @@ class DelhiveryService:
                         'error': result.get('rmk', 'Unknown error from Delhivery'),
                         'response': result
                     }
+
             else:
                 return {
                     'success': False,
-                    'error': f'API call failed with status {response.status_code}: {response.text}'
+                    'error': f'Delhivery API call failed ({response.status_code}): {response.text}'
                 }
-                
+
         except Order.DoesNotExist:
             return {'success': False, 'error': 'Order not found'}
+
         except Exception as e:
-            logger.error(f"Error creating Delhivery shipment: {str(e)}")
+            logger.error(f"Exception in create_shipment: {str(e)}")
             return {'success': False, 'error': str(e)}
-    
+
     
   
     def generate_shipping_label(self, tracking):
@@ -187,6 +187,7 @@ class DelhiveryService:
         try:
             # Use GET method with wbns parameter as per documentation
             label_url = f"https://track.delhivery.com/api/p/packing_slip?wbns={tracking.awb_number}&pdf=flase&pdf_size=4R"
+            # label_url = f"https://staging-express.delhivery.com/api/p/packing_slip?wbns={tracking.awb_number}&pdf=flase&pdf_size=4R"
             
             headers = {
                 'Authorization': f'Token {self.token}',
@@ -250,19 +251,24 @@ def render_label_html_and_save(tracking):
     """
     try:
         order = tracking.order
-        # Prepare items list
-        items = []
-        for it in order.items.all():
-            sku = it.product.sku or it.product.name
-            size = getattr(it.size_variant, "size", "") if getattr(it, "size_variant", None) else ""
-            color = getattr(it.variant, "color_name", "") if getattr(it, "variant", None) else ""
-            items.append({
-                "sku": sku,
-                "size": size,
-                "qty": it.quantity,
-                "color": color
-            })
 
+        order_items = Order.objects.get(id=order.id)
+        # print("order_items",order_items)
+        # for it in order_items.items.all():
+        #     print("it",it)
+        # Prepare items list
+        # items = []
+        # for it in order_items.items.all():
+        #     sku = it.product.sku or it.product.name
+        #     size = it.size_variant.size or 'XL'
+        #     color = it.variant.color_name or 'black'
+        #     items.append({
+        #         "sku": sku,
+        #         "size": size,
+        #         "qty": it.quantity,
+        #         "color": color
+        #     })
+        # print("items",items)
         awb = str(tracking.awb_number or order.order_number)
         order_no = str(order.order_number)
 
@@ -279,7 +285,10 @@ def render_label_html_and_save(tracking):
             "postal": order.shipping_address.postal_code or "",
             "awb": awb,
             "order_no": order_no,
-            "items": items,
+            # "items": items,
+            "order_items": order_items,
+
+           
             "qr_datauri": qr_datauri,
             "barcode_datauri": barcode_datauri,
             "order_date": order.created_at.strftime("%Y-%m-%d"),

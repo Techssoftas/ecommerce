@@ -1310,7 +1310,8 @@ def delete_review(request, review_id):
         return redirect('dashboard:product_details', product_id=review.product.id)  # or wherever you want to redirect
     else:
         return redirect('unauthorized')
-
+    
+from datetime import datetime, timedelta
 # Order Management
 @login_required
 @user_passes_test(is_admin)
@@ -1333,17 +1334,17 @@ def orders_list(request):
     
     # Calculate counts for dashboard cards
     total_orders = Order.objects.count()
-    new_orders = Order.objects.filter(status='confirmed').count()
-    pending_orders = Order.objects.filter(status='pending').count()
-    delivered_orders = Order.objects.filter(status='delivered').count()
-    cancelled_orders = Order.objects.filter(status='cancelled').count()
+    processing = Order.objects.filter(status='Processing').count()
+    pending_orders = Order.objects.filter(status='Pending').count()
+    delivered_orders = Order.objects.filter(status='Delivered').count()
+    cancelled_orders = Order.objects.filter(status='Cancelled').count()
     
     return render(request, 'dashboard/orders/orders_list.html', {
         'orders': page_obj,  # Use page_obj for paginated orders
         'status_choices': status_choices,
         'current_status': status_filter,
         'total_orders': total_orders,
-        'new_orders': new_orders,
+        'processing': processing,
         'pending_orders': pending_orders,
         'delivered_orders': delivered_orders,
         'cancelled_orders': cancelled_orders,
@@ -1945,23 +1946,32 @@ def size_variant_edit(request, product_id, pk):
 
 
 def size_variant_delete(request, product_id, pk):
-    # validate product exists
     product = get_object_or_404(Product, pk=product_id)
-
-    # ensure this size variant belongs to this product
     size_variant = get_object_or_404(SizeVariant, pk=pk)
 
     if request.method == "POST":
         size_variant.delete()
-        messages.success(request, "Size variant deleted successfully!")
-        return redirect('dashboard:product_edit', pk=product_id)
+        return JsonResponse({
+            "success": True,
+            "message": "Size variant deleted successfully!"
+        })
 
-    # optional: confirm deletion page
-    return render(request, "dashboard/size_variant_confirm_delete.html", {
-        "product": product,
-        "size_variant": size_variant,
+    # If GET request or others, can return error or redirect
+    return JsonResponse({
+        "success": False,
+        "message": "Invalid request."
     })
 
+from django.views.decorators.http import require_POST
+@require_POST
+def delete_variant_image(request, pk):
+    try:
+        img = ProductVariantImage.objects.get(pk=pk)
+        img.delete()
+        return JsonResponse({'success': True, 'message': 'Image deleted successfully.'})
+    except ProductVariantImage.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Image not found.'}, status=404)
+    
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
@@ -1977,23 +1987,22 @@ def create_shipping_label(request, order_id):
             logger.info(f"Creating shipping label for order {order_id}")
             
             delhivery = DelhiveryService()
+
+            
+            # ✅ Proceed shipment
             result = delhivery.create_shipment(order_id)
 
-            if result['success']:
+            if result.get("success"):
                 return JsonResponse({
-                    'status': 'success',
-                    'message': 'Shipping label created successfully',
-                    'waybill': result['waybill'],
-                    'tracking_id': result['tracking_id'],
-                    'label_generated': result['label_generated']
+                    "status": "success",
+                    "success": True,
+                    "message": f"✅ Shipment created successfully! Waybill: {result.get('waybill')}"
                 })
             else:
-                logger.error(f"Failed to create shipping label: {result['error']}")
                 return JsonResponse({
-                    'status': 'error',
-                    'message': result['error'],
-                    'details': result.get('response', {})
-                }, status=400)
+                "status": "fail",
+                "message": f"❌ {result.get('error')}"
+            })
                 
         except Exception as e:
             logger.error(f"Exception in create_shipping_label: {str(e)}")
@@ -2004,7 +2013,76 @@ def create_shipping_label(request, order_id):
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-  
+
+from datetime import datetime, timedelta
+import requests
+
+
+logger = logging.getLogger(__name__)
+
+def create_pickup(request, order_id):
+    """Create pickup for a shipped order"""
+
+    if request.method == 'POST':
+        try: 
+
+            # ✅ Load order to verify existence
+            order = Order.objects.get(id=order_id)
+
+            pickup_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+            pickup_time = "14:00:00"
+
+            pickup_payload = {
+                "pickup_time": pickup_time,
+                "pickup_date": pickup_date,
+                "pickup_location": "M TEX",
+                "expected_package_count": 1,
+            }
+
+            pickup_url = "https://track.delhivery.com/fm/request/new/"
+            pickup_headers = {
+                "Authorization": f"Token {settings.DELHIVERY_TOKEN}",  # Replace with your token
+                "Content-Type": "application/json"
+            }
+
+        
+            pickup_resp = requests.post(
+                pickup_url,
+                json=pickup_payload,
+                headers=pickup_headers,
+                timeout=30
+            )
+
+            
+            print("Pickup API response:", pickup_resp.status_code, pickup_resp.text)
+            if pickup_resp.status_code == 201 or 200 :
+                pickup_result = pickup_resp.json()
+                print("Pickup Result:", pickup_resp.status_code, pickup_resp)
+                # Check if response contains success indication
+                order.status = "Processing"
+                order.save()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': '✅ Pickup created successfully.'
+                })
+            else:
+                return JsonResponse({
+                    'status': 'fail',
+                   'message': f"❌ Pickup request failed: {pickup_resp.text}"
+                
+                })
+
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'fail', 'message': 'Order not found'}, status=404)
+
+        except Exception as e:
+            logger.error(f"Exception in create_pickup: {str(e)}")
+            return JsonResponse({'status': 'fail', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method'}, status=405)
+
+
 def download_shipping_label(request, tracking_id):
     """Download shipping label PDF"""
     try:

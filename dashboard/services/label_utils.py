@@ -6,7 +6,10 @@ from PIL import Image
 import barcode
 from barcode.writer import ImageWriter
 import logging
-
+from reportlab.graphics.barcode import code128
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics import renderPM
+from reportlab.graphics.barcode import createBarcodeDrawing
 logger = logging.getLogger(__name__)
 
 def image_bytes_to_datauri(img_bytes, mime="image/png"):
@@ -22,14 +25,26 @@ def generate_qr_datauri(text, box_size=6, border=2):
     img.save(buf, format="PNG")
     return image_bytes_to_datauri(buf.getvalue())
 
-def generate_code128_datauri(text, writer_options=None):
-    # python-barcode Code128 -> PNG via ImageWriter
-    writer_options = writer_options or {"module_height": 15.0, "module_width": 0.45, "font_size": 14, "text_distance": 1}
-    CODE128 = barcode.get_barcode_class('code128')
-    buf = BytesIO()
+
+import io
+def generate_code128_datauri(text):
     try:
-        CODE128(text, writer=ImageWriter()).write(buf, options=writer_options)
-        return image_bytes_to_datauri(buf.getvalue(), mime="image/png")
+        buffer = io.BytesIO()
+
+        # Get the Code128 class
+        code128 = barcode.get_barcode_class('code128')
+
+        # Create barcode object
+        code = code128(text, writer=ImageWriter())
+
+        # Write PNG to buffer
+        code.write(buffer, {'write_text': False})  # 👈 disable text below barcode
+
+        # Get PNG bytes
+        img_bytes = buffer.getvalue()
+
+        return image_bytes_to_datauri(img_bytes, mime="image/png")
     except Exception as e:
-        logger.exception("Barcode generation failed: %s", e)
+        print(f"Barcode generation failed for {text}: {e}")
         return ""
+

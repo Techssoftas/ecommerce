@@ -296,14 +296,14 @@ Products Create
                                                             class="btn btn-sm btn-icon btn-subtle-danger position-absolute top-0 end-0 m-3 remove-list"
                                                             data-remove-id="{{ variant.id }}"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#deleteRecordModal">
+                                                            data-bs-target="#deleteRecordModal-{{ variant.id }}">
                                                             <i class="ph-trash"></i>
                                                         </button>
 
 
-                                                        <!-- deleteRecordModal -->
+                                                            <!-- deleteRecordModal -->
                                                                 <div
-                                                                    id="deleteRecordModal"
+                                                                    id="deleteRecordModal-{{ variant.id }}"
                                                                     class="modal fade zoomIn"
                                                                     tabindex="-1"
                                                                     aria-hidden="true"
@@ -368,18 +368,11 @@ Products Create
                                                     </div>
 
                                                     <div class="card-body pt-0">
-                                                        {% if product.average_rating > 0 %}
-                                                            <span class="badge bg-warning-subtle text-warning float-end">
-                                                                <i class="bi bi-star-fill align-baseline me-1"></i>
-                                                                <span class="rate">{{ product.average_rating }}</span>
-                                                            </span>
-                                                        {% endif %}
-
+                                                      
                                                         {% for size in variant.sizes.all %}
-                                                            
-                                                            <button type="button" class="btn btn-primary btn-sm"   data-bs-toggle="modal" data-edit-id="{{ size.id }}" data-bs-target="#EditSizeModal-{{ size.id }}">{{ size.size }}</button> -
-                                                            <span class="">   ₹{{ size.get_price }} </span>
-                                                            <span class="badge bg-danger mb-3">{{ size.stock }} in stock</span>
+                                                           <button type="button" class="btn btn-primary btn-sm size-block-{{ size.id }}"   data-bs-toggle="modal" data-edit-id="{{ size.id }}" data-bs-target="#EditSizeModal-{{ size.id }}">{{ size.size }}</button> 
+                                                            <span class="size-block-{{ size.id }}"> -  ₹{{ size.get_price }} </span>
+                                                            <span class="badge bg-danger mb-3 size-block-{{ size.id }}">{{ size.stock }} in stock</span>
                                                             <br>  
 
                                                         
@@ -389,6 +382,16 @@ Products Create
                                                             <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="EditSizeModal-{{ size.id }}" aria-labelledby="EditSizeModal-{{ size.id }}" aria-hidden="true">
                                                                 <div class="modal-dialog modal-dialog-centered">
                                                                     <div class="modal-content">
+                                                                        <div class="modal-header text-center">
+                                                                            
+                                                                            <button type="button" class="btn btn-md btn-icon btn-subtle-danger m-3 delete-size-btn" data-product-id="{{ product.id }}" data-size-id="{{ size.id }}">
+                                                                                <i class="ph-trash"></i>
+                                                                            </button>
+                                                                           
+
+
+
+                                                                         </div>
                                                                         <div class="modal-body text-center p-5">
                                                                             <h5 class="mb-3">Edit Size -  {{size.size }}</h5>
                                                                             <form id="EditSizeForm-{{ size.id }}" action="{% url 'dashboard:size_variant_edit'  product.id size.id %}" method="post" class="row g-3" enctype="multipart/form-data">
@@ -436,12 +439,12 @@ Products Create
                                                                 </div><!-- /.modal-dialog -->
                                                             </div><!-- /.modal -->
 
+
+                                                       
                                                         {% endfor %}
 
 
-                                                            {% for size_val in variant.size %}
-                                                                <button type="button" class="btn rounded-pill btn-primary">{{ size_val }}</button>
-                                                            {% endfor %}
+                                                            
                                                         <br>
                                                         <button type="button"
                                                                     class="btn rounded-pill mt-2"
@@ -572,11 +575,11 @@ Products Create
                                                                                     <!-- Show existing product images -->
                                                                                     <div class="row mt-3">
                                                                                         {% for img in variant.images.all %}
-                                                                                            <div class="col-sm-4 col-6 mb-4 image-card" id="image-{{ img.id }}">
+                                                                                            <div class="col-sm-4 col-6 mb-4 image-card variant-image-container variant-image-{{ img.id }}" id="image-{{ img.id }}">
                                                                                                 <div class="position-relative border rounded p-1">
                                                                                                     <!-- Delete Button -->
                                                                                                     <button type="button" 
-                                                                                                            class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 delete-image-btn" 
+                                                                                                            class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 delete-variantImage-btn" 
                                                                                                             data-id="{{ img.id }}">
                                                                                                         <i class="bi bi-x-lg"></i>
                                                                                                     </button>
@@ -1180,5 +1183,177 @@ document.querySelectorAll("form[id^='EditVariantForm-']").forEach(function(form)
 
 </script>
 <!-- edit varient dropzone image priview -->
+
+<!-- include SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.querySelectorAll('.delete-size-btn').forEach(button => {
+  button.addEventListener('click', function () {
+    const productId = this.dataset.productId;
+    const sizeId = this.dataset.sizeId;
+    const clickedButton = this;
+
+    Swal.fire({
+      html: `<i class="bi bi-trash display-5 bg-red"></i><br> Are you sure want to delete?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`/product/${productId}/variant/size/${sizeId}/delete/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Close parent modal
+            const parentModal = clickedButton.closest('.modal');
+            if (parentModal) {
+              const modalInstance = bootstrap.Modal.getInstance(parentModal);
+              if (modalInstance) {
+                modalInstance.hide();
+              }
+            }
+
+            // Remove entire size container div from DOM
+            const sizeContainer = document.querySelectorAll(`.size-block-${sizeId}`).forEach(el => el.remove());
+            if (sizeContainer) sizeContainer.remove();
+
+            // Optionally remove modal from DOM
+            const modal = document.getElementById(`EditSizeModal-${sizeId}`);
+            if (modal) modal.remove();
+
+            // Assuming the button is inside a container you want to remove,
+            // adjust selector as per your markup
+
+            // Example: If size buttons are inside a container div with data-size-id:
+            const sizeButtonOnPage = document.querySelector(`[data-edit-id='${sizeId}']`);
+            if (sizeButtonOnPage) {
+              sizeButtonOnPage.remove();
+            }
+
+            // Show success swal (you can add trash icon here as well)
+            Swal.fire({
+              title: 'Deleted!',
+              html: ` ${data.message}`,
+              icon: 'success',
+              timer: 5000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.addEventListener('click', () => {
+                  Swal.close();
+                });
+              }
+            });
+          } else {
+            Swal.fire('Error', data.message || 'Could not delete.', 'error');
+          }
+        })
+        .catch(() => {
+          Swal.fire('Error', 'Network error occurred.', 'error');
+        });
+      }
+    });
+  });
+});
+
+// CSRF token helper function
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const c = cookie.trim();
+      if (c.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(c.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+</script>
+
+<!-- variant image delete start-->
+ <script>
+  document.querySelectorAll('.delete-variantImage-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      const imageId = this.dataset.id;
+      const imageContainer = document.querySelector(`.variant-image-${imageId}`);
+
+      Swal.fire({
+        html: `<i class="bi bi-trash display-5 text-danger"></i><br>Are you sure you want to delete this image?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        focusCancel: true,
+      }).then(result => {
+        if (result.isConfirmed) {
+          fetch(`/variant/image/${imageId}/delete/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Remove image container from DOM
+              if (imageContainer) imageContainer.remove();
+
+              // Show success Swal
+              Swal.fire({
+                title: 'Deleted!',
+                html: ` ${data.message}`,
+                icon: 'success',
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.addEventListener('click', () => {
+                    Swal.close();
+                  });
+                }
+              });
+            } else {
+              Swal.fire('Error', data.message || 'Could not delete.', 'error');
+            }
+          })
+          .catch(() => {
+            Swal.fire('Error', 'Network error occurred.', 'error');
+          });
+        }
+      });
+    });
+  });
+
+  // CSRF helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const c = cookie.trim();
+        if (c.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(c.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+<!-- variant image delete end -->
 
 {% endblock content %}

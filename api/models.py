@@ -401,6 +401,7 @@ class Order(models.Model):
         ('Delivered', 'Delivered'),
         ('Cancelled', 'Cancelled'),
         ('Refunded', 'Refunded'),
+        ('Ready to Ship', 'Ready to Ship')
     )
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

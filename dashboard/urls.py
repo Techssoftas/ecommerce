@@ -47,6 +47,8 @@ urlpatterns = [
     #Variants Size
     path("product/<int:product_id>/variant/size/<int:pk>/edit/", size_variant_edit, name="size_variant_edit"),
     path("product/<int:product_id>/variant/size/<int:pk>/delete/",size_variant_delete,name="size_variant_delete",),
+    # Assuming you're using 'dashboard' namespace
+    path("variant/image/<int:pk>/delete/", delete_variant_image, name="delete_variant_image"),
 
     # Categories
     path('categories/', variant_delete, name='category_list'),
@@ -76,6 +78,7 @@ urlpatterns = [
     
     
     path('create-shipping-label/<int:order_id>/', create_shipping_label, name='create_shipping_label'),
+    path('create_pickup/<int:order_id>/', create_pickup, name='create_pickup'),
     # path('create-shipping-label/<int:order_id>/', create_shipping_label, name='create_shipping_label'),
     path('download-label/<int:tracking_id>/', download_shipping_label, name='download_shipping_label'),
     path('track-order/<int:order_id>/', track_order, name='track_order'),
