@@ -68,23 +68,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'mtexdb',
-#         'USER': 'admin',
-#         'PASSWORD': 'L3g7#R83s$X#',
-#         'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
-#         'PORT': '3306',
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mtexdb',
+        'USER': 'admin',
+        'PASSWORD': 'L3g7#R83s$X#',
+        'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
+        'PORT': '3306',
+    }
+}
 
 
 # Password validation
@@ -259,8 +259,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 
 
 #Test Key
-RAZORPAY_KEY_ID = "rzp_test_RCJ4LxmMOSnvyB"
-RAZORPAY_KEY_SECRET = "eB8kvT0n5XI2fQyk9QrmVPJu"
+RAZORPAY_KEY_ID = "rzp_live_RFnXxVu9Ihl4Rv"
+RAZORPAY_KEY_SECRET = "9hcZNAZmxQOURfKTXUGYKCuG"
 
 
 DELHIVERY_API_TOKEN = "d7c1fdb1b8ca98d9fd3fc884a771fd4e96ffaf1e"
