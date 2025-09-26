@@ -12,7 +12,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ["m2hit.in", "www.m2hit.in", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["m2hit.in", "www.m2hit.in",'13.204.192.59','*' ,"127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -156,12 +156,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.29.3:5173',#naveen
     "https://m2hit.in",
     "https://mtex.in",  
+    "https://mtex-ecommerce.surge.sh"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://m2hit.in",
      "https://mtex.in",  
+     "https://mtex-ecommerce.surge.sh",
 ]
 
 
@@ -275,3 +277,17 @@ DELHIVERY_CLIENT_GST_TIN = "M TEX"
 DELHIVERY_COMPANY_NAME = "M TEX"
 DELHIVERY_BASE_URL ="https://track.delhivery.com/api/cmu/create.json" #production url
 # DELHIVERY_BASE_URL ="https://staging-express.delhivery.com/api/cmu/create.json" #testing url
+
+
+
+#Email Settings
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ # For development, prints emails to console
+EMAIL_HOST = 'smtpout.secureserver.net'  # GoDaddy SMTP
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'fashion@mtex.in'       # Ex: noreply@mtex.in
+EMAIL_HOST_PASSWORD = 'SiVa@76444'  # App password if enabled
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
