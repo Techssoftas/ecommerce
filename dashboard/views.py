@@ -81,7 +81,7 @@ def dashboard(request):
     total_products = Product.objects.count()
     total_orders = Order.objects.count()
     total_customers = CustomUser.objects.filter(user_type='customer').count()
-    total_revenue = Order.objects.filter(status='delivered').aggregate(
+    total_revenue = Order.objects.filter(status='Delivered').aggregate(
         total=Sum('total_amount'))['total'] or 0
     
     # Recent orders

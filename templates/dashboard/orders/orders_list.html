@@ -133,7 +133,7 @@
                           <button class="dropdown-item sort" data-sort="status">Status</button>
                         </div>
                       </div>
-                      <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal" style="font-family:serif;background-color:#002147;border-color:#002147;"><i class="bi bi-plus-circle align-baseline me-1"></i> Add Order</button>
+                      <!-- <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal" style="font-family:serif;background-color:#002147;border-color:#002147;"><i class="bi bi-plus-circle align-baseline me-1"></i> Add Order</button> -->
                     </div>
                   </div>
                 </div>
@@ -302,7 +302,7 @@
                                 <a href="{% url 'dashboard:order_detail' order.order_number %}" class="btn btn-subtle-primary btn-icon btn-sm"><i class="ph-eye"></i></a>
                               </li>
                               <li>
-                                <a href="{% url 'dashboard:order_edit' order.id %}" data-bs-toggle="modal" data-bs-target="#editModal" class="btn btn-subtle-secondary btn-icon btn-sm edit-item-btn"><i class="ph-pencil"></i></a>
+                                <!-- <a href="{% url 'dashboard:order_edit' order.id %}" data-bs-toggle="modal" data-bs-target="#editModal" class="btn btn-subtle-secondary btn-icon btn-sm edit-item-btn"><i class="ph-pencil"></i></a> -->
 
                                 <!-- showModal -->
                                 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
