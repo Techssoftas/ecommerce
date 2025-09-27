@@ -1,0 +1,6 @@
+<h2>Thank You for Your Order!</h2>
+<p>Hi {{ user.first_name }},</p>
+<p>Your order <strong>#{{ order.order_number }}</strong> has been placed successfully.</p>
+<p>Total Amount: ₹{{ order.total_amount }}</p>
+<p>Expected Delivery: {{ order.delivery_date|date:"F d, Y" }}</p>
+<p>We’ll notify you once your order is shipped.</p>

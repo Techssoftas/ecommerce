@@ -14,6 +14,7 @@ from decimal import Decimal
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Sum, F, DecimalField
+from dashboard.services.email import send_order_mail 
 
 class AlphaNumericFieldfive(models.CharField):
     def __init__(self, *args, **kwargs):
@@ -425,6 +426,7 @@ class Order(models.Model):
                 return code
             
     def save(self, *args, **kwargs):
+        is_new_order = self.pk is None  # check if order is new
         
         # Generate order_number if not already set
         if not self.order_number:
@@ -435,21 +437,36 @@ class Order(models.Model):
             # Use current datetime as base
             base_datetime = self.created_at if self.created_at else timezone.now()
             self.delivery_date = base_datetime + timedelta(days=7)
-            
-        # Check if status has changed
-        if self.pk:  # If order already exists
+
+        super().save(*args, **kwargs)  # save first, to get pk    
+        
+        # ✅ 1. New Order Placed → Send Order Success Mail
+        if is_new_order:
+            send_order_mail(
+                subject=f"Order #{self.order_number} Placed Successfully",
+                to_email=self.email,
+                template_name='emails/order_success.html',
+                context={
+                    'user': self.user,
+                    'order': self
+                }
+            )
+
+        # ✅ 2. Status Changed to "Delivered"
+        else:
             old_order = Order.objects.get(pk=self.pk)
-            if old_order.status != self.status:
-                # Send notification to user
-                send_mail(
-                    subject=f'Order {self.order_number} Status Update',
-                    message=f'Your order status has changed to: {self.get_status_display()}',
-                    from_email='no-reply@yourstore.com',
-                    recipient_list=[self.email],
-                    fail_silently=True,
+            if old_order.status != self.status and self.status == 'Delivered':
+                send_order_mail(
+                    subject=f"Order #{self.order_number} Delivered!",
+                    to_email=self.email,
+                    template_name='emails/order_delivered.html',
+                    context={
+                        'user': self.user,
+                        'order': self
+                    }
                 )
 
-        super().save(*args, **kwargs)
+        
 
     @property
     def total_mrp(self):
