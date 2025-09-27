@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     
     # Local apps
-    'dashboard',
+    # 'dashboard',
     'api',
 ]
 
