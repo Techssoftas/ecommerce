@@ -281,9 +281,7 @@ DELHIVERY_BASE_URL ="https://track.delhivery.com/api/cmu/create.json" #productio
 
 
 #Email Settings
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
- # For development, prints emails to console
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtpout.secureserver.net'  # GoDaddy SMTP
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'fashion@mtex.in'       # Ex: noreply@mtex.in
