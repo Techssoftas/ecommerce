@@ -440,32 +440,6 @@ class Order(models.Model):
 
         super().save(*args, **kwargs)  # save first, to get pk    
         
-        # ✅ 1. New Order Placed → Send Order Success Mail
-        if is_new_order:
-            send_order_mail(
-                subject=f"Order #{self.order_number} Placed Successfully",
-                to_email=self.email,
-                template_name='emails/order_success.html',
-                context={
-                    'user': self.user,
-                    'order': self
-                }
-            )
-
-        # ✅ 2. Status Changed to "Delivered"
-        else:
-            old_order = Order.objects.get(pk=self.pk)
-            if old_order.status != self.status and self.status == 'Delivered':
-                send_order_mail(
-                    subject=f"Order #{self.order_number} Delivered!",
-                    to_email=self.email,
-                    template_name='emails/order_delivered.html',
-                    context={
-                        'user': self.user,
-                        'order': self
-                    }
-                )
-
         
 
     @property
@@ -548,30 +522,53 @@ class TrackingScan(models.Model):
 
 class Payment(models.Model):
     PAYMENT_STATUS = (
-        ('pending', 'Pending'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('Failed', 'Failed'),
+        ('Cancelled', 'Cancelled'),
+        ('Refunded', 'Refunded'),
     )
     
     PAYMENT_METHODS = (
-        ('credit_card', 'Credit Card'),
-        ('debit_card', 'Debit Card'),
-        ('paypal', 'PayPal'),
-        ('stripe', 'Stripe'),
-        ('cash_on_delivery', 'Cash on Delivery'),
+        ('Credit Card', 'Credit Card'),
+        ('Debit Card', 'Debit Card'),
+        ('PayPal', 'PayPal'),
+        ('Stripe', 'Stripe'),
+        ('Razorpay', 'Razorpay'),
+        ('Cash on Delivery', 'Cash on Delivery'),
     )
     
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='Pending')
     transaction_id = models.CharField(max_length=200, blank=True, null=True)
     gateway_response = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+
+    def save(self, *args, **kwargs):
+        is_new_payment = self.pk is None
+        old_status = None
+
+        if not is_new_payment:
+            old_status = Payment.objects.get(pk=self.pk).status
+
+        super().save(*args, **kwargs)
+
+        # ✅ Only send mail when status changes to 'Completed'
+        if (is_new_payment and self.status == 'Completed') or (old_status != self.status and self.status == 'Completed'):
+            send_order_mail(
+                subject=f"Order #{self.order.order_number} Placed Successfully",
+                to_email=self.order.email,
+                template_name='emails/order_success.html',
+                context={
+                    'user': self.order.user,
+                    'order': self.order
+                }
+            )
+
     def __str__(self):
         return f"Payment for Order {self.order.order_number}"
 

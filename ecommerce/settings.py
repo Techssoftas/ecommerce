@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'dashboard.apps.DashboardConfig',
     # Third party apps
     'rest_framework',
     'corsheaders',

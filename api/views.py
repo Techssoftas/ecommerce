@@ -801,7 +801,7 @@ def create_order(request):
 
         Payment.objects.create(
             order=order,
-            payment_method='razorpay',
+            payment_method='Razorpay',
             amount=order.total_amount,
             transaction_id=payment_order['id'],
             gateway_response=payment_order
@@ -938,13 +938,13 @@ def delhivery_webhook(request):
         order = tracking.order
         status_lower = (tracking.current_status or "").lower()
         if "deliv" in status_lower:  # delivered/delivery
-            order.status = "delivered"
+            order.status = "Delivered"
         elif "out for delivery" in status_lower or "out_for_delivery" in status_lower:
-            order.status = "shipped"
+            order.status = "Shipped"
         elif "transit" in status_lower or "in transit" in status_lower:
-            order.status = "shipped"
+            order.status = "Shipped"
         elif "cancel" in status_lower or "returned" in status_lower:
-            order.status = "cancelled"
+            order.status = "Cancelled"
         order.save()
 
         # optional: notify user (email/push) if status changed to important states
@@ -970,11 +970,11 @@ def verify_payment(request):
             return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
         
         # Update Payment and Order
-        payment.status = 'completed'
+        payment.status = 'Completed'
         payment.gateway_response = data
         payment.save()
         
-        order.status = 'confirmed'
+        order.status = 'Confirmed'
         order.shipping_address_id = data.get('shipping_address_id')  # Send from frontend if needed
         order.save()
         
