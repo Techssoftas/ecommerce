@@ -335,7 +335,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(read_only=True,many=True)
-    tracking = OrderTrackingSerializer(many=True, read_only=True)
+    tracking = OrderTrackingSerializer(read_only=True)
     class Meta:
         model = Order
         fields = '__all__'
