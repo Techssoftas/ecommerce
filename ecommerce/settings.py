@@ -244,16 +244,13 @@ LOGGING = {
             'propagate': True,
         },
         # Logger for your app/module
-        'myapp': {
+        'dashboard': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': False,
         },
     }
 }
-
-
-
 
 
 

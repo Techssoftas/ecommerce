@@ -2031,7 +2031,7 @@ from .services.delhivery_service import DelhiveryService
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('dashboard')
 def create_shipping_label(request, order_id):
     """Create shipping label for an order"""
     if request.method == 'POST':
@@ -2053,7 +2053,7 @@ def create_shipping_label(request, order_id):
             else:
                 return JsonResponse({
                 "status": "fail",
-                "message": f"❌ {result.get('error')}"
+                "message": f"❌shipment {result.get('error')}"
             })
                 
         except Exception as e:
