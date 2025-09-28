@@ -15,7 +15,8 @@ from rest_framework.generics import RetrieveAPIView,UpdateAPIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.authtoken.models import Token
-
+from django.core.mail import send_mail
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -71,11 +72,26 @@ class RegisterView(generics.CreateAPIView):
             
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
-            
+            # Send a welcome email
+            send_mail(
+                subject='Welcome to M TEX Fashion Shop!',
+                message=(
+                    f"Hi {user.first_name},\n\n"
+                    "Welcome to M TEX Fashion Shop! 🎉\n\n"
+                    "Your account has been successfully created.\n"
+                    "We’re excited to have you join our fashion community!\n\n"
+                    "Stay tuned for the latest trends, special offers, and much more.\n\n"
+                    "Thank you for choosing M TEX.\n\n"
+                    "Best regards,\n"
+                    "M TEX Fashion Shop Team"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
             return Response({
                 'user': UserProfileSerializer(user).data,
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
                 'message': 'Account Registration successfully..!'
             }, status=status.HTTP_201_CREATED)
         print(serializer.errors)
@@ -534,7 +550,7 @@ class OrderApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        orders = Order.objects.filter(user=request.user).order_by('-created_at')
+        orders = Order.objects.filter(user=request.user,payment__status='Completed').order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
 
         return Response(serializer.data)
@@ -1043,3 +1059,69 @@ class ShippingAddressDetailView(APIView):
             return Response({"detail": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
         address.delete()
         return Response({"detail": "Address deleted."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ReturnRequestCreateView(APIView):
+    def post(self, request):
+        print("create_return_request",request.data)
+        order_item_id = request.data.get('item_id')
+        request_type = request.data.get('request_type')  # 'Return' or 'Exchange'
+
+        try:
+            order_item = OrderItem.objects.get(id=order_item_id, order__user=request.user)
+        except OrderItem.DoesNotExist:
+            return Response({"error": "Invalid order item."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ❗ Check if a return/exchange request already exists for this item
+        existing_request = ReturnRequest.objects.filter(
+            order_item=order_item,
+            user=request.user,
+            status__in=[
+                'Requested', 'Approved', 'Received', 'Inspected', 'Refunded', 'Exchanged'
+            ]
+        ).first()
+
+        if existing_request:
+            return Response({
+                "error": f"A {existing_request.request_type.lower()} request is already active for this item."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+        delivery_date = order_item.order.delivery_date
+        product = order_item.product
+
+        if not delivery_date:
+            return Response({"error": "Delivery date not available."}, status=status.HTTP_400_BAD_REQUEST)
+
+        today = timezone.now().date()
+        delivered_on = delivery_date.date()
+
+        days_since_delivery = (today - delivered_on).days
+
+        # Type-based period check
+        if request_type == 'Return':
+            if not product.is_returnable:
+                return Response({"error": "This product is not returnable."}, status=status.HTTP_400_BAD_REQUEST)
+            if days_since_delivery > product.return_period:
+                return Response({"error": "Return period expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request_type == 'Exchange':
+            if not product.is_replaceable:
+                return Response({"error": "This product is not replaceable."}, status=status.HTTP_400_BAD_REQUEST)
+            if days_since_delivery > product.replace_period:
+                return Response({"error": "Replacement period expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response({"error": "Invalid request type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ✅ Passed all checks, create return/exchange request
+        return_request = ReturnRequest.objects.create(
+            order_item=order_item,
+            user=request.user,
+            request_type=request_type,
+            quantity=request.data.get('quantity', 1),
+            reason=request.data.get('reason', ''),
+            images=request.data.get('images', None)
+        )
+
+        return Response({"message": f"{request_type} request submitted successfully."}, status=status.HTTP_201_CREATED)

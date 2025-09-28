@@ -50,6 +50,10 @@ urlpatterns = [
 
     path('create_order/', create_order, name='create_order'),
     path('verify_payment/', verify_payment, name='verify_payment'),
+    
+    
+    path('create_return_request/', ReturnRequestCreateView.as_view(), name='create_return_request'),
+
 
     path('shipping-address/', ShippingAddressListCreateView.as_view(), name='shipping-addresses'),
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),

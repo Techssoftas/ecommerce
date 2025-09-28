@@ -554,11 +554,12 @@ def mens_product_create(request):
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
         # is_trending = request.POST.get('is_trending') == 'on'
         # is_deal_of_day = request.POST.get('is_deal_of_day') == 'on'
-        # is_replaceable = request.POST.get('is_replaceable') == 'on'
+        is_replaceable = request.POST.get('is_replaceable') == 'on'
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
+        return_period = request.POST.get('return_period')
+        replace_period = request.POST.get('replace_period')
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -581,10 +582,10 @@ def mens_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -600,12 +601,13 @@ def mens_product_create(request):
             # is_trending=is_trending,
             # is_deal_of_day=is_deal_of_day,
             is_returnable=is_returnable,
-            # is_replaceable=is_replaceable,
+            is_replaceable=is_replaceable,
             is_cod_available=is_cod_available,
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -1351,6 +1353,56 @@ def orders_list(request):
         'page_obj': page_obj,  # Pass page_obj for pagination
     })
 
+from django.db.models import Prefetch, Q
+@login_required
+@user_passes_test(is_admin)
+def return_orders(request):
+    # Prefetch only ReturnRequest objects where request_type is 'Return'
+    # Filter ReturnRequest for only 'Return' type requests
+    orders = ReturnRequest.objects.filter(request_type='Return') \
+        .select_related('user', 'order_item__order') \
+        .prefetch_related('order_item__product') \
+        .order_by('-requested_at')
+    
+    # Paginate results - 10 per page
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Status choices for filtering or UI display
+    status_choices = ReturnRequest.STATUS_CHOICES
+
+    return render(request, 'dashboard/orders/return_orders.html', {
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'status_choices': status_choices,
+    })
+
+def exchange_orders(request):
+    # Prefetch only ReturnRequest objects where request_type is 'Exchange'
+    exchange_requests = ReturnRequest.objects.filter(request_type='Exchange')
+
+    exchanged_orders = Order.objects.filter(
+        items__returns__in=exchange_requests
+    ).distinct().select_related(
+        'user', 'payment'
+    ).prefetch_related(
+        'items__product',
+        Prefetch('items__returns', queryset=exchange_requests),
+        'items__returns__scans'
+    ).order_by('-created_at')
+
+    paginator = Paginator(exchanged_orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    total_exchanged = exchanged_orders.count()
+
+    return render(request, 'dashboard/orders/exchange_orders.html', {
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'total_exchanged': total_exchanged
+    })
 
 
 @login_required
@@ -2104,6 +2156,159 @@ def download_shipping_label(request, tracking_id):
         logger.error(f"Error downloading label: {str(e)}")
         return HttpResponse(f'Error: {str(e)}', status=500)
 
+
+def create_return_shipment(request, item_id):
+    try:
+        if request.method == 'POST':
+
+            order_item = get_object_or_404(OrderItem, id=item_id)
+
+            # Find active ReturnRequest for this order_item
+            return_request_qs = order_item.returns.filter(status='Requested').order_by('-requested_at')
+            if not return_request_qs.exists():
+                messages.error(request,'No active return request found for this item.')
+                return redirect("return_orders")
+
+            return_request = return_request_qs.first()
+            order = return_request.order_item.order
+            shipping_address = order.shipping_address
+
+            # Calculate weight & quantity
+            quantity = return_request.quantity
+            weight_per_item = float(order_item.product.weight or 0.5)
+            total_weight = max(0.5, weight_per_item * quantity)
+
+            # Your warehouse / pickup location details
+            pickup_location_name = "M TEX"  # warehouse registered name with Delhivery
+            pickup_address = "Your Warehouse Address Here"
+            pickup_pin = 641606
+            pickup_city = "Tiruppur"
+            pickup_state = "Tamil Nadu"
+            pickup_country = "India"
+            pickup_phone = ["9487332244"]
+
+            shipment_data = {
+                "shipments": [{
+                    "name": shipping_address.contact_person_name or order.user.username,
+                    "add": f"{shipping_address.address_line1}, {shipping_address.address_line2 or ''}".strip(', '),
+                    "pin": int(shipping_address.postal_code),
+                    "city": shipping_address.city,
+                    "state": shipping_address.state,
+                    "country": shipping_address.country or "India",
+                    "phone": [shipping_address.contact_person_number or shipping_address.phone or order.phone],
+                    "order": str(order.order_number),
+                    "payment_mode": "Pickup",  # For return shipments
+                    "return_pin": pickup_pin,
+                    "return_city": pickup_city,
+                    "return_phone": pickup_phone,
+                    "return_add": pickup_address,
+                    "return_state": pickup_state,
+                    "return_country": pickup_country,
+                    "products_desc": "Returned items",
+                    "hsn_code": order_item.product.hsn_code or "6109",
+                    "cod_amount": 0,
+                    "order_date": order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    "total_amount": str(order.total_amount),
+                    "seller_add": pickup_address,
+                    "seller_name": "M TEX",
+                    "seller_gst_tin": "33FLMPM1010A1ZY",
+                    "quantity": quantity,
+                    "waybill": "",
+                    "shipment_width": 18,
+                    "shipment_height": 1,
+                    "shipment_length": 27,
+                    "weight": total_weight,
+                    "shipping_mode": "Surface",
+                    "address_type": shipping_address.type_of_address or "home"
+                }],
+                "pickup_location": {
+                    "name": 'M TEX',
+                }
+            }
+
+            payload = {
+                "format": "json",
+                "data": json.dumps(shipment_data)
+            }
+
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"Token {settings.DELHIVERY_TOKEN}"
+            }
+
+            try:
+                response = requests.post(
+                    "https://track.delhivery.com/api/cmu/create.json",
+                    headers=headers,
+                    data=payload,
+                    timeout=30
+                )
+                logger.info(f"Delhivery return shipment response: {response.status_code} {response.text}")
+
+                if response.status_code in (200, 201):
+                    result = response.json()
+                    if result.get("success"):
+                        waybill = result.get("packages", [{}])[0].get("waybill")
+                        if waybill:
+                            # Update return request status and AWB
+                            return_request.pickup_awb = waybill
+                            return_request.status = "Approved"
+                            return_request.save()
+
+                            messages.success(request, "Return shipment created successfully. Waybill: " + waybill)
+                            # Redirect to return_orders page
+                            return redirect("dashboard:return_orders")
+                        else:
+                            messages.error(request, "Waybill missing in response")
+                            return redirect("dashboard:return_orders")
+                    else:
+                        messages.error(request,result.get("rmk", "Unknown error"))
+                        return redirect("dashboard:return_orders")
+                else:
+                    messages.error(request, f"Delhivery API failed with status {response.status_code}")
+                    return redirect("dashboard:return_orders")
+            except Exception as e:
+                logger.error(f"Error in return shipment creation (Delhivery API): {e}")
+                messages.error(request, f"Error in return shipment creation (API): {str(e)}")
+                return redirect("dashboard:return_orders")
+
+    except Exception as e:
+        logger.error(f"Error in create_return_shipment view: {e}")
+        messages.error(request, f"Something went wrong: {str(e)}")
+        return redirect("dashboard:return_orders")
+
+
+
+def update_return_payment(request, request_id):
+    try:
+        return_request = get_object_or_404(ReturnRequest, id=request_id)
+
+        # ✅ Update ReturnRequest
+        return_request.status = 'Refunded'
+        return_request.processed_at = timezone.now()
+        return_request.save()
+
+        # ✅ Get the associated Order
+        order = return_request.order_item.order
+
+        # ✅ Update Payment
+        try:
+            payment = order.payment
+            payment.status = 'Refunded'
+            payment.save()  # ✅ auto_now=True will update updated_at
+        except Payment.DoesNotExist:
+            messages.warning(request, "Payment record not found for this order.")
+
+        # ✅ Update Order
+        order.status = 'Refunded'
+        order.save()  # ✅ auto_now=True will update updated_at
+
+        messages.success(request, "Refund updated successfully.")
+        return redirect('dashboard:return_orders')
+
+    except Exception as e:
+        messages.error(request, f"Error updating refund: {str(e)}")
+        return redirect('dashboard:return_orders')
 
 def track_order(request, order_id):
     """Track order status from Delhivery"""

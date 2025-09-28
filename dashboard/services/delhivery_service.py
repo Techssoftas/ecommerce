@@ -47,7 +47,7 @@ class DelhiveryService:
             first_item = order.items.first()
             dimensions = {
                 'length': float(27),
-                'width': float(250),
+                'width': float(18),
                 'height': float(1)
             }
 
@@ -65,7 +65,7 @@ class DelhiveryService:
                     'payment_mode': 'Prepaid',  # Change if COD
                     'return_pin': '641606',
                     'return_city': 'Tiruppur',
-                    'return_phone': '9876543210',
+                    'return_phone': '9487332244',
                     'return_add': self.pickup_location,
                     'return_state': 'Tamil Nadu',
                     'return_country': 'India',
@@ -311,3 +311,78 @@ def render_label_html_and_save(tracking):
         logger.exception("Failed to render/save html->pdf label: %s", e)
         return False
 
+
+
+def create_return_shipment(request, order_id):
+    try:
+        order = Order.objects.select_related('shipping_address').get(id=order_id)
+    except Order.DoesNotExist:
+        return HttpResponseBadRequest("Invalid order ID")
+
+    shipping_addr = order.shipping_address
+    if not shipping_addr:
+        return HttpResponseBadRequest("No shipping address found for this order")
+
+    # Build shipment dict as per Delhivery specs
+    shipment = {
+        "name": shipping_addr.contact_person_name or "Customer",
+        "order": order.order_number,
+        "phone": [shipping_addr.contact_person_number] if shipping_addr.contact_person_number else [],
+        "add": f"{shipping_addr.address_line1 or ''} {shipping_addr.address_line2 or ''}".strip(),
+        "pin": int(shipping_addr.postal_code) if shipping_addr.postal_code else None,
+        "address_type": shipping_addr.type_of_address or "",
+        "city": shipping_addr.city or "",
+        "state": shipping_addr.state or "",
+        "country": shipping_addr.country or "India",
+        "payment_mode": "Pickup",  # Reverse shipment payment mode
+
+        # Return (drop) address is your warehouse
+        "return_name": settings.DELHIVERY_COMPANY_NAME,
+        "return_address": settings.DELHIVERY_PICKUP_LOCATION,
+        "return_city": 'Tiruppur',
+        "return_state": 'Tamil Nadu',
+        "return_pin": '641606',
+        "return_phone": ['9487332244'],
+        "return_country": 'India',
+
+        # Optional but recommended fields:
+        "products_desc": "Return shipment",
+        "weight": 500,   # example weight in grams; adjust dynamically if you have it
+        "shipping_mode": "Surface",
+        "seller_name": order.user.username if order.user else "",
+        "total_amount": str(order.total_amount),
+        "quantity": "1",
+        "fragile_shipment": False,
+        "dangerous_good": False,
+        "plastic_packaging": False,
+        # dimensions can be added if you have data
+        "shipment_width": "10",
+        "shipment_height": "10",
+        "shipment_length": "10"
+    }
+
+    # Compose payload as per Delhivery API format
+    payload_dict = {
+        "shipments": [shipment],
+        "pickup_location": {
+            "name": 'M TEX'
+        }
+    }
+
+    # Delhivery expects payload as urlencoded string with format=json&data=...
+    payload_str = f"format=json&data={json.dumps(payload_dict)}"
+
+    headers = {
+        "Authorization": f"Token {settings.DELHIVERY_API_TOKEN}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+
+    # Call Delhivery API
+    response = requests.post("https://staging-express.delhivery.com/api/cmu/create.json", data=payload_str, headers=headers)
+
+    # Return API response to frontend
+    return JsonResponse({
+        "delhivery_response": response.json(),
+        "sent_payload": payload_dict
+    })

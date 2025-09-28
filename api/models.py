@@ -15,6 +15,11 @@ from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Sum, F, DecimalField
 from dashboard.services.email import send_order_mail 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 
 class AlphaNumericFieldfive(models.CharField):
     def __init__(self, *args, **kwargs):
@@ -159,6 +164,7 @@ class Product(models.Model):
     
     # Return policy
     return_period = models.PositiveIntegerField(default=7)  # days
+    replace_period = models.PositiveIntegerField(default=7)  # days
     return_policy = models.TextField(blank=True)
     
     # Ratings and reviews
@@ -402,6 +408,7 @@ class Order(models.Model):
         ('Delivered', 'Delivered'),
         ('Cancelled', 'Cancelled'),
         ('Refunded', 'Refunded'),
+        ("Exchanged", "Exchanged"),
         ('Ready to Ship', 'Ready to Ship')
     )
     
@@ -508,6 +515,7 @@ class OrderTracking(models.Model):
 
 class TrackingScan(models.Model):
     tracking = models.ForeignKey(OrderTracking, on_delete=models.CASCADE, related_name="scans")
+    return_request = models.ForeignKey("ReturnRequest", null=True, blank=True, on_delete=models.CASCADE, related_name="scans")
     status = models.CharField(max_length=200)
     location = models.CharField(max_length=200, blank=True, null=True)
     scan_time = models.DateTimeField(null=True, blank=True)
@@ -559,18 +567,79 @@ class Payment(models.Model):
 
         # ✅ Only send mail when status changes to 'Completed'
         if (is_new_payment and self.status == 'Completed') or (old_status != self.status and self.status == 'Completed'):
-            send_order_mail(
-                subject=f"Order #{self.order.order_number} Placed Successfully",
-                to_email=self.order.email,
-                template_name='emails/order_success.html',
-                context={
-                    'user': self.order.user,
-                    'order': self.order
-                }
-            )
+            try:
+                send_order_mail(
+                    subject=f"Order #{self.order.order_number} Placed Successfully",
+                    to_email=self.order.email,
+                    template_name='emails/order_success.html',
+                    context={
+                        'user': self.order.user,
+                        'order': self.order
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Error sending order success email for Order #{self.order.order_number}: {e}")
 
     def __str__(self):
         return f"Payment for Order {self.order.order_number}"
+
+
+# models.py (add these)
+
+from decimal import Decimal
+
+class ReturnRequest(models.Model):
+    TYPE_CHOICES = (('Return','Return'), ('Exchange','Exchange'))
+    STATUS_CHOICES = (
+        ('Requested','Requested'),
+        ('Approved','Approved'),
+        ('Rejected','Rejected'),
+        ('Received','Received'),        # customer sent item back / courier scan
+        ('Inspected','Inspected'),
+        ('Refunded','Refunded'),
+        ('Exchanged','Exchanged'),
+        ('Completed','Completed'),
+        ('Cancelled','Cancelled'),
+    )
+
+    order_item = models.ForeignKey('OrderItem', on_delete=models.CASCADE, related_name='returns')
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    request_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    pickup_awb = models.CharField(max_length=100, null=True, blank=True)  # Delhivery reverse pickup AWB
+    quantity = models.PositiveIntegerField(default=1)  # support partial returns
+    reason = models.TextField(blank=True, null=True)
+    images = models.JSONField(blank=True, null=True)  # optional: photos uploaded by user
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Requested')
+    requested_at = models.DateTimeField(auto_now_add=True)
+    admin_note = models.TextField(blank=True, null=True)
+    admin_by = models.ForeignKey('CustomUser', null=True, blank=True, on_delete=models.SET_NULL, related_name='handled_returns')
+    admin_action_at = models.DateTimeField(null=True, blank=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    exchange_for_variant = models.ForeignKey('SizeVariant', null=True, blank=True, on_delete=models.SET_NULL)  # if exchange
+    exchange_created_order = models.ForeignKey('Order', null=True, blank=True, on_delete=models.SET_NULL, related_name='exchange_orders')
+
+    class Meta:
+        ordering = ['-requested_at']
+
+    def __str__(self):
+        return f"Return #{self.id} for {self.order_item}"
+
+
+class Refund(models.Model):
+    STATUS = (('Initiated','Initiated'),('Processing','Processing'),('Completed','Completed'),('Failed','Failed'))
+    return_request = models.ForeignKey(ReturnRequest, on_delete=models.CASCADE, related_name='refunds')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='INR')
+    gateway_txn_id = models.CharField(max_length=200, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS, default='Initiated')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Refund #{self.id} for Return #{self.return_request.id}"
+
+
 
 class Review(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

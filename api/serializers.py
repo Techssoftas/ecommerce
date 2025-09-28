@@ -5,8 +5,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
 from django.db.models import Q
 from django.conf import settings
-
-
+from .utils import is_within_return_window, get_delivered_time
+from datetime import datetime, timedelta
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'  # this enables email login
@@ -304,10 +304,34 @@ class OrderTrackingSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     variant = ProductVariantSerializer(read_only=True)
-    
+    is_returnable = serializers.SerializerMethodField()
+    is_replaceable = serializers.SerializerMethodField()
+
     class Meta:
         model = OrderItem
         fields = '__all__'
+
+    def get_is_returnable(self, obj):
+        delivery_date = obj.order.delivery_date
+        return_period = obj.product.return_period
+
+        if obj.product.is_returnable and delivery_date:
+    
+            now = timezone.now()
+            if (now - delivery_date).days <= return_period:
+                return True
+        return False
+
+    def get_is_replaceable(self, obj):
+        delivery_date = obj.order.delivery_date
+        replace_period = obj.product.replace_period
+
+        if obj.product.is_replaceable and delivery_date:
+            
+            now = timezone.now()
+            if (now - delivery_date).days <= replace_period:
+                return True
+        return False
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(read_only=True,many=True)
@@ -315,6 +339,8 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:

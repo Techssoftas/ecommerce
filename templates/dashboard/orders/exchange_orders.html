@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
 {% block title %}
-  Orders - Django Ecommerce
+  Exchange Orders - Django Ecommerce
 {% endblock %}
 
 {% block content %}
@@ -12,11 +12,11 @@
         <div class="row">
           <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-              <h4 class="mb-sm-0" style="font-family:serif;">Overall Orders</h4>
+              <h4 class="mb-sm-0" style="font-family:serif;">Exchange Orders</h4>
 
               <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                  <li class="breadcrumb-item active">Orders List</li>
+                  <li class="breadcrumb-item active">Exchange Orders</li>
                 </ol>
               </div>
             </div>
@@ -152,6 +152,7 @@
                         </th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif; color:#002147;">Order ID</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Order Date</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Delivery Date</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="products" style="font-family:serif;color:#002147;">Products</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
@@ -211,7 +212,8 @@
                             <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_number }}</a>
                           </td>
                           <td class="order_date">{{ order.created_at|date:'d M, Y' }}</td>
-                          
+                          <td class="delivery_date">{{ order.delivery_date|date:'d M, Y' }}</td>
+                         
                           <td class="products" style="font-family:sans-serif;">
                             {% with item=order.items.all.0 %}
                               {{ item.product.name|slice:':30' }}{% if item.variant.sizes %}

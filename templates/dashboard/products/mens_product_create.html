@@ -74,7 +74,7 @@ Mens Products Create
                                                 placeholder="Enter product title">
                                         </div>
                                         <div class="row">
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                                 <div class="mb-3">
                                                     <label for="productBrand" class="form-label">Brand <span
                                                             class="text-danger">*</span></label>
@@ -82,14 +82,58 @@ Mens Products Create
                                                         id="productBrand" placeholder="Enter brand">
                                                 </div>
                                             </div>
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                                 <div class="mb-3">
-                                                    <label for="productBrand" class="form-label">Model name <span
+                                                    <label for="Modelname" class="form-label">Model name <span
                                                             class="text-danger">*</span></label>
                                                     <input type="text" name="model_name" class="form-control"
-                                                        id="productBrand" placeholder="Enter brand">
+                                                        placeholder="Enter brand">
                                                 </div>
                                             </div>
+                                            <div class="col-lg-4">
+                                                <div class="mb-3">
+                                                    <label for="hsn_code" class="form-label">HSN Code <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="hsn_code" class="form-control"
+                                                        placeholder="Enter HSN Code">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="weight" class="form-label">Weight (Gm)<span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="weight" class="form-control" 
+                                                        id="weight" placeholder="Enter brand">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="dimensions_length" class="form-label">Length (Cm) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_length" class="form-control"
+                                                        placeholder="Enter Length">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="dimensions_width" class="form-label">Width (Cm) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_width" class="form-control"
+                                                        placeholder="Enter Width">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="dimensions_height" class="form-label">Height (Cm) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal"  pattern="^\d*([.,]?\d+)?$" name="dimensions_height" class="form-control"
+                                                        placeholder="Enter Height">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-lg-6">
                                                 <div class="mb-3">
                                                     <label class="form-label" for="product-price-input">MRP Price <span
@@ -305,7 +349,7 @@ Mens Products Create
                                         </div>
 
                                         <div class="row mt-3">
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-3">
                                                 <div class="form-check form-switch mb-3">
                                                     <input class="form-check-input" type="checkbox" name="cod_available"
                                                         id="exchangeableInput">
@@ -313,25 +357,54 @@ Mens Products Create
                                                         Available</label>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-3">
                                                 <div class="form-check form-switch mb-3">
-                                                    <input class="form-check-input" type="checkbox" name="is_returnable"
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="is_free_shipping" >
+                                                    <label class="form-check-label" for="refundableInput">Free
+                                                        Shipping</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox"  name="is_returnable"
                                                         id="refundableInput">
                                                     <label class="form-check-label"
                                                         for="refundableInput">Returnable</label>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-6">
+                                           
+                                            <div class="col-lg-3">
                                                 <div class="form-check form-switch mb-3">
-                                                    <input class="form-check-input" type="checkbox"
-                                                        name="is_free_shipping" id="refundableInput">
-                                                    <label class="form-check-label" for="refundableInput">Free
-                                                        Shipping</label>
+                                                    <input class="form-check-input" type="checkbox" name="is_replaceable"
+                                                        id="is_replaceable">
+                                                    <label class="form-check-label"
+                                                        for="is_replaceable">Replaceable</label>
                                                 </div>
                                             </div>
+                                            
 
                                         </div>
 
+                                         <div class="row mt-3">
+                                            <div class="col-lg-6" id="returnPeriodDiv" style="display: none;">
+                                                <div class="mb-3">
+                                                    <label for="return_period" class="form-label">Return Period (Days) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="return_period" class="form-control" 
+                                                        id="return_period" placeholder="Enter Return Period" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6"  id="replacePeriodDiv" style="display: none;">
+                                                <div class="mb-3">
+                                                    <label for="replace_period" class="form-label">Replace Period (Days) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="replace_period" class="form-control" 
+                                                        id="replace_period" placeholder="Enter Replace Period" required>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
                                     </div><!--end col-->
                                 </div><!--end row-->
                             </div>
@@ -1026,6 +1099,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 <!--  category form --> 
+<!-- JavaScript to toggle visibility -->
+<script>
+    // Get elements
+    const refundableInput = document.getElementById('refundableInput');
+    const returnPeriodDiv = document.getElementById('returnPeriodDiv');
 
+    const replaceableInput = document.getElementById('is_replaceable');
+    const replacePeriodDiv = document.getElementById('replacePeriodDiv');
+
+    // Add event listeners
+    refundableInput.addEventListener('change', function () {
+        returnPeriodDiv.style.display = this.checked ? 'block' : 'none';
+        document.getElementById('return_period').required = this.checked;
+    });
+
+    replaceableInput.addEventListener('change', function () {
+        replacePeriodDiv.style.display = this.checked ? 'block' : 'none';
+        document.getElementById('replace_period').required = this.checked;
+    });
+</script>
 
 {% endblock content %}

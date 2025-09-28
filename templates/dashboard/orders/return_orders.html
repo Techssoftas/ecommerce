@@ -12,11 +12,11 @@
         <div class="row">
           <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-              <h4 class="mb-sm-0" style="font-family:serif;">Overall Orders</h4>
+              <h4 class="mb-sm-0" style="font-family:serif;">Return Orders</h4>
 
               <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                  <li class="breadcrumb-item active">Orders List</li>
+                  <li class="breadcrumb-item active">Return Orders</li>
                 </ol>
               </div>
             </div>
@@ -152,12 +152,13 @@
                         </th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif; color:#002147;">Order ID</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Order Date</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Delivery Date</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="products" style="font-family:serif;color:#002147;">Products</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                         {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
-                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Refund Status</th>
                        <th scope="col" class="cursor-pointer fs-lg" data-sort="label" style="font-family:serif; color:#002147;">Label</th>
                         <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
                       </tr>
@@ -208,46 +209,34 @@
                             </div>
                           </th>
                           <td class="order_id" style="font-family:sans-serif;">
-                            <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_number }}</a>
+                            <a href="{% url 'dashboard:order_detail' order.order_item.order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_item.order.order_number }}</a>
                           </td>
-                          <td class="order_date">{{ order.created_at|date:'d M, Y' }}</td>
-                          
+                          <td class="order_date">{{ order.order_item.order.created_at|date:'d M, Y' }}</td>
+                          <td class="delivery_date">{{ order.order_item.order.delivery_date|date:'d M, Y' }}</td>
+                         
                           <td class="products" style="font-family:sans-serif;">
-                            {% with item=order.items.all.0 %}
-                              {{ item.product.name|slice:':30' }}{% if item.variant.sizes %}
-                                ({{ item.variant.color_name }})
-                              {% endif %}
-                            {% endwith %}
+                            {{ order.order_item.product.sku}} &nbsp; -&nbsp;{{order.order_item.variant.color_name}} &nbsp;-&nbsp;{{order.order_item.size_variant.size}}
+                             
                           </td>
                           <td class="customer" style="font-family:sans-serif;">{{ order.user.username }}</td>
                           <td class="payment_method" style="font-family:sans-serif;">
                             {% if order.payment %}
                               {{ order.payment.get_payment_method_display }}
                             {% else %}
-                              COD
+                              Razorpay
                             {% endif %}
                           </td>
                           <td class="amount" style="font-family:sans-serif;">
-                            <span class="fw-medium" style="font-family:sans-serif;">₹{{ order.total_amount }}</span>
+                            <span class="fw-medium" style="font-family:sans-serif;">₹{{ order.order_item.order.total_amount }}</span>
                           </td>
-                          {% comment %} <td class="rating">
-                            <h5 class="fs-md fw-medium mb-0">
-                              {% with avg_rating=order.items.first.product.average_rating %}
-                                {% if avg_rating > 0 %}
-                                  {{ avg_rating|floatformat:1 }}/5
-                                {% else %}
-                                  -
-                                {% endif %}
-                              {% endwith %}
-                            </h5>
-                          </td> {% endcomment %}
+                          
                           <td class="status">
                             <span class="badge
-                                {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
+                                {% if order.status == 'Approved' or order.status == 'Refunded' or order.status == 'Completed' %}
                                     bg-success-subtle text-success
-                                {% elif order.status == 'Processing' or order.status == 'Ready to Ship' %}
+                                {% elif order.status == 'Received'  %}
                                     bg-info-subtle text-info
-                                {% elif order.status == 'Cancelled' or order.status == 'Refunded' %}
+                                {% elif order.status == 'Cancelled'  %}
                                     bg-danger-subtle text-danger
                                 {% else %}
                                     bg-warning-subtle text-warning
@@ -258,40 +247,23 @@
 
                           </td>
                            <td class="status">
-                            <!-- Load More Buttons -->
+                          
                             
-                            
-                               
-                            {% if order.status == 'Pending' %}
-                              <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
-                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
-
-                                <button class="btn btn-outline-primary btn-load d-none" type="button" disabled>
-                                  <span class="d-flex align-items-center">
-                                    <span class="spinner-border flex-shrink-0" role="status">
-                                      <span class="visually-hidden">Loading...</span>
-                                    </span>
-                                    <span class="flex-grow-1 ms-2">
-                                      Loading...
-                                    </span>
-                                  </span>
-                                </button>
-                              </form>
-                            {% elif order.status == 'Ready to Ship' %}
-                             <form class="create-pickup-form" action="{% url 'dashboard:create_pickup' order.id %}" method="post" style="display:inline;">
+                            {% if order.status == 'Requested' %}
+                             <form class="" action="{% url 'dashboard:create_return_shipment' order.order_item.id %}" method="post" style="display:inline;">
                                   {% csrf_token %}
-                                <button type="button" class="btn btn-secondary custom-toggle active" ><i class="ri-shopping-cart-2-fill align-bottom me-1"></i> &nbsp;Create Pickup
+                                <button type="submit" class="btn btn-secondary custom-toggle active" ><i class="ri-shopping-cart-2-fill align-bottom me-1"></i> &nbsp;Create Pickup
                                      
                                 </button>
                              </form>
+                            
                             {% else %}
-                                <a href="{{ order.tracking.label_file.url }}" 
-                                  class="btn btn-success btn-label right rounded-pill" 
-                                  download>
-                                  <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
-                                  Download
-                                </a>
+                                <form class="" action="{% url 'dashboard:update_return_payment' order.id %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success  rounded-pill" > Update Payment
+                                        
+                                  </button>
+                                </form>
 
                             {% endif %}
                             
@@ -299,7 +271,7 @@
                           <td>
                             <ul class="d-flex gap-2 list-unstyled mb-0">
                               <li>
-                                <a href="{% url 'dashboard:order_detail' order.order_number %}" class="btn btn-subtle-primary btn-icon btn-sm"><i class="ph-eye"></i></a>
+                                <a href="{% url 'dashboard:order_detail' order.order_item.order.order_number %}" class="btn btn-subtle-primary btn-icon btn-sm"><i class="ph-eye"></i></a>
                               </li>
                               <li>
                                 <!-- <a href="{% url 'dashboard:order_edit' order.id %}" data-bs-toggle="modal" data-bs-target="#editModal" class="btn btn-subtle-secondary btn-icon btn-sm edit-item-btn"><i class="ph-pencil"></i></a> -->
@@ -390,7 +362,7 @@
                                           </div>
 
                                           <div>
-                                            <label for="delivered-status" class="form-label">Delivery Status</label>
+                                            <label for="delivered-status" class="form-label">Refund Status</label>
                                             <select class="form-control" data-trigger name="delivered-status" required id="delivered-status">
                                               <option value="">Delivery Status</option>
                                               <option value="New">New</option>
@@ -438,7 +410,7 @@
                                         </div>
                                         <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
                                           <button type="button" class="btn w-sm btn-light btn-hover" data-bs-dismiss="modal">Close</button>
-                                          <form method="POST" action="{% url 'dashboard:order_delete' order.order_number %}" style="display:inline;">
+                                          <form method="POST" action="{% url 'dashboard:order_delete' order.order_item.order.order_number %}" style="display:inline;">
                                             {% csrf_token %}
                                             <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
                                           </form>

@@ -147,14 +147,25 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a
-                  href="{% url 'dashboard:orders_list' %}"
-                  class="nav-link menu-link"
-                >
-                   <i class="ri-shopping-cart-2-line"></i>
-                  <span data-key="t-chat ms-2">Orders</span>
-                </a>
-              </li>
+                    <a class="nav-link menu-link" href="#sidebarMaps" data-bs-toggle="collapse" role="button" aria-expanded="true" aria-controls="sidebarMaps">
+                        <i class="ri-shopping-cart-2-line"></i> <span >Orders</span>
+                    </a>
+                    <div class="menu-dropdown collapse show" id="sidebarMaps" style="">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'dashboard:orders_list' %}" class="nav-link" >Orders List</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'dashboard:return_orders' %}" class="nav-link" >Return Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'dashboard:exchange_orders' %}" class="nav-link" >Exchange Orders</a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                </li>
+              
               <li class="nav-item">
                 <a
                   href="{% url 'dashboard:payment_list' %}"

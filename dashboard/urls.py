@@ -3,6 +3,7 @@ from .views import *
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+
 app_name = 'dashboard'
 
 urlpatterns = [
@@ -57,6 +58,8 @@ urlpatterns = [
 
     # Orders
     path('orders_list/', orders_list, name='orders_list'),
+    path('return_orders/', return_orders, name='return_orders'),
+    path('exchange_orders/', exchange_orders, name='exchange_orders'),
     path('order_detail/<str:order_number>/', order_detail, name='order_detail'),
     path('order_edit/<str:pk>/', order_detail, name='order_edit'),
     path('order_delete/<str:order_number>/', order_delete, name='order_delete'),
@@ -79,6 +82,9 @@ urlpatterns = [
     
     path('create-shipping-label/<int:order_id>/', create_shipping_label, name='create_shipping_label'),
     path('create_pickup/<int:order_id>/', create_pickup, name='create_pickup'),
+    path('create_return_shipment/<str:item_id>/', create_return_shipment, name='create_return_shipment'),
+    
+    path('update_return_payment/<str:request_id>/', update_return_payment, name='update_return_payment'),
     # path('create-shipping-label/<int:order_id>/', create_shipping_label, name='create_shipping_label'),
     path('download-label/<int:tracking_id>/', download_shipping_label, name='download_shipping_label'),
     path('track-order/<int:order_id>/', track_order, name='track_order'),
