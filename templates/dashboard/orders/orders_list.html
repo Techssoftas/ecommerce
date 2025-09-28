@@ -167,7 +167,7 @@
                         <tr data-order-id="{{ order.order_number }}"
                           data-order-date="{{ order.created_at|date:'Y-m-d' }}"
                           data-delivery-date="
-                                                        {% if order.status == 'delivered' %}
+                                                        {% if order.status == 'Delivered' %}
                             {{ order.updated_at|date:'Y-m-d' }}
                           {% elif order.items.first %}
                             {{ order.created_at|add_days:order.items.first.product.delivery_time_max|date:'Y-m-d' }}
@@ -262,7 +262,7 @@
                             
                             
                                
-                            {% if order.status == 'Pending' %}
+                            {% if order.status == 'Pending' or order.status == 'Confirmed'  %}
                               <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
                                  {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
