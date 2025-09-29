@@ -297,31 +297,49 @@ def kids_girls_products(request):
 
 @login_required
 @user_passes_test(is_admin)
+
 def product_details(request, product_id):
+    # Get product with related data
     product = get_object_or_404(
-        Product.objects.select_related('category').prefetch_related('images', 'variants', 'reviews'),
+        Product.objects.select_related('category').prefetch_related(
+            'images', 
+            'variants__sizes', 
+            'variants__images', 
+            'reviews__images'
+        ),
         id=product_id
     )
-    reviews = product.reviews.all()
-    # Filter size and color variants
-    size_variants = product.variants.filter( is_active=True)
-    color_variants = product.variants.filter( is_active=True)
-    # Filter approved reviews
+
+    # Approved reviews
     approved_reviews = product.reviews.filter(is_approved=True)
-    
-    # Calculate minimum order total and total revenue
+
+    # Group active color variants and their active size variants
+    color_variants = product.variants.filter(is_active=True)
+    size_variants = []  # List of all sizes across variants
+
+    for variant in color_variants:
+        sizes = variant.sizes.filter(stock__gt=0)  # Only sizes with stock
+        size_variants.extend(sizes)
+
+    # Primary product image
+    primary_image = product.primary_image
+
+    # Minimum order total
     minimum_order_total = product.minimum_order_quantity * product.get_price
+
+    # Total revenue
     total_revenue = product.total_sold * product.get_price
 
     context = {
         'product': product,
-        'reviews':reviews,
-        'size_variants': size_variants,
         'color_variants': color_variants,
+        'size_variants': size_variants,
         'approved_reviews': approved_reviews,
+        'primary_image': primary_image,
         'minimum_order_total': minimum_order_total,
         'total_revenue': total_revenue,
     }
+
     return render(request, 'dashboard/products/product_details.html', context)
 
 

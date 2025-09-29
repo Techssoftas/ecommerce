@@ -89,20 +89,63 @@ Products Create
                                                         <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
                                                         <textarea class="form-control" name="description"  id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8">{{ product.description }}</textarea>
                                                     </div>
+
+                                                     <div class="row mt-4">
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="weight" class="form-label">Weight (Gm)<span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" value="{{product.weight}}" name="weight" class="form-control" 
+                                                                    id="weight" placeholder="Enter brand">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="dimensions_length" class="form-label">Length (Cm) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" inputmode="decimal" value="{{product.dimensions_length}}" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_length" class="form-control"
+                                                                    placeholder="Enter Length">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="dimensions_width" class="form-label">Width (Cm) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" inputmode="decimal" value="{{product.dimensions_width}}" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_width" class="form-control"
+                                                                    placeholder="Enter Width">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="dimensions_height" class="form-label">Height (Cm) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" inputmode="decimal" value="{{product.dimensions_height}}" pattern="^\d*([.,]?\d+)?$" name="dimensions_height" class="form-control"
+                                                                    placeholder="Enter Height">
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <div class="row">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label for="productBrand" class="form-label">Brand <span class="text-danger">*</span></label>
                                                                 <input type="text" value="{{ product.brand }}"  name="brand" class="form-control" id="productBrand" placeholder="Enter brand" >
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label for="productBrand" class="form-label">Model name <span class="text-danger">*</span></label>
                                                                 <input type="text" name="model_name" value="{{ product.model_name }}" class="form-control" id="productBrand" placeholder="Enter brand" >
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
+                                                            <div class="mb-3">
+                                                                <label for="hsn_code" class="form-label">HSN Code <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="hsn_code" value="{% if product.hsn_code %}{{product.hsn_code}}{% else %} 0 {%endif%}" class="form-control"
+                                                                    placeholder="Enter HSN Code">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
                                                                 <div class="input-group has-validation">
@@ -112,7 +155,7 @@ Products Create
                                                                 </div>
                                                             </div>
                                                         </div><!--end col-->
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
                                                                 <div class="input-group has-validation">
@@ -122,26 +165,62 @@ Products Create
                                                                 </div>
                                                             </div>
                                                         </div><!--end col-->
-                                                    
+                                                        <div class="col-lg-4">
+                                                            <div class="mb-3">
+                                                                <label for="sku" class="form-label">Sku Code <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="sku" value="{{product.sku}}" class="form-control"
+                                                                    placeholder="Enter SKU Code">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     
                                                     <div class="row mt-3">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-3">
                                                             <div class="form-check form-switch mb-3">
                                                                 <input type="checkbox" name="cod_available" {% if product.is_cod_available %}checked{% endif %} class="form-check-input" id="id_cod_available">
                                                                 <label class="form-check-label" for="exchangeableInput">Cod Available</label>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-3">
                                                             <div class="form-check form-switch mb-3">
-                                                                <input type="checkbox" name="returnable" {% if product.is_returnable %}checked{% endif %} class="form-check-input" id="id_returnable">
+                                                                <input type="checkbox" name="free_shipping" {% if product.free_shipping %}checked{% endif %} class="form-check-input" id="id_free_shipping">
+                                                                <label class="form-check-label" for="free_shipping">Free Shipping</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="returnable" {% if product.is_returnable %}checked{% endif %} class="form-check-input" id="refundableInput">
                                                                 <label class="form-check-label" for="refundableInput">Returnable</label>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-3">
                                                             <div class="form-check form-switch mb-3">
-                                                                <input type="checkbox" name="free_shipping" {% if product.free_shipping %}checked{% endif %} class="form-check-input" id="id_free_shipping">
-                                                                <label class="form-check-label" for="refundableInput">Free Shipping</label>
+                                                                <input class="form-check-input" type="checkbox" {% if product.is_replaceable %}checked{% endif %}  name="is_replaceable"
+                                                                    id="is_replaceable">
+                                                                <label class="form-check-label"
+                                                                    for="is_replaceable">Replaceable</label>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+
+
+                                                     <div class="row mt-3">
+                                                        <div class="col-lg-6" id="returnPeriodDiv" style="display: none;">
+                                                            <div class="mb-3">
+                                                                <label for="return_period" class="form-label">Return Period (Days) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="return_period" value="{{product.return_period}}" class="form-control" 
+                                                                    id="return_period" placeholder="Enter Return Period" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6"  id="replacePeriodDiv" style="display: none;">
+                                                            <div class="mb-3">
+                                                                <label for="replace_period" class="form-label">Replace Period (Days) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="replace_period" value="{{product.replace_period}}" class="form-control" 
+                                                                    id="replace_period" placeholder="Enter Replace Period" required>
                                                             </div>
                                                         </div>
                                                         
@@ -446,11 +525,12 @@ Products Create
 
                                                             
                                                         <br>
-                                                        <button type="button"
-                                                                    class="btn rounded-pill mt-2"
-                                                                    style="background-color: {{ variant.hex_color_code }}; border: 1px solid #ccc;">
-                                                            </button>
-
+                                                        
+                                                    <div data-bs-toggle="tooltip"  data-bs-placement="top"  >
+                                                        <button type="button" style="background-color: {{ variant.hex_color_code }};" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-primary" disabled="">
+                                                           
+                                                        </button>
+                                                    </div>
 
                                                         <div class="mt-3 hstack gap-2">
                                                             
@@ -1356,4 +1436,42 @@ function getCookie(name) {
 
 <!-- variant image delete end -->
 
+
+<!-- JavaScript to toggle visibility -->
+<script>
+const refundableInput = document.getElementById('refundableInput');
+const returnPeriodDiv = document.getElementById('returnPeriodDiv');
+
+const replaceableInput = document.getElementById('is_replaceable');
+const replacePeriodDiv = document.getElementById('replacePeriodDiv');
+
+function toggleReturnPeriod() {
+    if (refundableInput.checked) {
+        returnPeriodDiv.style.display = 'block';
+        document.getElementById('return_period').required = true;
+    } else {
+        returnPeriodDiv.style.display = 'none';
+        document.getElementById('return_period').required = false;
+    }
+}
+
+function toggleReplacePeriod() {
+    if (replaceableInput.checked) {
+        replacePeriodDiv.style.display = 'block';
+        document.getElementById('replace_period').required = true;
+    } else {
+        replacePeriodDiv.style.display = 'none';
+        document.getElementById('replace_period').required = false;
+    }
+}
+
+// Add event listeners
+refundableInput.addEventListener('change', toggleReturnPeriod);
+replaceableInput.addEventListener('change', toggleReplacePeriod);
+
+// Initialize on page load
+toggleReturnPeriod();
+toggleReplacePeriod();
+
+</script>
 {% endblock content %}

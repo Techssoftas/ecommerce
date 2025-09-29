@@ -994,6 +994,13 @@ def verify_payment(request):
         order.shipping_address_id = data.get('shipping_address_id')  # Send from frontend if needed
         order.save()
         
+        for item in order.items.all():
+            size_variant = item.size_variant
+            if size_variant:
+                if size_variant.stock >= item.quantity:
+                    size_variant.stock -= item.quantity
+                    size_variant.save()
+
         # Clear cart only for cart orders
         if order.source == 'cart' and Cart.objects.filter(user=user).exists():
             Cart.objects.get(user=user).items.all().delete()  # Or delete the whole cart if preferred

@@ -39,7 +39,7 @@
                   </p>
                 </div>
                 <div class="flex-shrink-0">
-                  <a href="{% url 'dashboard:download_invoice' order.order_number %}" class="btn btn-primary"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+                  <a href="{{ order.tracking.label_file.url }}" class="btn btn-primary"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
                 </div>
               </div>
             </div>
@@ -195,8 +195,16 @@
                           </td>
 
                           <td>
-                            <button type="button" class="btn rounded-pill mt-2" style="background-color: {{ item.variant.hex_color_code }}; border: 1px solid #ccc;"></button>
-                          </td>
+                           
+
+                            <div data-bs-toggle="tooltip"  data-bs-placement="top"  >
+                              <button type="button" style="background-color: {{ item.variant.hex_color_code }};" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-primary" disabled="">
+                              
+                              </button>
+                          </div>
+
+
+                           </td>
                           <td>{{ item.size_variant.size }}</td>
                           <td>{{ item.quantity }}</td>
 
@@ -325,7 +333,7 @@
                 <h6 class="card-title flex-grow-1 mb-0">Order Status</h6>
                 <div class="flex-shrink-0">
                   <button type="button" class="btn btn-danger btn-sm"><i class="ph-x align-middle"></i> Cancel Order</button>
-                  <a href="{% url 'dashboard:download_invoice' order.order_number %}" class="btn btn-primary btn-sm"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+                  <a href="{{ order.tracking.label_file.url }}" class="btn btn-primary btn-sm"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
                 </div>
               </div>
               <div class="card-body">
