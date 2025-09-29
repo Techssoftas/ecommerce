@@ -181,7 +181,7 @@
             <td class="text-center">{{ item.quantity }}</td>
             <td class="text-right">{{ item.size_variant.price  }}</td>
             <td class="text-right">{{ item.size_variant.discount_price  }}</td>
-            <td class="text-right">{{ item.taxable_value  }}</td>
+            <td class="text-right">{% if item.taxable_value %}{{ item.taxable_value  }}{% else %}-{% endif %}</td>
             <td class="text-right">
               GST 5%<br/>
              
@@ -194,7 +194,7 @@
           <tr>
             <td colspan="6" class="no-border-right"></td>
             <td class="text-right"><strong>Total:</strong></td>
-            <td class="text-right"><strong>Rs.{{ item.price  }}</strong></td>
+            <td class="text-right"><strong>Rs.{{ oredr.total_mrp  }}</strong></td>
           </tr>
           <tr>
             <td colspan="8" class=""><p>Tax is not payable on reverse charge basis. This is a computer generated invoice and does not require signature. Other charges are charges that are applicable to your order and include charges for logistics fee (where applicable). Includes discounts for your city and/or for online payments (as applicable).</p></td>

@@ -286,12 +286,20 @@
                                 </button>
                              </form>
                             {% else %}
-                                <a href="{{ order.tracking.label_file.url }}" 
-                                  class="btn btn-success btn-label right rounded-pill" 
-                                  download>
-                                  <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
-                                  Download
-                                </a>
+                                {% if order.tracking and order.tracking.label_file %}
+                                  <a href="{{ order.tracking.label_file.url }}" 
+                                    class="btn btn-success btn-label right rounded-pill" 
+                                    download>
+                                    <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
+                                    Download
+                                  </a>
+                                {% else %}
+                                  <a href="{{ order.tracking.label_file.url }}" 
+                                    class="btn btn-danger right rounded-pill" 
+                                    download>
+                                    Label Not Available
+                                  </a>
+                                {% endif %}
 
                             {% endif %}
                             
