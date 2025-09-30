@@ -40,29 +40,43 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 def forgot_password_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
-        if not email:
-            messages.error(request, "Email is required.")
-            return redirect('password_reset')
+        print("request.user:", request.user)
+        new_password = request.POST.get('new_password')
+
+        if not new_password:
+            messages.error(request, "Please provide both email and new password.")
+            return redirect('forgot_password_view')
 
         try:
-            user = User.objects.get(email=email)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_url = f"{request.scheme}://{request.get_host()}/reset/{uid}/{token}/"
+            user = User.objects.get(email=request.user.email)
 
-            # Send email
-            subject = "Reset Your Password"
-            message = f"Hi {user.username},\n\nClick the link below to reset your password:\n{reset_url}\n\nIf you didn’t request this, please ignore this email."
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            # Set new password
+            user.set_password(new_password)
+            user.save()
 
-            messages.success(request, "Password reset email has been sent.")
-            return redirect('password_reset_done')
+            # Send confirmation email
+            subject = "Password Changed Successfully"
+            message = f"""
+                Hi {user.username},
+
+                Your password has been successfully changed.
+
+                Your new password is: {new_password}
+
+                If you did not request this change, please contact support immediately.
+                """
+            send_mail(subject, message.strip(), settings.DEFAULT_FROM_EMAIL, [user.email])
+
+            messages.success(request, "Password changed and confirmation email sent.")
+            return redirect('login_view')  # Redirect to login or wherever appropriate
+
         except User.DoesNotExist:
             messages.error(request, "No user found with this email.")
-            return redirect('password_reset')
+            return redirect('forgot_password_view')
+
     return render(request, 'dashboard/auth/forgot_password_manual.html')
 
 
