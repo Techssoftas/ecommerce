@@ -122,7 +122,7 @@
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-end">
                                                     <button class="dropdown-item sort" data-sort="payment_date">Payment Date</button>
-                                                    <button class="dropdown-item sort" data-sort="transaction_id">Transaction ID</button>
+                                                    <button class="dropdown-item sort" data-sort="payment_id">Transaction ID</button>
                                                     <button class="dropdown-item sort" data-sort="order_number">Order Number</button>
                                                     <button class="dropdown-item sort" data-sort="customer">Customer</button>
                                                     <button class="dropdown-item sort" data-sort="payment_method">Payment Method</button>
@@ -147,7 +147,7 @@
                                                         <label class="form-check-label" for="checkAll"></label>
                                                     </div>
                                                 </th>
-                                                <th scope="col" class=" cursor-pointer fs-lg" data-sort="transaction_id" style="font-family:serif;color:#002147;">Transaction ID</th>
+                                                <th scope="col" class=" cursor-pointer fs-lg" data-sort="payment_id" style="font-family:serif;color:#002147;">Payment ID</th>
                                                 <th scope="col" class=" cursor-pointer fs-lg" data-sort="payment_date" style="font-family:serif;color:#002147;">Payment Date</th>
                                                 <th scope="col" class=" cursor-pointer fs-lg" data-sort="order_number" style="font-family:serif;color:#002147;">Order Number</th>
                                                 <th scope="col" class=" cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
@@ -159,14 +159,14 @@
                                         </thead>
                                         <tbody class="list form-check-all" id="payment-table-body">
                                             {% for payment in payments %}
-                                            <tr data-transaction-id="{{ payment.transaction_id|default:'N/A' }}" data-payment-date="{{ payment.created_at|date:'Y-m-d' }}" data-order-number="{{ payment.order.order_number }}" data-customer="{{ payment.order.user.username }}" data-payment-method="{{ payment.get_payment_method_display }}" data-amount="{{ payment.amount }}" data-status="{{ payment.get_status_display }}">
+                                            <tr data-transaction-id="{{ payment.payment_id|default:'N/A' }}" data-payment-date="{{ payment.created_at|date:'Y-m-d' }}" data-order-number="{{ payment.order.order_number }}" data-customer="{{ payment.order.user.username }}" data-payment-method="{{ payment.get_payment_method_display }}" data-amount="{{ payment.amount }}" data-status="{{ payment.get_status_display }}">
                                                 <th>
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="chk_child" value="{{ payment.id }}">
                                                         <label class="form-check-label"></label>
                                                     </div>
                                                 </th>
-                                                <td class="transaction_id" style="font-family:sans-serif;">
+                                                <td class="payment_id" style="font-family:sans-serif;">
                                                     <a href="javascript:void(0);" class="fw-medium link-primary" onclick="copyToClipboard(this)" data-value="{{ payment.payment_id|default:'N/A' }}">
                                                         {{ payment.payment_id|default:"N/A" }}
                                                     </a>
@@ -539,7 +539,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 <script>
   var options = {
-    valueNames: ['transaction_id', 'payment_date', 'order_number', 'customer', 'payment_method', 'amount', 'status']
+    valueNames: ['payment_id', 'payment_date', 'order_number', 'customer', 'payment_method', 'amount', 'status']
   };
 
   var paymentList = new List('paymentList', options);
