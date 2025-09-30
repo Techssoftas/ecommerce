@@ -167,8 +167,13 @@
                                                     </div>
                                                 </th>
                                                 <td class="transaction_id" style="font-family:sans-serif;">
-                                                    <a href="" class="fw-medium link-primary">{{ payment.transaction_id|default:"N/A" }}</a>
+                                                    <a href="javascript:void(0);" class="fw-medium link-primary" onclick="copyToClipboard(this)" data-value="{{ payment.payment_id|default:'N/A' }}">
+                                                        {{ payment.payment_id|default:"N/A" }}
+                                                    </a>
+                                                    <span class="copied-msg" style="display:none; font-size: 11px; color: green; margin-left: 8px;">Copied!</span>
                                                 </td>
+
+
                                                 <td class="payment_date" style="font-family:sans-serif;">
                                                     {{ payment.created_at }}
                                                 </td>
@@ -553,5 +558,22 @@
   });
 </script>
 
+<script>
+    function copyToClipboard(elem) {
+        const value = elem.getAttribute("data-value");
+        if (!value) return;
 
+        // Copy to clipboard
+        navigator.clipboard.writeText(value).then(function () {
+            // Show "Copied!"
+            const copiedMsg = elem.parentElement.querySelector(".copied-msg");
+            copiedMsg.style.display = "inline";
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                copiedMsg.style.display = "none";
+            }, 2000);
+        });
+    }
+</script>
 {% endblock content %}

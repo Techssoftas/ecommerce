@@ -834,6 +834,51 @@ def create_order(request):
         print(e)
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+def verify_payment(request):
+    data = request.data  # Razorpay response: razorpay_order_id, razorpay_payment_id, razorpay_signature
+    user = request.user
+    
+    try:
+        # Verify signature (important for security)
+        client.utility.verify_payment_signature(data)
+        
+        # Get your Order from notes or transaction_id
+        payment = Payment.objects.get(transaction_id=data['razorpay_order_id'])
+        order = payment.order
+        
+        if order.user != user:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Update Payment and Order
+        payment.status = 'Completed'
+        payment.payment_id = data.get('razorpay_payment_id') 
+        payment.gateway_response = data
+        payment.save()
+        
+        order.status = 'Confirmed'
+        order.shipping_address_id = data.get('shipping_address_id')  # Send from frontend if needed
+        order.save()
+        
+        for item in order.items.all():
+            size_variant = item.size_variant
+            if size_variant:
+                if size_variant.stock >= item.quantity:
+                    size_variant.stock -= item.quantity
+                    size_variant.save()
+
+        # Clear cart only for cart orders
+        if order.source == 'cart' and Cart.objects.filter(user=user).exists():
+            Cart.objects.get(user=user).items.all().delete()  # Or delete the whole cart if preferred
+        
+        return Response({"success": "Payment verified and order confirmed"})
+    
+    except razorpay.errors.SignatureVerificationError:
+        return Response({"error": "Signature verification failed"}, status=status.HTTP_400_BAD_REQUEST)
+    except Payment.DoesNotExist:
+        return Response({"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 
 import json
 import hmac
@@ -968,49 +1013,6 @@ def delhivery_webhook(request):
     return JsonResponse({"status": "ok"}, status=200)
 
 
-
-@api_view(['POST'])
-def verify_payment(request):
-    data = request.data  # Razorpay response: razorpay_order_id, razorpay_payment_id, razorpay_signature
-    user = request.user
-    
-    try:
-        # Verify signature (important for security)
-        client.utility.verify_payment_signature(data)
-        
-        # Get your Order from notes or transaction_id
-        payment = Payment.objects.get(transaction_id=data['razorpay_order_id'])
-        order = payment.order
-        
-        if order.user != user:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        
-        # Update Payment and Order
-        payment.status = 'Completed'
-        payment.gateway_response = data
-        payment.save()
-        
-        order.status = 'Confirmed'
-        order.shipping_address_id = data.get('shipping_address_id')  # Send from frontend if needed
-        order.save()
-        
-        for item in order.items.all():
-            size_variant = item.size_variant
-            if size_variant:
-                if size_variant.stock >= item.quantity:
-                    size_variant.stock -= item.quantity
-                    size_variant.save()
-
-        # Clear cart only for cart orders
-        if order.source == 'cart' and Cart.objects.filter(user=user).exists():
-            Cart.objects.get(user=user).items.all().delete()  # Or delete the whole cart if preferred
-        
-        return Response({"success": "Payment verified and order confirmed"})
-    
-    except razorpay.errors.SignatureVerificationError:
-        return Response({"error": "Signature verification failed"}, status=status.HTTP_400_BAD_REQUEST)
-    except Payment.DoesNotExist:
-        return Response({"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 
