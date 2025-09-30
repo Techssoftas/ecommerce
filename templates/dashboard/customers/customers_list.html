@@ -115,7 +115,7 @@
                                 <thead class="text-muted table-light">
                                     <tr>
                                         <th class=" cursor-pointer fs-lg" data-sort="id"  style="font-family:serif;color:#002147;">ID</th>
-                                        <th class=" cursor-pointer fs-lg" data-sort="customer"  style="font-family:serif;color:#002147;">Customer</th>
+                                        <th class=" cursor-pointer fs-lg" data-sort="customer"  style="font-family:serif;color:#002147;">Customer Name</th>
                                         <th class=" cursor-pointer fs-lg" data-sort="email"  style="font-family:serif;color:#002147;">Email</th>
                                         <th class=" cursor-pointer fs-lg" data-sort="contact"  style="font-family:serif;color:#002147;">Contact</th>
                                         <th class=" cursor-pointer fs-lg" data-sort="date"  style="font-family:serif;color:#002147;">Join Date</th>
@@ -138,7 +138,7 @@
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <h5 class="fs-base mb-0">
-                                                        <a href="{% url 'dashboard:customer_detail' customer.id %}" class="text-reset customer-name-elem">{{ customer.username }}</a>
+                                                        <a href="{% url 'dashboard:customer_detail' customer.id %}" class="text-reset customer-name-elem">{{ customer.first_name }}</a>
                                                     </h5>
                                                 </div>
                                             </div>
