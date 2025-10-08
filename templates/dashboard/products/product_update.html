@@ -77,7 +77,7 @@ Products Create
                                                     <div class="mb-3">
                                                         <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
-                                                            <option value="{{ product.category.name }}">{{ product.category.name }}</option>
+                                                            <option value="{{ product.category.id }}">{{ product.category.name }}</option>
                                                             {% for category in categories %}
                                                                 <option value="{{ category.id }}">{{ category.name }}</option>
                                                             {% endfor %}
