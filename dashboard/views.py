@@ -1169,13 +1169,9 @@ def kids_girls_product_create(request):
     
     return render(request, 'dashboard/products/kids_girls_product_create.html', {'categories': categories})
 
+import uuid
 @login_required
 @user_passes_test(is_admin)
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Product, ProductImage, ProductVariant, Category
-import uuid
-
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
     categories = Category.objects.all()
