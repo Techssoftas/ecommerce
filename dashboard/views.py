@@ -1206,7 +1206,6 @@ def product_edit(request, pk):
         product.brand = brand
         product.model_name = model_name
         product.description = description
-        product.short_description = short_description
         product.category = category
         product.subcategory = subcategory
         product.price = selling_price
@@ -1215,8 +1214,6 @@ def product_edit(request, pk):
         product.stock = stock
         product.sku = sku
         product.hsn_code = hsn_code
-        product.condition = condition
-        product.availability_status = availability_status
         product.is_cod_available = is_cod_available
         product.is_returnable = is_returnable
         product.is_free_shipping = is_free_shipping
@@ -1225,56 +1222,16 @@ def product_edit(request, pk):
 
         # Handle product images
         product_images = request.FILES.getlist('product_images')
+        print("Uploaded images count:", len(product_images))
         if product_images:
-            # Optional: clear old images
-            product.images.all().delete()
+            # Check if a primary image already exists for the product
+            primary_exists = product.images.filter(is_primary=True).exists()
             for idx, image in enumerate(product_images):
                 ProductImage.objects.create(
                     product=product,
                     image=image,
-                    is_primary=(idx == 0)
+                    is_primary=(not primary_exists and idx == 0)
                 )
-
-        # Handle variant update
-        variant_value = request.POST.get('variant_value')  # e.g. color name
-        hex_color_code = request.POST.get('hex_color_code')
-        variant_image = request.FILES.get('variant_image')
-
-        # Optional: remove old variants
-        product.variants.all().delete()
-
-        # Create new variant
-        variant = ProductVariant.objects.create(
-            product=product,
-            color_name=variant_value,
-            hex_color_code=hex_color_code,
-        )
-
-        if variant_image:
-            ProductVariantImage.objects.create(
-                variant=variant,
-                image=variant_image,
-                is_default=True
-            )
-
-        # Handle size variants
-        variant_sizes = request.POST.getlist('variant_sizes')  # Could be comma-separated
-        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
-            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
-
-        variant_mrp = request.POST.get('variant_mrp_price') or 0
-        variant_selling_price = request.POST.get('variant_selling_price') or 0
-
-        for size in variant_sizes:
-            SizeVariant.objects.create(
-                variant=variant,
-                size=size,
-                sku=f"{sku}-{size.upper()}",
-                price=variant_selling_price,
-                discount_price=discount_price,
-                mrp=variant_mrp,
-                stock=stock
-            )
 
         messages.success(request, 'Product updated successfully!')
         return redirect('dashboard:product_list')

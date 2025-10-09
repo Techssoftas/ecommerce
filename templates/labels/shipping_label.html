@@ -1,3 +1,4 @@
+{% load math_filters %}
 <!doctype html>
 <html>
 <head>
@@ -174,27 +175,49 @@
           </tr>
         </thead>
         <tbody>
+         
           {% for item in order_items.items.all %}
-          <tr>
-            <td>{{ item.product.name|slice:":10" }}-{{item.variant.color_name}}-{{item.size_variant.size}}</td>
-            <td class="text-center">{{ item.product.hsn_code }}</td>
-            <td class="text-center">{{ item.quantity }}</td>
-            <td class="text-right">{{ item.size_variant.price  }}</td>
-            <td class="text-right">{{ item.size_variant.discount_price  }}</td>
-            <td class="text-right">{% if item.taxable_value %}{{ item.taxable_value  }}{% else %}-{% endif %}</td>
-            <td class="text-right">
-              GST 5%<br/>
-             
-            </td>
-            <td class="text-right">{{ item.price  }}</td>
-          </tr>
+            {% with item.size_variant.price|default_if_none:"0" as price %}
+              {% with price|mul:0.05 as gst_amount %}
+                {% with price|subtract:gst_amount as taxable_value %}
+                  <tr>
+                    <td>
+                      {{ item.product.name|default:""|slice:":10" }}-
+                      {{ item.variant.color_name|default:"" }}-
+                      {{ item.size_variant.size|default:"" }}
+                    </td>
+                    <td class="text-center">{{ item.product.hsn_code|default:"" }}</td>
+                    <td class="text-center">{{ item.quantity|default:"" }}</td>
+                    <td class="text-right">Rs.{{ item.size_variant.mrp|default:"0" }}</td>
+                    <td class="text-right">Rs.{{ item.size_variant.discount_price|default:"0" }}</td>
+
+                    <!-- Taxable Value -->
+                    <td class="text-right taxable">
+                      Rs.{{ taxable_value|floatformat:2 }}
+                    </td>
+
+                    <!-- GST Value -->
+                    <td class="text-right">
+                      IGST @5.0%<br/>
+                      Rs.{{ gst_amount|floatformat:2 }}
+                    </td>
+
+                    <!-- Final Price -->
+                    <td class="text-right">Rs.{{ price|floatformat:2 }}</td>
+                  </tr>
+                {% endwith %}
+              {% endwith %}
+            {% endwith %}
           {% endfor %}
+
         </tbody>
         <tfoot>
+          {% get_total_gst order_items as total_gst %}
           <tr>
             <td colspan="6" class="no-border-right"></td>
-            <td class="text-right"><strong>Total:</strong></td>
-            <td class="text-right"><strong>Rs.{{ oredr.total_mrp  }}</strong></td>
+            
+            <td class="text-right"><strong>Rs.{{ total_gst|floatformat:2 }}</strong></td>
+            <td class="text-right"><strong>Rs.{{ order_items.total_amount  }}</strong></td>
           </tr>
           <tr>
             <td colspan="8" class=""><p>Tax is not payable on reverse charge basis. This is a computer generated invoice and does not require signature. Other charges are charges that are applicable to your order and include charges for logistics fee (where applicable). Includes discounts for your city and/or for online payments (as applicable).</p></td>
@@ -203,7 +226,6 @@
           </tr>
 
         </tfoot>
-
          
       </table>
      

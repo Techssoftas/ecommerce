@@ -69,27 +69,45 @@ Products Create
                                         <div class="row">
                                             
                                             <div class="col-xxl-12">
-                                               
-                                                    <div class="mb-3">
-                                                        <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control" value="{{ product.name }}"  name="name" id="productTitle" placeholder="Enter product title" >
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
-                                                        <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
-                                                            <option value="{{ product.category.id }}">{{ product.category.name }}</option>
-                                                            {% for category in categories %}
-                                                                <option value="{{ category.id }}">{{ category.name }}</option>
-                                                            {% endfor %}
-                                                        </select>
+                                                    <div class="row">
+                                                        <div class="col-lg-12">
+                                                            <div class="mb-3">
+                                                                <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
+                                                                <input type="text" class="form-control" value="{{ product.name }}"  name="name" id="productTitle" placeholder="Enter product title" >
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
+                                                                <select class="form-control" name="category" data-choices id="productCategories" required>
+                                                                    <option value="{{ product.category.id }}">{{ product.category.name }}</option>
+                                                                    {% for category in categories %}
+                                                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="SubCategory" class="form-label">SubCategory <span class="text-danger">*</span></label>
+                                                                <select class="form-control" name="subcategory" data-choices  id="SubCategory" required>
+                                                                    <option value="{{ product.subcategory }}">{{ product.subcategory }}</option>
+                                                                    <option value="Mens">Mens</option>
+                                                                    <option value="Womens">Womens</option>
+                                                                    <option value="Kids(Boys)">Kids(Boys)</option>
+                                                                    <option value="Kids(Girls)">Kids(Girls)</option>
+                            
+                                                                </select>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
-                                                        <textarea class="form-control" name="description"  id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8">{{ product.description }}</textarea>
+                                                    <div class="row">
+                                                        <div class="mb-3">
+                                                            <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
+                                                            <textarea class="form-control" name="description"  id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8">{{ product.description }}</textarea>
+                                                        </div>
                                                     </div>
-
                                                      <div class="row mt-4">
                                                         <div class="col-lg-3">
                                                             <div class="mb-3">
@@ -239,7 +257,7 @@ Products Create
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row">
+                                            <div class="row">
                                               <div class="col-xxl-12">
                                                 <div class="mb-3">
                                                     <label class="form-label">Product Images <span class="text-danger">*</span></label>
@@ -910,12 +928,11 @@ Products Create
 
 
 
-    <!-- dropzone js -->
-    <script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
     <!-- init js -->
     <script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
 
 <script>
 $(document).ready(function () {
@@ -982,46 +999,68 @@ $(document).ready(function () {
 
 
 <script>
-Dropzone.autoDiscover = false; // avoid auto init
+Dropzone.autoDiscover = false;
 
-var myDropzone = new Dropzone("#dropzoneArea", {
-    autoProcessQueue: false,       // don't auto-upload
+// Initialize Dropzone for product images only
+const myDropzone = new Dropzone("#dropzoneArea", {
+    url: "#", // we handle upload manually
+    autoProcessQueue: false,
     uploadMultiple: true,
-    parallelUploads: 10,
-    maxFiles: 20,
-    paramName: "product_images",   // must match Django field name
-    addRemoveLinks: true
+    paramName: "product_images",
+    clickable: "#dropzoneArea",
+    addRemoveLinks: true,
+    acceptedFiles: "image/*",
+    parallelUploads: 10
 });
 
+// Handle form submit
 document.getElementById("productDropzoneForm").addEventListener("submit", function(e) {
-    e.preventDefault(); // stop normal submit
+    e.preventDefault(); // prevent normal submit
 
-    var form = this;
-    var formData = new FormData(form);
+    const form = this;
+    const formData = new FormData(form);
 
-    // append Dropzone files into formData
-    myDropzone.files.forEach(function(file) {
+    // ✅ Append Dropzone images manually
+    myDropzone.files.forEach(file => {
         formData.append("product_images", file, file.name);
     });
 
+    console.log("🧾 Total product images sending:", myDropzone.files.length);
+
+    // ✅ Send via fetch (to Django)
     fetch(form.action, {
         method: "POST",
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Success:", data);
-        // optionally redirect or show message
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url; // redirect after success
+        } else {
+            return response.text();
+        }
     })
-    .catch(error => {
-        console.error("Error:", error);
-    });
+    .then(data => console.log("✅ Upload complete"))
+    .catch(err => console.error("❌ Upload error:", err));
 });
 
-
-
-
+// ✅ Simple CSRF helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
