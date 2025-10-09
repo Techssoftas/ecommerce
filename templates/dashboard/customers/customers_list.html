@@ -125,11 +125,11 @@
                                 </thead>
                                 <tbody class="list" id="customer-table-body">
                                     {% for customer in customers %}
-                                    <tr data-id="{{ customer.id }}" data-customer="{{ customer.username }}" data-email="{{ customer.email }}" data-contact="{{ customer.phone|default:'N/A' }}" data-date="{{ customer.date_joined|date:'Y-m-d' }}" data-status="{% if customer.is_active %}Active{% else %}Unactive{% endif %}">
+                                     <tr data-id="{{ customer.id }}" data-customer="{{ customer.username }}" data-email="{{ customer.email }}" data-contact="{{ customer.phone|default:'N/A' }}" data-date="{{ customer.date_joined|date:'Y-m-d' }}" data-status="{% if customer.is_active %}Active{% else %}Unactive{% endif %}">
                                         <td class="id" style="font-family:sans-serif;" >
                                             <a href="{% url 'dashboard:customer_detail' customer.id %}" class="fw-medium link-primary">{{ customer.id }}</a>
                                         </td>
-                                        <td class="customer">
+                                        <td class="customer" style="font-family:sans-serif;">
                                             <div class="d-flex align-items-center">
                                                 <div class="flex-shrink-0 me-2">
                                                     <div>
@@ -188,7 +188,7 @@
                                             </div>
                                             <!-- end deleteRecordModal -->
                                         </td>
-                                    </tr>
+                                     </tr>
                                     {% empty %}
                                     <tr>
                                         <td colspan="7" class="text-center">No customers found</td>
