@@ -157,6 +157,7 @@
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                         {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Payment Status</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
                        <th scope="col" class="cursor-pointer fs-lg" data-sort="label" style="font-family:serif; color:#002147;">Label</th>
                         <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
@@ -241,6 +242,24 @@
                               {% endwith %}
                             </h5>
                           </td> {% endcomment %}
+                          <td class="paymentstatus">
+                            {% if order.payment %}
+                              <span class="badge 
+                                  {% if order.payment.status == 'Completed' %}
+                                      bg-success-subtle text-success
+                                  {% elif order.payment.status == 'Failed' or order.payment.status == 'Cancelled' %}
+                                      bg-danger-subtle text-danger
+                                  {% elif order.payment.status == 'Refunded' %}
+                                      bg-info-subtle text-info
+                                  {% else %}
+                                      bg-warning-subtle text-warning
+                                  {% endif %}">
+                                  {{ order.payment.status }}
+                              </span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning">Payment: N/A</span>
+                            {% endif %}
+                          </td>
                           <td class="status">
                             <span class="badge
                                 {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
