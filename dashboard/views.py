@@ -567,11 +567,12 @@ def mens_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
+
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -590,8 +591,8 @@ def mens_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        return_period = request.POST.get('return_period')
-        replace_period = request.POST.get('replace_period')
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -740,11 +741,13 @@ def womens_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -763,8 +766,6 @@ def womens_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
-        # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
             name=name,
@@ -786,10 +787,10 @@ def womens_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -810,7 +811,8 @@ def womens_product_create(request):
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -897,11 +899,11 @@ def kids_boys_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -920,7 +922,8 @@ def kids_boys_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -943,10 +946,10 @@ def kids_boys_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -967,7 +970,8 @@ def kids_boys_product_create(request):
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -1054,11 +1058,11 @@ def kids_girls_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -1077,7 +1081,8 @@ def kids_girls_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -1100,10 +1105,10 @@ def kids_girls_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -1124,7 +1129,8 @@ def kids_girls_product_create(request):
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images

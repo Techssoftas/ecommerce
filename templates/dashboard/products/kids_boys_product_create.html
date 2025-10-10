@@ -1111,24 +1111,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!--  category form --> 
 <!-- JavaScript to toggle visibility -->
+
 <script>
-    // Get elements
     const refundableInput = document.getElementById('refundableInput');
     const returnPeriodDiv = document.getElementById('returnPeriodDiv');
+    const returnPeriodInput = document.getElementById('return_period');
 
     const replaceableInput = document.getElementById('is_replaceable');
     const replacePeriodDiv = document.getElementById('replacePeriodDiv');
+    const replacePeriodInput = document.getElementById('replace_period');
 
-    // Add event listeners
+    // Function to toggle field
+    function toggleField(checkbox, div, input) {
+        if (checkbox.checked) {
+            div.style.display = 'block';
+            input.setAttribute('required', 'required');
+        } else {
+            div.style.display = 'none';
+            input.removeAttribute('required');
+            input.value = ''; // Optional: clear value if unchecked
+        }
+    }
+
+    // Initial check (if pre-filled)
+    toggleField(refundableInput, returnPeriodDiv, returnPeriodInput);
+    toggleField(replaceableInput, replacePeriodDiv, replacePeriodInput);
+
+    // On change
     refundableInput.addEventListener('change', function () {
-        returnPeriodDiv.style.display = this.checked ? 'block' : 'none';
-        document.getElementById('return_period').required = this.checked;
+        toggleField(this, returnPeriodDiv, returnPeriodInput);
     });
 
     replaceableInput.addEventListener('change', function () {
-        replacePeriodDiv.style.display = this.checked ? 'block' : 'none';
-        document.getElementById('replace_period').required = this.checked;
+        toggleField(this, replacePeriodDiv, replacePeriodInput);
     });
 </script>
+
 
 {% endblock content %}

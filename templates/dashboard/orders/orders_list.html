@@ -158,7 +158,7 @@
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                         {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Payment Status</th>
-                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Order Status</th>
                        <th scope="col" class="cursor-pointer fs-lg" data-sort="label" style="font-family:serif; color:#002147;">Label</th>
                         <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
                       </tr>
@@ -281,7 +281,7 @@
                             
                             
                                
-                            {% if order.status == 'Pending' or order.status == 'Confirmed'  %}
+                            {% if order.status == 'Confirmed'  %}
                               <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
                                  {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
@@ -297,6 +297,23 @@
                                   </span>
                                 </button>
                               </form>
+                            {% elif order.status == 'Pending'  %}
+                              <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-primary pending-generate-btn">Generate Label</button>
+
+                                <button class="btn btn-outline-primary btn-load d-none" type="button" disabled>
+                                  <span class="d-flex align-items-center">
+                                    <span class="spinner-border flex-shrink-0" role="status">
+                                      <span class="visually-hidden">Loading...</span>
+                                    </span>
+                                    <span class="flex-grow-1 ms-2">
+                                      Loading...
+                                    </span>
+                                  </span>
+                                </button>
+                              </form>
+
                             {% elif order.status == 'Ready to Ship' %}
                              <form class="create-pickup-form" action="{% url 'dashboard:create_pickup' order.id %}" method="post" style="display:inline;">
                                   {% csrf_token %}
@@ -898,6 +915,37 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const pendingButtons = document.querySelectorAll(".pending-generate-btn");
+
+    pendingButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: 'Do you want to generate the label? The order status is still pending.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, confirm',
+          cancelButtonText: 'Cancel',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Show loading button and submit the form
+            const form = btn.closest("form");
+            const generateBtn = form.querySelector(".generate-btn");
+            const loadBtn = form.querySelector(".btn-load");
+
+            generateBtn.classList.add("d-none");
+            loadBtn.classList.remove("d-none");
+
+            form.submit();
+          }
+        });
+      });
+    });
+  });
 </script>
 
 {% endblock %}
