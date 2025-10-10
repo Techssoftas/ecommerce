@@ -539,6 +539,7 @@ def mens_product_create(request):
         is_cod_available = request.POST.get('cod_available') == 'on'  
         is_returnable = request.POST.get('is_returnable')   == 'on'
         is_free_shipping = request.POST.get('free_shipping') == 'on'  
+        is_active = request.POST.get('is_active') == 'on'  
         
         discount_price = request.POST.get('discount_price')
         sku = request.POST.get('sku')
@@ -581,7 +582,7 @@ def mens_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -627,7 +628,7 @@ def mens_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -713,7 +714,7 @@ def womens_product_create(request):
         is_cod_available = request.POST.get('cod_available') == 'on'  
         is_returnable = request.POST.get('is_returnable')   == 'on'
         is_free_shipping = request.POST.get('free_shipping') == 'on'  
-        
+        is_active = request.POST.get('is_active') == 'on'  
         discount_price = request.POST.get('discount_price')
         sku = request.POST.get('sku')
         if not sku:
@@ -799,7 +800,7 @@ def womens_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -912,7 +913,7 @@ def kids_boys_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -958,7 +959,7 @@ def kids_boys_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -1071,7 +1072,7 @@ def kids_girls_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -1117,7 +1118,7 @@ def kids_girls_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -1192,6 +1193,7 @@ def product_edit(request, pk):
         is_cod_available = request.POST.get('cod_available') == 'on'
         is_returnable = request.POST.get('is_returnable') == 'on'
         is_free_shipping = request.POST.get('free_shipping') == 'on'
+        is_active = request.POST.get('is_active') == 'on'  
 
         discount_price = request.POST.get('discount_price') or 0
         mrp_price = request.POST.get('product_mrp_price') or 0
@@ -1223,6 +1225,7 @@ def product_edit(request, pk):
         product.is_cod_available = is_cod_available
         product.is_returnable = is_returnable
         product.is_free_shipping = is_free_shipping
+        product.is_active = is_active
 
         product.save()
 
