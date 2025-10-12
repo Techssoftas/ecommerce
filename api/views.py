@@ -818,6 +818,122 @@ def create_order(request):
         print(e)
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+def cod_order_create(request):
+    user = request.user
+
+    if not user.is_authenticated:
+        return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    data = request.data
+    order_type = data.get('type')  # 'cart' or 'buynow'
+    shipping_address_id = data.get('shipping_address_id')
+
+    if not shipping_address_id:
+        return Response({"error": "Shipping address required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        shipping_address = ShippingAddress.objects.get(id=shipping_address_id, user=user)
+    except ShippingAddress.DoesNotExist:
+        return Response({"error": "Invalid shipping address"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        if order_type == 'cart':
+            cart = Cart.objects.get(user=user)
+            if not cart.items.exists():
+                return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+            total_amount = cart.total_price
+
+        elif order_type == 'buynow':
+            product_id = data.get('product_id')
+            variant_id = data.get('variant_id')
+            size_variant_id = data.get('size_variant_id')
+            quantity = int(data.get('quantity', 1))
+
+            if not (product_id and variant_id and size_variant_id):
+                return Response({"error": "Missing product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+
+            product = Product.objects.get(id=product_id, is_active=True)
+            variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+            size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+
+            total_amount = size_variant.get_price * quantity
+
+        else:
+            return Response({"error": "Invalid order type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # COD charges (like ₹90)
+        cod_fee = 90
+        final_amount = total_amount + cod_fee
+
+        # ✅ Create Order
+        order = Order.objects.create(
+            user=user,
+            total_amount=final_amount,
+            billing_address=shipping_address.address_line1,
+            shipping_address=shipping_address,
+            phone=user.phone or '',
+            email=user.email,
+            notes='Cash on Delivery order',
+            source=order_type,
+            status='Confirmed'  # COD orders start as pending
+        )
+
+        # ✅ Create Order Items
+        if order_type == 'cart':
+            for item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    variant=item.variant,
+                    size_variant=item.varient_size,
+                    quantity=item.quantity,
+                    price=item.varient_size.get_price if item.varient_size else item.product.get_price
+                )
+        else:
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                variant=variant,
+                size_variant=size_variant,
+                quantity=quantity,
+                price=size_variant.get_price
+            )
+
+        # ✅ Create Payment record (COD)
+        Payment.objects.create(
+            order=order,
+            payment_method='Cash on Delivery',
+            amount=final_amount,
+            transaction_id='COD-' + str(order.order_number),
+            status='Pending',
+            gateway_response={}
+        )
+
+        # ✅ Reduce stock
+        for item in order.items.all():
+            if item.size_variant and item.size_variant.stock >= item.quantity:
+                item.size_variant.stock -= item.quantity
+                item.size_variant.save()
+
+        # ✅ Clear cart if needed
+        if order_type == 'cart':
+            cart.items.all().delete()
+
+        # ✅ Generate shipment label
+        # create_shipping_label(request, order_id=order.id)
+
+        return Response({
+            "success": "COD order placed successfully",
+            "order_id": order.order_number,
+            "total": final_amount,
+            "cod_fee": cod_fee
+        })
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 import json
 import hmac

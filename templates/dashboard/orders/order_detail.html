@@ -39,8 +39,10 @@
                   </p>
                 </div>
                 <div class="flex-shrink-0">
-                  <a href="{% url 'dashboard:download_invoice' order.order_number %}" class="btn btn-primary"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
-                </div>
+                  {% if order.tracking.label_file %}
+                    <a href="{{ order.tracking.label_file.url }}" class="btn btn-primary"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+                  {% endif %}
+                  </div>
               </div>
             </div>
             <!-- end card -->
@@ -261,17 +263,12 @@
                         <tbody>
                           <tr>
                             <td>Sub Total :</td>
-                            <td class="text-end">₹{{ order.total_mrp }}</td>
+                            <td class="text-end">₹{{ order.total_selling }}.00</td>
                           </tr>
-                          <tr>
-                            <td>
-                              Discount <span class="text-muted">(STEEX30)</span> : :
-                            </td>
-                            <td class="text-end">- ₹{{ order.total_discount }}</td>
-                          </tr>
+                          
                           <tr>
                             <td>Shipping Charge :</td>
-                            <td class="text-end">₹ 0.00</td>
+                            <td class="text-end">₹ 90.00</td>
                           </tr>
                           <tr>
                             <td>Estimated Tax :</td>
@@ -325,7 +322,9 @@
                 <h6 class="card-title flex-grow-1 mb-0">Order Status</h6>
                 <div class="flex-shrink-0">
                   <button type="button" class="btn btn-danger btn-sm"><i class="ph-x align-middle"></i> Cancel Order</button>
-                  <a href="{% url 'dashboard:download_invoice' order.order_number %}" class="btn btn-primary btn-sm"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+                 {% if order.tracking.label_file %}
+                  <a href="{{ order.tracking.label_file.url }}" class="btn btn-primary btn-sm"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
+                {% endif %}
                 </div>
               </div>
               <div class="card-body">

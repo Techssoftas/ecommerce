@@ -48,8 +48,16 @@ urlpatterns = [
     path('buy_now/', BuyNowCheckoutView.as_view(), name='buy_now'),
     path('cart_checkout/', CartCheckoutView.as_view(), name='cart_checkout'),
 
-    path('create_order/', create_order, name='create_order'),
-    path('verify_payment/', verify_payment, name='verify_payment'),
+    # path('create_order/', create_order, name='create_order'),
+    # path('verify_payment/', verify_payment, name='verify_payment'),
+    
+    path('initiate_payment/', initiate_payment, name='initiate_payment'),
+    path('confirm_order/', confirm_order, name='confirm_order'),
+    path('cod_order_create/', cod_order_create, name='cod_order_create'),
+    
+    
+    path('create_return_request/', ReturnRequestCreateView.as_view(), name='create_return_request'),
+
 
     path('shipping-address/', ShippingAddressListCreateView.as_view(), name='shipping-addresses'),
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),

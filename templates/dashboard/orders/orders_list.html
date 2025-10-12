@@ -121,7 +121,44 @@
                   <!-- Header with Sort and Search -->
                   <div class="col-md-auto ms-md-auto">
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                      <button class="btn btn-subtle-danger d-none" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
+                     
+                      
+                       <button type="button" class="btn btn-primary right rounded-pill " data-bs-toggle="modal" data-bs-target=".bs-example-modal-center"><i class="ri-shopping-cart-2-fill align-bottom me-1"></i>Generate Bulk Labels</button>
+                                            <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-body text-center p-2">
+                                                            <div class="mt-4">
+                                                              <form id="generateBulkLabelForm" action="" method="post">
+                                                                <h4 class="mb-3">Generate Bulk Labels..!</h4>
+                                                                <div class="row justify-content-center">
+                                                                  <div class="col-xxl-4 col-md-4">
+                                                                      <div>
+                                                                          <label for="exampleInputdate" class="form-label">From Date</label>
+                                                                          <input type="date" class="form-control" id="fromInputdate" name="from_date" required>
+                                                                          <span class="text-danger small" id="fromDateError"></span>
+                                                                      </div>
+                                                                  </div>
+                                                                  <div class="col-xxl-4 col-md-4">
+                                                                      <div>
+                                                                          <label for="exampleInputdate" class="form-label">To Date</label>
+                                                                          <input type="date" class="form-control" id="toInputdate" name="to_date" required>
+                                                                           <span class="text-danger small" id="toDateError"></span>
+                                                                      </div>
+                                                                  </div>
+                                                                </div>
+                                                                <div class="hstack gap-2 justify-content-center mt-4">
+                                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                                                                    <button type="submit" class="btn btn-success">Generate</button>
+                                                                </div>
+                                                              </form>
+                                                            </div>
+                                                        </div>
+                                                    </div><!-- /.modal-content -->
+                                                </div><!-- /.modal-dialog -->
+                                            </div><!-- /.modal -->
+
+                      
                       <div class="dropdown card-header-dropdown sortble-dropdown flex-shrink-0">
                         <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="text-muted dropdown-title" id="sort-title">Order Date</span> <i class="mdi mdi-chevron-down ms-1"></i></a>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -278,6 +315,23 @@
                                   </span>
                                 </button>
                               </form>
+                            {% elif order.status == 'Pending'  %}
+                              <form class="Pending-create-label-form" data-label-form="order-{{ order.id }}" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-primary pending-generate-btn">Generate Label</button>
+
+                                <button class="btn btn-outline-primary btn-load d-none" type="button" disabled>
+                                  <span class="d-flex align-items-center">
+                                    <span class="spinner-border flex-shrink-0" role="status">
+                                      <span class="visually-hidden">Loading...</span>
+                                    </span>
+                                    <span class="flex-grow-1 ms-2">
+                                      Loading...
+                                    </span>
+                                  </span>
+                                </button>
+                              </form>
+
                             {% elif order.status == 'Ready to Ship' %}
                              <form class="create-pickup-form" action="{% url 'dashboard:create_pickup' order.id %}" method="post" style="display:inline;">
                                   {% csrf_token %}
@@ -872,5 +926,70 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const pendingButtons = document.querySelectorAll(".pending-generate-btn");
 
+    pendingButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: 'Do you want to generate the label? The order status is still pending.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, confirm',
+          cancelButtonText: 'Cancel',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Show loading button and submit the form
+            const form = btn.closest("form[data-label-form]");
+            const generateBtn = form.querySelector(".pending-generate-btn");
+            const loadBtn = form.querySelector(".btn-load");
+
+            if (generateBtn) generateBtn.classList.add("d-none");
+            if (loadBtn) loadBtn.classList.remove("d-none");
+
+
+            form.submit();
+          }
+        });
+      });
+    });
+  });
+</script>
+<script>
+    document.getElementById('generateBulkLabelForm').addEventListener('submit', function (e) {
+        const fromDateInput = document.getElementById('fromInputdate');
+        const toDateInput = document.getElementById('toInputdate');
+        const fromDate = fromDateInput.value;
+        const toDate = toDateInput.value;
+
+        // Clear old error messages
+        document.getElementById('fromDateError').textContent = '';
+        document.getElementById('toDateError').textContent = '';
+        fromDateInput.classList.remove('is-invalid');
+        toDateInput.classList.remove('is-invalid');
+
+        // Validate only if both dates are selected
+        if (fromDate && toDate) {
+            const from = new Date(fromDate);
+            const to = new Date(toDate);
+
+            if (from >= to) {
+                e.preventDefault(); // Stop form submission
+
+                const errorMsg = "From Date must be earlier than To Date.";
+
+                // Show error under both fields
+                document.getElementById('fromDateError').textContent = errorMsg;
+                document.getElementById('toDateError').textContent = errorMsg;
+
+                // Add red border
+                fromDateInput.classList.add('is-invalid');
+                toDateInput.classList.add('is-invalid');
+            }
+        }
+    });
+</script>
 {% endblock %}

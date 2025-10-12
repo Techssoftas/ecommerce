@@ -186,12 +186,34 @@
             <td class="text-right">{{ item.total  }}</td>
           </tr>
           {% endfor %}
+          
+          
+          {% if cod_charge %}
+            <tr>
+              <td>{{ cod_charge.description }}</td>
+              <td class="text-center">{{ cod_charge.hsn_code }}</td>
+              <td class="text-center">{{ cod_charge.qty }}</td>
+              <td class="text-right">Rs.0</td>
+              <td class="text-right">Rs.{{ cod_charge.discount }}</td>
+              <td class="text-right">Rs.{{ cod_charge.taxable_value|floatformat:2 }}</td>
+              <td class="text-right">
+                IGST @{{ cod_charge.gst_rate }}%<br/>
+                Rs.{{ cod_charge.gst_amount|floatformat:2 }}
+              </td>
+              <td class="text-right">Rs.{{ cod_charge.total|floatformat:2 }}</td>
+            </tr>
+          {% endif %}
+
+
         </tbody>
         <tfoot>
+          {% get_total_gst order_items cod_charge as total_gst %}
           <tr>
             <td colspan="6" class="no-border-right"></td>
-            <td class="text-right"><strong>Total:</strong></td>
-            <td class="text-right"><strong>Rs.{{ invoice.totals.total_payable  }}</strong></td>
+            
+                <td class="text-right"><strong>Rs.{{  total_gst|floatformat:2  }}</strong></td>
+              
+            <td class="text-right"><strong>Rs.{{ order_items.total_amount  }}</strong></td>
           </tr>
           <tr>
             <td colspan="8" class=""><p>Tax is not payable on reverse charge basis. This is a computer generated invoice and does not require signature. Other charges are charges that are applicable to your order and include charges for logistics fee (where applicable). Includes discounts for your city and/or for online payments (as applicable).</p></td>
