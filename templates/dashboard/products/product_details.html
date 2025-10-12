@@ -87,82 +87,60 @@ Products Details
 
                                             <h6 class="fs-md mb-3">Choose Size:</h6>
                                             <div class="d-flex flex-wrap gap-2">
-                                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="Out of Stock">
-                                                    <input type="radio" class="btn-check" name="productsize-radio" id="productsize-radio1" disabled>
-                                                    <label class="btn btn-subtle-primary avatar-xs rounded-circle p-0 d-flex justify-content-center align-items-center" for="productsize-radio1">S</label>
-                                                </div>
+                                                
+                                               {% for size in size_variants %}
+                                                    <div data-bs-toggle="tooltip" 
+                                                        data-bs-trigger="hover" 
+                                                        data-bs-placement="top" 
+                                                        data-bs-original-title="{{ size.stock }} Items Available">
+                                                        
+                                                        <input type="radio" 
+                                                            class="btn-check" 
+                                                            name="productsize-radio" 
+                                                            id="productsize-radio{{ forloop.counter }}">
 
-                                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="04 Items Available">
-                                                    <input type="radio" class="btn-check" name="productsize-radio" id="productsize-radio2">
-                                                    <label class="btn btn-subtle-primary avatar-xs rounded-circle p-0 d-flex justify-content-center align-items-center" for="productsize-radio2">M</label>
-                                                </div>
-                                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="06 Items Available">
-                                                    <input type="radio" class="btn-check" name="productsize-radio" id="productsize-radio3">
-                                                    <label class="btn btn-subtle-primary avatar-xs rounded-circle p-0 d-flex justify-content-center align-items-center" for="productsize-radio3">L</label>
-                                                </div>
+                                                        <label class="btn btn-subtle-primary avatar-xs rounded-circle p-0 d-flex justify-content-center align-items-center" 
+                                                            for="productsize-radio{{ forloop.counter }}">
+                                                        {{ size.size|upper }}
+                                                        </label>
+                                                    </div>
+                                                {% empty %}
+                                                    <p>No sizes available</p>
+                                                {% endfor %}
 
-                                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="Out of Stock">
-                                                    <input type="radio" class="btn-check" name="productsize-radio" id="productsize-radio4" disabled>
-                                                    <label class="btn btn-subtle-primary avatar-xs rounded-circle p-0 d-flex justify-content-center align-items-center" for="productsize-radio4">XL</label>
-                                                </div>
 
-                                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="08 Items Available">
-                                                    <input type="radio" class="btn-check" name="productsize-radio" id="productsize-radio5">
-                                                    <label class="btn btn-subtle-primary avatar-xs rounded-circle p-0 d-flex justify-content-center align-items-center" for="productsize-radio5">2xl</label>
-                                                </div>
                                             </div>
 
                                             <div class="mt-4">
                                                 <h5 class="fs-md mb-3">Colors :</h5>
                                                 <div class="d-flex flex-wrap gap-2">
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="Out of Stock">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-primary" disabled="">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="03 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-secondary">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="03 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-success">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="02 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-info">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="01 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-warning">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="04 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-danger">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="03 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-light">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="04 Items Available">
-                                                        <button type="button" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-dark">
-                                                            <i class="ri-checkbox-blank-circle-fill"></i>
-                                                        </button>
-                                                    </div>
+                                                    {% for color in color_variants %}
+                                                        <div data-bs-toggle="tooltip"  data-bs-placement="top"  >
+                                                            <button type="button" style="background-color: {{ color.hex_color_code }};" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-primary" disabled="">
+                                                            
+                                                            </button>
+                                                        </div>
+                                                    {% empty %}
+                                                        <p>No sizes available</p>
+                                                    {% endfor %}
                                                 </div>
                                             </div>
 
-                                            <div class="mt-4">
-                                                <h5 class="fs-md mb-3">Shipping Information:</h5>
-                                                <p class="text-muted mb-2"><b>Delivery Location</b> </p>
-                                                <p class="text-muted mb-0">{{ product.short_description }}</p>
-                                            </div>
+                                           <div class="mt-4">
+                                            <h5 class="fs-md mb-3">Key Features:</h5>
+
+                                            {% if product.key_features %}
+                                                <ul class="list-unstyled text-muted">
+                                                    {% for key, value in product.key_features.items %}
+                                                        <li><strong>{{ key|capfirst }}:</strong> {{ value }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="text-muted">No specifications available.</p>
+                                            {% endif %}
+                                        </div>
+
+
 
                                         </div>
                                     </div><!--end card-->
@@ -251,20 +229,7 @@ Products Details
                                        
                                     </div>
 
-                                    <div class="mt-4">
-                                        <h5 class="fs-md mb-3">Product Details:</h5>
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-borderless align-middle description-table mb-0">
-                                                <tbody>
-                                                   {% for key, value in product.specifications.items %}
-                                                    <li class="list-group-item"><strong>{{ key }}</strong>: {{ value }}</li>
-                                                    {% empty %}
-                                                    <li class="list-group-item">No specifications available</li>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div><!--end col-->

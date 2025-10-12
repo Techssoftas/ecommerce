@@ -69,40 +69,101 @@ Products Create
                                         <div class="row">
                                             
                                             <div class="col-xxl-12">
-                                               
-                                                    <div class="mb-3">
-                                                        <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control" value="{{ product.name }}"  name="name" id="productTitle" placeholder="Enter product title" >
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
-                                                        <select class="form-control" name="category" data-choices name="productCategories" id="productCategories" required>
-                                                            <option value="">{{ product.name }}</option>
-                                                            {% for category in categories %}
-                                                                <option value="{{ category.id }}">{{ category.name }}</option>
-                                                            {% endfor %}
-                                                        </select>
+                                                    <div class="row">
+                                                        <div class="col-lg-12">
+                                                            <div class="mb-3">
+                                                                <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
+                                                                <input type="text" class="form-control" value="{{ product.name }}"  name="name" id="productTitle" placeholder="Enter product title" >
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="productCategories" class="form-label">Categories <span class="text-danger">*</span></label>
+                                                                <select class="form-control" name="category" data-choices id="productCategories" required>
+                                                                    <option value="{{ product.category.id }}">{{ product.category.name }}</option>
+                                                                    {% for category in categories %}
+                                                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mb-3">
+                                                                <label for="SubCategory" class="form-label">SubCategory <span class="text-danger">*</span></label>
+                                                                <select class="form-control" name="subcategory" data-choices  id="SubCategory" required>
+                                                                    <option value="{{ product.subcategory }}">{{ product.subcategory }}</option>
+                                                                    <option value="Mens">Mens</option>
+                                                                    <option value="Womens">Womens</option>
+                                                                    <option value="Kids(Boys)">Kids(Boys)</option>
+                                                                    <option value="Kids(Girls)">Kids(Girls)</option>
+                            
+                                                                </select>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
-                                                        <textarea class="form-control" name="description"  id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8">{{ product.description }}</textarea>
+                                                    <div class="row">
+                                                        <div class="mb-3">
+                                                            <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
+                                                            <textarea class="form-control" name="description"  id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8">{{ product.description }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                     <div class="row mt-4">
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="weight" class="form-label">Weight (Gm)<span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" value="{{product.weight}}" name="weight" class="form-control" 
+                                                                    id="weight" placeholder="Enter brand">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="dimensions_length" class="form-label">Length (Cm) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" inputmode="decimal" value="{{product.dimensions_length}}" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_length" class="form-control"
+                                                                    placeholder="Enter Length">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="dimensions_width" class="form-label">Width (Cm) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" inputmode="decimal" value="{{product.dimensions_width}}" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_width" class="form-control"
+                                                                    placeholder="Enter Width">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3">
+                                                            <div class="mb-3">
+                                                                <label for="dimensions_height" class="form-label">Height (Cm) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="number" inputmode="decimal" value="{{product.dimensions_height}}" pattern="^\d*([.,]?\d+)?$" name="dimensions_height" class="form-control"
+                                                                    placeholder="Enter Height">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label for="productBrand" class="form-label">Brand <span class="text-danger">*</span></label>
                                                                 <input type="text" value="{{ product.brand }}"  name="brand" class="form-control" id="productBrand" placeholder="Enter brand" >
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label for="productBrand" class="form-label">Model name <span class="text-danger">*</span></label>
                                                                 <input type="text" name="model_name" value="{{ product.model_name }}" class="form-control" id="productBrand" placeholder="Enter brand" >
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
+                                                            <div class="mb-3">
+                                                                <label for="hsn_code" class="form-label">HSN Code <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="hsn_code" value="{% if product.hsn_code %}{{product.hsn_code}}{% else %} 0 {%endif%}" class="form-control"
+                                                                    placeholder="Enter HSN Code">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
                                                                 <div class="input-group has-validation">
@@ -112,7 +173,7 @@ Products Create
                                                                 </div>
                                                             </div>
                                                         </div><!--end col-->
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <div class="mb-3">
                                                                 <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
                                                                 <div class="input-group has-validation">
@@ -122,26 +183,68 @@ Products Create
                                                                 </div>
                                                             </div>
                                                         </div><!--end col-->
-                                                    
+                                                        <div class="col-lg-4">
+                                                            <div class="mb-3">
+                                                                <label for="sku" class="form-label">Sku Code <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="sku" value="{{product.sku}}" class="form-control"
+                                                                    placeholder="Enter SKU Code">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     
                                                     <div class="row mt-3">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-2">
                                                             <div class="form-check form-switch mb-3">
-                                                                <input type="checkbox" name="cod_available" {% if product.is_cod_available %}checked{% endif %} class="form-check-input" id="id_cod_available">
-                                                                <label class="form-check-label" for="exchangeableInput">Cod Available</label>
+                                                                <input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %} class="form-check-input" id="is_active">
+                                                                <label class="form-check-label" for="is_active">Is Showing</label>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-2">
                                                             <div class="form-check form-switch mb-3">
-                                                                <input type="checkbox" name="returnable" {% if product.is_returnable %}checked{% endif %} class="form-check-input" id="id_returnable">
+                                                                <input type="checkbox" name="cod_available" {% if product.is_cod_available %}checked{% endif %} class="form-check-input" id="id_cod_available">
+                                                                <label class="form-check-label" for="cod_available">Cod Available</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2">
+                                                            <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="free_shipping" {% if product.free_shipping %}checked{% endif %} class="form-check-input" id="id_free_shipping">
+                                                                <label class="form-check-label" for="free_shipping">Free Shipping</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2">
+                                                            <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="returnable" {% if product.is_returnable %}checked{% endif %} class="form-check-input" id="refundableInput">
                                                                 <label class="form-check-label" for="refundableInput">Returnable</label>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-2">
                                                             <div class="form-check form-switch mb-3">
-                                                                <input type="checkbox" name="free_shipping" {% if product.free_shipping %}checked{% endif %} class="form-check-input" id="id_free_shipping">
-                                                                <label class="form-check-label" for="refundableInput">Free Shipping</label>
+                                                                <input class="form-check-input" type="checkbox" {% if product.is_replaceable %}checked{% endif %}  name="is_replaceable"
+                                                                    id="is_replaceable">
+                                                                <label class="form-check-label"
+                                                                    for="is_replaceable">Replaceable</label>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+
+
+                                                     <div class="row mt-3">
+                                                        <div class="col-lg-6" id="returnPeriodDiv" style="display: none;">
+                                                            <div class="mb-3">
+                                                                <label for="return_period" class="form-label">Return Period (Days) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="return_period" value="{{product.return_period}}" class="form-control" 
+                                                                    id="return_period" placeholder="Enter Return Period" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6"  id="replacePeriodDiv" style="display: none;">
+                                                            <div class="mb-3">
+                                                                <label for="replace_period" class="form-label">Replace Period (Days) <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" name="replace_period" value="{{product.replace_period}}" class="form-control" 
+                                                                    id="replace_period" placeholder="Enter Replace Period" required>
                                                             </div>
                                                         </div>
                                                         
@@ -160,7 +263,7 @@ Products Create
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row">
+                                            <div class="row">
                                               <div class="col-xxl-12">
                                                 <div class="mb-3">
                                                     <label class="form-label">Product Images <span class="text-danger">*</span></label>
@@ -446,11 +549,12 @@ Products Create
 
                                                             
                                                         <br>
-                                                        <button type="button"
-                                                                    class="btn rounded-pill mt-2"
-                                                                    style="background-color: {{ variant.hex_color_code }}; border: 1px solid #ccc;">
-                                                            </button>
-
+                                                        
+                                                    <div data-bs-toggle="tooltip"  data-bs-placement="top"  >
+                                                        <button type="button" style="background-color: {{ variant.hex_color_code }};" class="btn avatar-xs p-0 d-flex align-items-center justify-content-center border rounded-circle fs-5xl text-primary" disabled="">
+                                                           
+                                                        </button>
+                                                    </div>
 
                                                         <div class="mt-3 hstack gap-2">
                                                             
@@ -486,7 +590,7 @@ Products Create
                                                                                                 <option value="Purple">Purple</option>
                                                                                                 <option value="Pink">Pink</option>
                                                                                                 <option value="White">White</option>
-                                                                                                <option value="Gray">Gray</option>
+                                                                                                <option value="Grey">Grey</option>
                                                                                                 <option value="Brown">Brown</option>
                                                                                                 <option value="Violet">Violet</option>
                                                                                                 <option value="Indigo">Indigo</option>
@@ -718,7 +822,7 @@ Products Create
                                     <option value="purple">Purple</option>
                                     <option value="pink">Pink</option>
                                     <option value="white">White</option>
-                                    <option value="gray">Gray</option>
+                                    <option value="grey">Grey</option>
                                     <option value="brown">Brown</option>
                                     <option value="violet">Violet</option>
                                     <option value="indigo">Indigo</option>
@@ -830,12 +934,11 @@ Products Create
 
 
 
-    <!-- dropzone js -->
-    <script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
     <!-- init js -->
     <script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
 
 <script>
 $(document).ready(function () {
@@ -902,46 +1005,68 @@ $(document).ready(function () {
 
 
 <script>
-Dropzone.autoDiscover = false; // avoid auto init
+Dropzone.autoDiscover = false;
 
-var myDropzone = new Dropzone("#dropzoneArea", {
-    autoProcessQueue: false,       // don't auto-upload
+// Initialize Dropzone for product images only
+const myDropzone = new Dropzone("#dropzoneArea", {
+    url: "#", // we handle upload manually
+    autoProcessQueue: false,
     uploadMultiple: true,
-    parallelUploads: 10,
-    maxFiles: 20,
-    paramName: "product_images",   // must match Django field name
-    addRemoveLinks: true
+    paramName: "product_images",
+    clickable: "#dropzoneArea",
+    addRemoveLinks: true,
+    acceptedFiles: "image/*",
+    parallelUploads: 10
 });
 
+// Handle form submit
 document.getElementById("productDropzoneForm").addEventListener("submit", function(e) {
-    e.preventDefault(); // stop normal submit
+    e.preventDefault(); // prevent normal submit
 
-    var form = this;
-    var formData = new FormData(form);
+    const form = this;
+    const formData = new FormData(form);
 
-    // append Dropzone files into formData
-    myDropzone.files.forEach(function(file) {
+    // ✅ Append Dropzone images manually
+    myDropzone.files.forEach(file => {
         formData.append("product_images", file, file.name);
     });
 
+    console.log("🧾 Total product images sending:", myDropzone.files.length);
+
+    // ✅ Send via fetch (to Django)
     fetch(form.action, {
         method: "POST",
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Success:", data);
-        // optionally redirect or show message
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url; // redirect after success
+        } else {
+            return response.text();
+        }
     })
-    .catch(error => {
-        console.error("Error:", error);
-    });
+    .then(data => console.log("✅ Upload complete"))
+    .catch(err => console.error("❌ Upload error:", err));
 });
 
-
-
-
+// ✅ Simple CSRF helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1356,4 +1481,42 @@ function getCookie(name) {
 
 <!-- variant image delete end -->
 
+
+<!-- JavaScript to toggle visibility -->
+<script>
+const refundableInput = document.getElementById('refundableInput');
+const returnPeriodDiv = document.getElementById('returnPeriodDiv');
+
+const replaceableInput = document.getElementById('is_replaceable');
+const replacePeriodDiv = document.getElementById('replacePeriodDiv');
+
+function toggleReturnPeriod() {
+    if (refundableInput.checked) {
+        returnPeriodDiv.style.display = 'block';
+        document.getElementById('return_period').required = true;
+    } else {
+        returnPeriodDiv.style.display = 'none';
+        document.getElementById('return_period').required = false;
+    }
+}
+
+function toggleReplacePeriod() {
+    if (replaceableInput.checked) {
+        replacePeriodDiv.style.display = 'block';
+        document.getElementById('replace_period').required = true;
+    } else {
+        replacePeriodDiv.style.display = 'none';
+        document.getElementById('replace_period').required = false;
+    }
+}
+
+// Add event listeners
+refundableInput.addEventListener('change', toggleReturnPeriod);
+replaceableInput.addEventListener('change', toggleReplacePeriod);
+
+// Initialize on page load
+toggleReturnPeriod();
+toggleReplacePeriod();
+
+</script>
 {% endblock content %}

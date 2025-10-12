@@ -1,0 +1,878 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}
+  Exchange Orders - Django Ecommerce
+{% endblock %}
+
+{% block content %}
+  <div class="main-content">
+    <div class="page-content">
+      <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+          <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+              <h4 class="mb-sm-0" style="font-family:serif;">Exchange Orders</h4>
+
+              <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                  <li class="breadcrumb-item active">Exchange Orders</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end page title -->
+
+        <div class="row mb-2">
+          <div class="col-12">
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-xl-0 mb-2" role="alert" id="alert-{{ forloop.counter }}">
+                  <strong>{{ message }}..!</strong>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- JS will inject alert Start -->
+          <div class="row mb-2">
+            <div class="col-12" id="shipmentalert">
+              <!-- JS will inject alert here -->
+            </div>
+          </div>
+        <!-- JS will inject alert end -->
+
+        <div class="row row-cols-xxl-5 row-cols-lg-3 row-cols-md-2 row-cols-1">
+          <div class="col">
+            <div class="card border-bottom border-3 card-animate border-secondary">
+              <div class="card-body">
+                <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;">
+                  <i class="ph-trend-up align-middle me-1"></i>
+                  3.8%
+                </span>
+                <h4 class="mb-4"><span class="counter-value" data-target="{{ total_orders }}" style="font-family:sans-serif;">0</span></h4>
+                <p class="fw-bold text-uppercase mb-0" style="font-family:serif; color:#002147;">Total Orders</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card border-bottom border-3 card-animate border-primary">
+              <div class="card-body">
+                <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;">
+                  <i class="ph-trend-up align-middle me-1"></i>
+                  20.8%
+                </span>
+                <h4 class="mb-4"><span class="counter-value" data-target="{{ processing }}" style="font-family:sans-serif;">0</span></h4>
+                <p class="fw-bold text-uppercase mb-0" style="font-family:serif;  color:#002147;">Ready to Pickup</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card border-bottom border-3 card-animate border-warning">
+              <div class="card-body">
+                <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;">
+                  <i class="ph-trend-up align-middle me-1"></i>
+                  12.6%
+                </span>
+                <h4 class="mb-4"><span class="counter-value" data-target="{{ pending_orders }}" style="font-family:sans-serif;">0</span></h4>
+                <p class="fw-bold text-uppercase mb-0" style="font-family:serif; color:#002147;">Pending Orders</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card border-bottom border-3 card-animate border-success">
+              <div class="card-body">
+                <span class="badge bg-success-subtle text-success float-end" style="font-family:sans-serif;">
+                  <i class="ph-trend-up align-middle me-1"></i>
+                  18.7%
+                </span>
+                <h4 class="mb-4"><span class="counter-value" data-target="{{ delivered_orders }}" style="font-family:sans-serif;">0</span></h4>
+                <p class="fw-bold text-uppercase mb-0" style="font-family:serif; color:#002147;">Delivered Orders</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card border-bottom border-3 card-animate border-danger">
+              <div class="card-body">
+                <span class="badge bg-danger-subtle text-danger float-end" style="font-family:sans-serif;"><i class="ph-trend-down align-middle me-1"></i> 7.1%</span>
+                <h4 class="mb-4"><span class="counter-value" data-target="{{ cancelled_orders }}" style="font-family:sans-serif;">0</span></h4>
+                <p class="fw-bold text-uppercase mb-0" style="font-family:serif;  color:#002147;">Cancelled Orders</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- -end row -->
+
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card" id="orderList">
+              <div class="card-header">
+                <div class="row align-items-center gy-3">
+                  <div class="col-lg-3 col-md-6">
+                    <div class="search-box">
+                      <input type="text" class="form-control search" id="search-input" placeholder="Search for order ID, customer, order status or something..." />
+                      <i class="ri-search-line search-icon"></i>
+                    </div>
+                  </div>
+
+                  <!-- Header with Sort and Search -->
+                  <div class="col-md-auto ms-md-auto">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                      <button class="btn btn-subtle-danger d-none" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
+                      <div class="dropdown card-header-dropdown sortble-dropdown flex-shrink-0">
+                        <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="text-muted dropdown-title" id="sort-title">Order Date</span> <i class="mdi mdi-chevron-down ms-1"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                          <button class="dropdown-item sort" data-sort="order_date">Order Date</button>
+                          <button class="dropdown-item sort" data-sort="order_id">Order ID</button>
+                          <button class="dropdown-item sort" data-sort="amount">Amount</button>
+                          <button class="dropdown-item sort" data-sort="customer">Customer</button>
+                          <button class="dropdown-item sort" data-sort="payment_method">Payment Method</button>
+                          <button class="dropdown-item sort" data-sort="status">Status</button>
+                        </div>
+                      </div>
+                      <!-- <button type="button" class="btn btn-primary add-btn ms-auto fs-lg" data-bs-toggle="modal" data-bs-target="#showModal" style="font-family:serif;background-color:#002147;border-color:#002147;"><i class="bi bi-plus-circle align-baseline me-1"></i> Add Order</button> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <!-- start table -->
+                  <table class="table table-centered align-middle table-nowrap mb-0">
+                    <thead class="text-muted table-light">
+                      <tr>
+                        <th>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="option" id="checkAll" />
+                            <label class="form-check-label" for="checkAll"></label>
+                          </div>
+                        </th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif; color:#002147;">Order ID</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Order Date</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Delivery Date</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="products" style="font-family:serif;color:#002147;">Products</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
+                        {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
+                       <th scope="col" class="cursor-pointer fs-lg" data-sort="label" style="font-family:serif; color:#002147;">Label</th>
+                        <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody class="list form-check-all" id="order-table-body">
+                      {% for order in orders %}
+                        <tr data-order-id="{{ order.order_number }}"
+                          data-order-date="{{ order.created_at|date:'Y-m-d' }}"
+                          data-delivery-date="
+                                                        {% if order.status == 'delivered' %}
+                            {{ order.updated_at|date:'Y-m-d' }}
+                          {% elif order.items.first %}
+                            {{ order.created_at|add_days:order.items.first.product.delivery_time_max|date:'Y-m-d' }}
+                          {% else %}
+                            {{ order.created_at|date:'Y-m-d' }}
+                          {% endif %}
+                                                    "
+                          data-products="{% for item in order.items.all %}
+                            {{ item.product.name }}{% if item.variant %}
+                              
+                              
+                               ({{ item.variant.variant_value }})
+
+
+                            {% endif %}
+                            
+                            
+
+
+                            {% if not forloop.last %}, {% endif %}
+                          {% endfor %}"
+                          data-customer="{{ order.user.username }}"
+                          data-payment-method="{% if order.payment %}
+                            {{ order.payment.get_payment_method_display }}
+                          {% else %}
+                            
+                            
+                            COD
+
+
+                          {% endif %}"
+                          data-amount="{{ order.total_amount }}"
+                          data-status="{{ order.get_status_display }}">
+                          <th>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="chk_child" value="{{ order.id }}" />
+                              <label class="form-check-label"></label>
+                            </div>
+                          </th>
+                          <td class="order_id" style="font-family:sans-serif;">
+                            <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_number }}</a>
+                          </td>
+                          <td class="order_date">{{ order.created_at|date:'d M, Y' }}</td>
+                          <td class="delivery_date">{{ order.delivery_date|date:'d M, Y' }}</td>
+                         
+                          <td class="products" style="font-family:sans-serif;">
+                            {% with item=order.items.all.0 %}
+                              {{ item.product.name|slice:':30' }}{% if item.variant.sizes %}
+                                ({{ item.variant.color_name }})
+                              {% endif %}
+                            {% endwith %}
+                          </td>
+                          <td class="customer" style="font-family:sans-serif;">{{ order.user.username }}</td>
+                          <td class="payment_method" style="font-family:sans-serif;">
+                            {% if order.payment %}
+                              {{ order.payment.get_payment_method_display }}
+                            {% else %}
+                              COD
+                            {% endif %}
+                          </td>
+                          <td class="amount" style="font-family:sans-serif;">
+                            <span class="fw-medium" style="font-family:sans-serif;">₹{{ order.total_amount }}</span>
+                          </td>
+                          {% comment %} <td class="rating">
+                            <h5 class="fs-md fw-medium mb-0">
+                              {% with avg_rating=order.items.first.product.average_rating %}
+                                {% if avg_rating > 0 %}
+                                  {{ avg_rating|floatformat:1 }}/5
+                                {% else %}
+                                  -
+                                {% endif %}
+                              {% endwith %}
+                            </h5>
+                          </td> {% endcomment %}
+                          <td class="status">
+                            <span class="badge
+                                {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
+                                    bg-success-subtle text-success
+                                {% elif order.status == 'Processing' or order.status == 'Ready to Ship' %}
+                                    bg-info-subtle text-info
+                                {% elif order.status == 'Cancelled' or order.status == 'Refunded' %}
+                                    bg-danger-subtle text-danger
+                                {% else %}
+                                    bg-warning-subtle text-warning
+                                {% endif %}">
+                                {{ order.status }}
+                            </span>
+
+
+                          </td>
+                           <td class="status">
+                            <!-- Load More Buttons -->
+                            
+                            
+                               
+                            {% if order.status == 'Pending' %}
+                              <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
+                                 {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
+
+                                <button class="btn btn-outline-primary btn-load d-none" type="button" disabled>
+                                  <span class="d-flex align-items-center">
+                                    <span class="spinner-border flex-shrink-0" role="status">
+                                      <span class="visually-hidden">Loading...</span>
+                                    </span>
+                                    <span class="flex-grow-1 ms-2">
+                                      Loading...
+                                    </span>
+                                  </span>
+                                </button>
+                              </form>
+                            {% elif order.status == 'Ready to Ship' %}
+                             <form class="create-pickup-form" action="{% url 'dashboard:create_pickup' order.id %}" method="post" style="display:inline;">
+                                  {% csrf_token %}
+                                <button type="button" class="btn btn-secondary custom-toggle active" ><i class="ri-shopping-cart-2-fill align-bottom me-1"></i> &nbsp;Create Pickup
+                                     
+                                </button>
+                             </form>
+                            {% else %}
+                                <a href="{{ order.tracking.label_file.url }}" 
+                                  class="btn btn-success btn-label right rounded-pill" 
+                                  download>
+                                  <i class="ri-check-double-line label-icon align-middle rounded-pill fs-lg ms-2"></i> 
+                                  Download
+                                </a>
+
+                            {% endif %}
+                            
+                           </td>
+                          <td>
+                            <ul class="d-flex gap-2 list-unstyled mb-0">
+                              <li>
+                                <a href="{% url 'dashboard:order_detail' order.order_number %}" class="btn btn-subtle-primary btn-icon btn-sm"><i class="ph-eye"></i></a>
+                              </li>
+                              <li>
+                                <!-- <a href="{% url 'dashboard:order_edit' order.id %}" data-bs-toggle="modal" data-bs-target="#editModal" class="btn btn-subtle-secondary btn-icon btn-sm edit-item-btn"><i class="ph-pencil"></i></a> -->
+
+                                <!-- showModal -->
+                                <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                      <div class="modal-header bg-light p-3">
+                                        <h5 class="modal-title" id="exampleModalLabel">Edit Order</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-ordermodal"></button>
+                                      </div>
+                                      <form class="tablelist-form" novalidate autocomplete="off">
+                                        <div class="modal-body">
+                                          <div id="alert-error-msg" class="d-none alert alert-danger py-2"></div>
+                                          <input type="hidden" id="id-field" />
+                                          <div class="mb-3">
+                                            <label for="customername-field" class="form-label">Customer Name</label>
+                                            <input type="text" id="customername-field" class="form-control" placeholder="Enter name" required />
+                                          </div>
+
+                                          <div class="mb-3">
+                                            <label for="productname-field" class="form-label">Product</label>
+                                            <select class="form-control" data-trigger name="productname-field" id="productname-field" required>
+                                              <option value="">Product</option>
+                                              <option value="Cotton collar t-shirts for men">Cotton collar t-shirts for men</option>
+                                              <option value="Like style travel black handbag">Like style travel black handbag</option>
+                                              <option value="Fossil gen 5E smart watch">Fossil gen 5E smart watch</option>
+                                              <option value="Super bass bluetooth wireless headphone">Super bass bluetooth wireless headphone</option>
+                                              <option value="Willage volleyball ball size 4">Willage volleyball ball size 4</option>
+                                              <option value="Branded T-Shirts">Branded T-Shirts</option>
+                                              <option value="Flip-Flops and house slippers">Flip-Flops and house slippers</option>
+                                              <option value="Jeans blue men boxer">Jeans blue men boxer</option>
+                                              <option value="MAG back to the future shoes">MAG back to the future shoes</option>
+                                              <option value="Super bass bluetooth wireless headphone">Super bass bluetooth wireless headphone</option>
+                                            </select>
+                                          </div>
+
+                                          <div class="row">
+                                            <div class="col-lg-6">
+                                              <div class="mb-3">
+                                                <label for="date-field" class="form-label">Order Date</label>
+                                                <input type="date" id="date-field" class="form-control" required />
+                                              </div>
+                                              <div class="mb-3">
+                                                <label for="shopName-input" class="form-label">Shop</label>
+                                                <input type="text" id="shopName-input" class="form-control" placeholder="Enter shop name" required />
+                                              </div>
+                                            </div>
+
+                                            <div class="col-lg-6">
+                                              <label class="form-label mb-3">Shop logo</label>
+                                              <div class="text-center mb-3">
+                                                <div class="position-relative d-inline-block">
+                                                  <div class="position-absolute top-100 start-100 translate-middle">
+                                                    <label for="companyLogo-image-input" class="mb-0" data-bs-toggle="tooltip" data-bs-placement="right" title="Select company logo"><span class="avatar-xs d-inline-block"><span class="avatar-title bg-light border rounded-circle text-muted cursor-pointer"><i class="ri-image-fill"></i></span></span></label>
+                                                    <input class="form-control d-none" id="companyLogo-image-input" type="file" accept="image/png, image/gif, image/jpeg" />
+                                                  </div>
+                                                  <div class="avatar-lg">
+                                                    <div class="avatar-title bg-light rounded-3">
+                                                      <img src="assets/images/users/multi-user.jpg" alt="" id="companyLogo-img" class="avatar-md h-auto rounded-3 object-fit-cover" />
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <div class="row gy-4 mb-3">
+                                            <div class="col-md-6">
+                                              <div>
+                                                <label for="amount-field" class="form-label">Amount</label>
+                                                <input type="text" id="amount-field" class="form-control" placeholder="Total amount" required />
+                                              </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                              <div>
+                                                <label for="payment-field" class="form-label">Payment Method</label>
+                                                <select class="form-control" data-trigger name="payment-method" required id="payment-field">
+                                                  <option value="">Payment Method</option>
+                                                  <option value="Mastercard">Mastercard</option>
+                                                  <option value="Visa">Visa</option>
+                                                  <option value="COD">COD</option>
+                                                  <option value="Paypal">Paypal</option>
+                                                </select>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <div>
+                                            <label for="delivered-status" class="form-label">Delivery Status</label>
+                                            <select class="form-control" data-trigger name="delivered-status" required id="delivered-status">
+                                              <option value="">Delivery Status</option>
+                                              <option value="New">New</option>
+                                              <option value="Pending">Pending</option>
+                                              <option value="Out of Delivered">Out of Delivered</option>
+                                              <option value="Shipping">Shipping</option>
+                                              <option value="Delivered">Delivered</option>
+                                            </select>
+                                          </div>
+                                          <input type="hidden" id="delivery-status-field" />
+                                          <input type="hidden" id="rating-field" />
+                                        </div>
+                                        <div class="modal-footer">
+                                          <div class="hstack gap-2 justify-content-end">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success" id="add-btn">Add Order</button>
+                                            <!-- <button type="button" class="btn btn-success" id="edit-btn">Update</button> -->
+                                          </div>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                                <!-- end showModal -->
+                              </li>
+                              <li>
+                                <a href="#" class="btn btn-subtle-danger btn-icon btn-sm remove-item-btn" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-order-id="{{ order.id }}"><i class="ph-trash"></i></a>
+
+                                <!-- deleteRecordModal -->
+                                <div id="deleteRecordModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <button type="button" class="btn-close" id="close-removemodal" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body p-md-5">
+                                        <div class="text-center">
+                                          <div class="text-danger">
+                                            <i class="bi bi-trash display-5"></i>
+                                          </div>
+                                          <div class="mt-4">
+                                            <h4 class="mb-2">Are you sure ?</h4>
+                                            <p class="text-muted mx-3 mb-0">Are you sure you want to remove this record ?</p>
+                                          </div>
+                                        </div>
+                                        <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
+                                          <button type="button" class="btn w-sm btn-light btn-hover" data-bs-dismiss="modal">Close</button>
+                                          <form method="POST" action="{% url 'dashboard:order_delete' order.order_number %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn w-sm btn-danger" id="remove-product">Yes, Delete It!</button>
+                                          </form>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                  </div>
+                                  <!-- /.modal-dialog -->
+                                </div>
+                                <!-- /deleteRecordModal -->
+                              </li>
+                            </ul>
+                          </td>
+                        </tr>
+                      {% empty %}
+                        <tr>
+                          <td colspan="11" class="text-center">No orders found</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  <!-- end table -->
+                  <div class="noresult" style="display: none">
+                    <div class="text-center py-4">
+                      <i class="ph-magnifying-glass fs-1 text-primary"></i>
+                      <h5 class="mt-2">Sorry! No Result Found</h5>
+                      <p class="text-muted mb-0">We've searched more than 150+ orders We did not find any orders for you search.</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center justify-content-sm-end mt-2">
+                  <div class="pagination-wrap hstack gap-2">
+                    <a class="page-item pagination-prev {% if not page_obj.has_previous %}disabled{% endif %}"
+                      href="{% if page_obj.has_previous %}
+                        
+                        
+                        ?page={{ page_obj.previous_page_number }}{% if current_status %}
+                          
+                          
+                          &status={{ current_status }}
+                        {% endif %}
+                      {% else %}
+                        
+                        
+                        javascript:void(0)
+
+
+                      {% endif %}">
+                      <i class="mdi mdi-chevron-left align-middle" style="color:#002147;"></i>
+                    </a>
+                    <ul class="pagination listjs-pagination mb-0">
+                      <!-- Show first page and ellipsis if needed -->
+                      {% if page_obj.number > 3 %}
+                        <li class="page-item">
+                          <a class="page-link"
+                            style="color:#002147;"
+                            href="?page=1{% if current_status %}
+                              
+                              
+                              &status={{ current_status }}
+                            {% endif %}">
+                            1
+                          </a>
+                        </li>
+                        {% if page_obj.number > 4 %}
+                          <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                          </li>
+                        {% endif %}
+                      {% endif %}
+
+                      <!-- Show pages around current page -->
+                      {% for num in page_obj.paginator.page_range %}
+                        {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                          <li class="page-item  {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link"
+                              style="background-color:#002147;border-color:#002147;"
+                              href="?page={{ num }}{% if current_status %}
+                                
+                                
+                                &status={{ current_status }}
+                              {% endif %}">
+                              {{ num }}
+                            </a>
+                          </li>
+                        {% endif %}
+                      {% endfor %}
+
+                      <!-- Show ellipsis and last page if needed -->
+                      {% with total_pages=page_obj.paginator.num_pages %}
+                        {% if page_obj.number < total_pages|add:'- 2' %}
+                          {% if page_obj.number < total_pages|add:'- 3' %}
+                            <li class="page-item disabled">
+                              <span class="page-link">...</span>
+                            </li>
+                          {% endif %}
+                          <li class="page-item">
+                            <a class="page-link"
+                              style="color:#002147;"
+                              href="?page={{ total_pages }}{% if current_status %}
+                                
+                                
+                                &status={{ current_status }}
+                              {% endif %}">
+                              {{ total_pages }}
+                            </a>
+                          </li>
+                        {% endif %}
+                      {% endwith %}
+                    </ul>
+                    <a class="page-item pagination-next {% if not page_obj.has_next %}disabled{% endif %}"
+                      href="{% if page_obj.has_next %}
+                        
+                        
+                        ?page={{ page_obj.next_page_number }}{% if current_status %}
+                          
+                          
+                          &status={{ current_status }}
+                        {% endif %}
+                      {% else %}
+                        
+                        
+                        javascript:void(0)
+
+
+                      {% endif %}">
+                      <i class="mdi mdi-chevron-right align-middle" style="color:#002147;"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- end card -->
+          </div>
+          <!-- end col -->
+        </div>
+        <!-- end row -->
+      </div>
+      <!-- container-fluid -->
+    </div>
+    <!-- End Page-content -->
+  </div>
+  <!-- end main content -->
+
+  <!-- deleteRecordModal -->
+  <div id="deleteRecordModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="btn-close" id="deleteRecord-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-md-5">
+          <div class="text-center">
+            <div class="text-danger">
+              <i class="bi bi-trash display-4"></i>
+            </div>
+            <div class="mt-4">
+              <h3 class="mb-2">Are you sure ?</h3>
+              <p class="text-muted fs-lg mx-3 mb-0">Are you sure you want to remove this record ?</p>
+            </div>
+          </div>
+          <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+            <button type="button" class="btn w-sm btn-light btn-hover" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn w-sm btn-danger btn-hover" id="delete-record">Yes, Delete It!</button>
+          </div>
+        </div>
+      </div>
+      <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+  </div>
+  <!-- /deleteRecordModal -->
+
+  <!-- showModal -->
+  <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-light p-3">
+          <h5 class="modal-title" id="exampleModalLabel">Add Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-ordermodal"></button>
+        </div>
+        <form class="tablelist-form" novalidate autocomplete="off">
+          <div class="modal-body">
+            <div id="alert-error-msg" class="d-none alert alert-danger py-2"></div>
+            <input type="hidden" id="id-field" />
+            <div class="mb-3">
+              <label for="customername-field" class="form-label">Customer Name</label>
+              <input type="text" id="customername-field" class="form-control" placeholder="Enter name" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="productname-field" class="form-label">Product</label>
+              <select class="form-control" data-trigger name="productname-field" id="productname-field" required>
+                <option value="">Product</option>
+                <option value="Cotton collar t-shirts for men">Cotton collar t-shirts for men</option>
+                <option value="Like style travel black handbag">Like style travel black handbag</option>
+                <option value="Fossil gen 5E smart watch">Fossil gen 5E smart watch</option>
+                <option value="Super bass bluetooth wireless headphone">Super bass bluetooth wireless headphone</option>
+                <option value="Willage volleyball ball size 4">Willage volleyball ball size 4</option>
+                <option value="Branded T-Shirts">Branded T-Shirts</option>
+                <option value="Flip-Flops and house slippers">Flip-Flops and house slippers</option>
+                <option value="Jeans blue men boxer">Jeans blue men boxer</option>
+                <option value="MAG back to the future shoes">MAG back to the future shoes</option>
+                <option value="Super bass bluetooth wireless headphone">Super bass bluetooth wireless headphone</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label for="date-field" class="form-label">Order Date</label>
+                  <input type="date" id="date-field" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                  <label for="shopName-input" class="form-label">Shop</label>
+                  <input type="text" id="shopName-input" class="form-control" placeholder="Enter shop name" required />
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <label class="form-label mb-3">Shop logo</label>
+                <div class="text-center mb-3">
+                  <div class="position-relative d-inline-block">
+                    <div class="position-absolute top-100 start-100 translate-middle">
+                      <label for="companyLogo-image-input" class="mb-0" data-bs-toggle="tooltip" data-bs-placement="right" title="Select company logo"><span class="avatar-xs d-inline-block"><span class="avatar-title bg-light border rounded-circle text-muted cursor-pointer"><i class="ri-image-fill"></i></span></span></label>
+                      <input class="form-control d-none" id="companyLogo-image-input" type="file" accept="image/png, image/gif, image/jpeg" />
+                    </div>
+                    <div class="avatar-lg">
+                      <div class="avatar-title bg-light rounded-3">
+                        <img src="assets/images/users/multi-user.jpg" alt="" id="companyLogo-img" class="avatar-md h-auto rounded-3 object-fit-cover" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row gy-4 mb-3">
+              <div class="col-md-6">
+                <div>
+                  <label for="amount-field" class="form-label">Amount</label>
+                  <input type="text" id="amount-field" class="form-control" placeholder="Total amount" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div>
+                  <label for="payment-field" class="form-label">Payment Method</label>
+                  <select class="form-control" data-trigger name="payment-method" required id="payment-field">
+                    <option value="">Payment Method</option>
+                    <option value="Mastercard">Mastercard</option>
+                    <option value="Visa">Visa</option>
+                    <option value="COD">COD</option>
+                    <option value="Paypal">Paypal</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="delivered-status" class="form-label">Delivery Status</label>
+              <select class="form-control" data-trigger name="delivered-status" required id="delivered-status">
+                <option value="">Delivery Status</option>
+                <option value="New">New</option>
+                <option value="Pending">Pending</option>
+                <option value="Out of Delivered">Out of Delivered</option>
+                <option value="Shipping">Shipping</option>
+                <option value="Delivered">Delivered</option>
+              </select>
+            </div>
+            <input type="hidden" id="delivery-status-field" />
+            <input type="hidden" id="rating-field" />
+          </div>
+          <div class="modal-footer">
+            <div class="hstack gap-2 justify-content-end">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-success" id="add-btn">Add Order</button>
+              <!-- <button type="button" class="btn btn-success" id="edit-btn">Update</button> -->
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- end showModal -->
+
+  <!-- List.js for pagination & search -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+  <script>
+    var options = {
+      valueNames: ['order_id', 'order_date', 'delivery_date', 'products', 'customer', 'payment_method', 'amount', 'rating', 'status']
+    }
+    
+    var orderList = new List('orderList', options)
+    
+    // Show/hide "No results" message
+    const searchInput = document.getElementById('search-input')
+    searchInput.addEventListener('input', function () {
+      const noResult = document.querySelector('.noresult')
+      setTimeout(() => {
+        if (document.querySelectorAll('#order-table-body tr').length === 0) {
+          noResult.style.display = 'block'
+        } else {
+          noResult.style.display = 'none'
+        }
+      }, 200)
+    })
+  </script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  function showAlert(message, status) {
+    console.log("Showing alert:", message, status);
+    let alertBox = document.createElement("div");
+    alertBox.className = `alert ${status === "success" ? "alert-success" : "alert-danger"} alert-dismissible fade show`;
+    alertBox.role = "alert";
+    alertBox.innerHTML = `
+      <strong>${message}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    let alertContainer = document.getElementById("shipmentalert");
+    if (alertContainer) {
+      alertContainer.innerHTML = "";
+      alertContainer.appendChild(alertBox);
+    }
+
+    setTimeout(() => {
+      if (alertBox) {
+        alertBox.classList.remove("show");
+        alertBox.classList.add("hide");
+        alertBox.remove();
+      }
+    }, 500000);
+  }
+
+  // 🔁 Generic form handler
+  function handleFormSubmit(form, submitBtnClass, loadingBtnClass) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      let submitBtn = form.querySelector(submitBtnClass);
+      let loadingBtn = form.querySelector(loadingBtnClass);
+
+      submitBtn.classList.add("d-none");
+      loadingBtn.classList.remove("d-none");
+
+      let url = form.getAttribute("action");
+      let csrfToken = form.querySelector("input[name=csrfmiddlewaretoken]").value;
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          showAlert(data.message, data.status);
+
+          if (data.status === "success") {
+            location.reload();
+          } else {
+            submitBtn.classList.remove("d-none");
+            loadingBtn.classList.add("d-none");
+          }
+        })
+        .catch((error) => {
+          showAlert("⚠️ Error: " + error, "fail");
+          submitBtn.classList.remove("d-none");
+          loadingBtn.classList.add("d-none");
+        });
+    });
+  }
+
+  // ✅ Bind label form
+  document.querySelectorAll(".create-label-form").forEach(function (form) {
+    handleFormSubmit(form, ".generate-btn", ".btn-load");
+  });
+
+  // ✅ Bind pickup form
+  document.querySelectorAll(".create-pickup-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) { e.preventDefault(); }); // prevent default
+
+    let submitBtn = form.querySelector(".custom-toggle");
+    let loadingBtn = document.createElement("button");
+
+    loadingBtn.className = "btn btn-secondary d-none";
+    loadingBtn.disabled = true;
+    loadingBtn.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      Processing...
+    `;
+    form.appendChild(loadingBtn);
+
+    submitBtn.addEventListener("click", function () {
+      submitBtn.classList.add("d-none");
+      loadingBtn.classList.remove("d-none");
+
+      let url = form.getAttribute("action");
+      let csrfToken = form.querySelector("input[name=csrfmiddlewaretoken]").value;
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          showAlert(data.message, data.status);
+
+          if (data.status === "success") {
+            location.reload();
+          } else {
+            submitBtn.classList.remove("d-none");
+            loadingBtn.classList.add("d-none");
+          }
+        })
+        .catch((error) => {
+          showAlert("⚠️ Error: " + error, "fail");
+          submitBtn.classList.remove("d-none");
+          loadingBtn.classList.add("d-none");
+        });
+    });
+  });
+});
+</script>
+
+{% endblock %}

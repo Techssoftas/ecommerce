@@ -1,509 +1,734 @@
-{% extends 'base.html' %} 
-{% load static %} 
+{% extends 'base.html' %}
+{% load static %}
 {% block title %}
-Kids(Girls) Products Create
-{% endblock title %} 
+Kids Girls Products Create
+{% endblock title %}
 {% block content %}
 
 <div class="main-content">
 
-            <div class="page-content">
-                <div class="container-fluid">
-                    <form action="{% url 'dashboard:kids_girls_product_create' %}" id="productDropzoneForm" method="post" class="row g-3" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <!-- start page title -->
-                        <div class="row">
+    <div class="page-content">
+        <div class="container-fluid">
+            <form action="{% url 'dashboard:kids_girls_product_create' %}" id="productDropzoneForm" method="post"
+                class="row g-3" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- start page title -->
+                <div class="row">
 
-                            <div class="col-12">
+                    <div class="col-12">
 
-                                    {% if messages %}
-                                    {% for message in messages %}
-                                        <div
-                                        class="alert alert-{{ message.tags }} alert-dismissible fade show mb-xl-0 mb-2"
-                                        role="alert"
-                                        id="alert-{{ forloop.counter }}"
-                                        >
-                                        <strong>{{ message }}..!</strong>
-                                        <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="alert"
-                                            aria-label="Close"
-                                        ></button>
-                                        </div>
-                                    {% endfor %}
-                                    {% endif %}
-                                    
-
-                                </div>
-
-
-                            <div class="col-12 mt-3">
-                                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                    <h4 class="mb-sm-0">Kids(Girls) Products Create</h4>
-
-                                    <div class="page-title-right">
-                                        <ol class="breadcrumb m-0">
-                                            <li class="breadcrumb-item">
-                                            
-                                                <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target=".bs-example-modal-center">
-                                                <i class="bi bi-plus-circle align-baseline me-1"></i>
-                                                    Add Category
-                                                </button>
-                                                
-                                               
-                                            </li>
-                                        </ol>
-                                    </div>
-
-                                </div>
-                            </div>
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-xl-0 mb-2"
+                            role="alert" id="alert-{{ forloop.counter }}">
+                            <strong>{{ message }}..!</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        <!-- end page title -->
-
-                        <div class="row">
-                        
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            
-                                            <div class="col-xxl-12">
-                                               
-                                                    <div class="mb-3">
-                                                        <label for="productTitle" class="form-label">Product Title <span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control" name="name" id="productTitle" placeholder="Enter product title" >
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label for="productBrand" class="form-label">Brand <span class="text-danger">*</span></label>
-                                                                <input type="text" name="brand" class="form-control" value="M2HIT" id="productBrand" placeholder="Enter brand" >
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label for="productBrand" class="form-label">Model name <span class="text-danger">*</span></label>
-                                                                <input type="text" name="model_name" class="form-control" id="productBrand" placeholder="Enter brand" >
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
-                                                                <div class="input-group has-validation">
-                                                                    <span class="input-group-text" id="product-price-addon">₹</span>
-                                                                    <input type="number" class="form-control" name="product_mrp_price" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
-                                                                    <div class="invalid-feedback">Please Enter a MRP price.</div>
-                                                                </div>
-                                                            </div>
-                                                        </div><!--end col-->
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
-                                                                <div class="input-group has-validation">
-                                                                    <span class="input-group-text" id="product-price-addon">₹</span>
-                                                                    <input type="number" name="product_selling_price" class="form-control" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
-                                                                    <div class="invalid-feedback">Please Enter a selling price.</div>
-                                                                </div>
-                                                            </div>
-                                                        </div><!--end col-->
-                                                    
-                                                    </div>
-
-                                                    
-                                                    
-                                                    <div class="row">
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                                <label for="productCategories" class="form-label">
-                                                                  Kids(Girls) Set <span class="text-danger">*</span>
-                                                                </label>
-                                                                <select class="form-control" id="productCategories" name="category" required>
-                                                                  <option value="">Select categories</option>
-                                                                  {% for category in categories %}
-                                                                      <option value="{{ category.id }}">{{ category.name }}</option>
-                                                                  {% endfor %}
-                                                                </select>
-
-                                                            </div>
-                                                            
-                                                        </div>
-                                                       
-                                                        <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="productOccasions" class="form-label">Occasions<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="occasion">
-                                                                <option value="Casual">Casual</option>
-                                                                <option value="Festival">Festival</option>
-                                                                <option value="Party">Party</option>
-                                                                <option value="Night Out">Night Out</option>
-                                                                <option value="Formal/Office Casual">Formal / Office Casual</option>
-                                                              </select>
-                                                            </div>
-                                                        </div>
+                        {% endfor %}
+                        {% endif %}
 
 
-                                                    </div>
-                                                    
-                                                    
-                                                      <!-- Dynamic fields wrapper -->
-                                                      <div id="dynamicAttributes">
-
-                                                        <!-- T-shirt fields -->
-                                                        <div id="tshirtFields" class="row d-none">
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="productSleeve" class="form-label">Sleeve<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[Sleeve]">
-                                                                <option value="Full Sleeve">Full Sleeve</option>
-                                                                <option value="Half Sleeve">Half Sleeve</option>
-                                                                <option value="Sleeveless">Sleeveless</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="productNeckType" class="form-label">Neck Type <span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[Neck Type]">
-                                                                <option value="V Neck">V Neck</option>
-                                                                <option value="Round Neck">Round Neck</option>
-                                                                <option value="High Neck">High Neck</option>
-                                                                <option value="Polo Neck">Polo Neck</option>
-                                                                <option value="Dual Collar">Dual Collar</option>
-                                                                <option value="Hooded Collar">Hooded Collar</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="productTSirtFit" class="form-label">TSirt Fit<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[TShirt Fit]">
-                                                                <option value="Regular">Regular</option>
-                                                                <option value="Slim Fit">Slim Fit</option>
-                                                                <option value="Over Size">Over Size</option>
-                                                                <option value="Polo Fit">Polo Fit</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="productHemLine" class="form-label">HemLine<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[HemLine]">
-                                                                <option value="Curved">Curved</option>
-                                                                <option value="Stright">Stright</option>
-                                                                <option value="High-Low">High-Low</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="productTShirtFabric" class="form-label">Fabric<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[TShirt Fabric]">
-                                                                <option value="Cotton">Cotton</option>
-                                                                <option value="Cotton Blend">Cotton Blend</option>
-                                                                <option value="PopCorn">PopCorn</option>
-                                                                <option value="Polyester">Polyester</option>
-                                                                <option value="Lycra">Lycra</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                        </div>
-
-                                                        <!-- Pant fields -->
-                                                        <div id="pantFields" class="row d-none">
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="pantPockets" class="form-label">Pockets<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[Pockets]">
-                                                                <option value="2">2</option>
-                                                                <option value="4">4</option>
-                                                                <option value="6">6</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="pantFit" class="form-label">PantFit<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[PantFit]">
-                                                                <option value="Regular">Regular</option>
-                                                                <option value="Relaxed">Relaxed</option>
-                                                                <option value="Jogger">Jogger</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="pantLenght" class="form-label">Lenght<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[Lenght]">
-                                                                <option value="Full Lenght">Full Lenght</option>
-                                                                <option value="Ankle Lenght">Ankle</option>
-                                                                <option value="3/4th Lenght">3/4th </option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="pantFabric" class="form-label">Fabric<span class="text-danger">*</span></label>
-                                                              <select class="form-select mb-3" name="key_features[PantFabric]">
-                                                                <option value="Cotton">Cotton</option>
-                                                                <option value="Cotton Blend">Cotton Blend</option>
-                                                                <option value="Polyester">Polyester</option>
-                                                                <option value="NS Lycra">NS Lycra</option>
-                                                                <option value="Two Way Lycra">Two Way Lycra</option>
-                                                                <option value="Four Way Lycra">Four Way Lycra</option>
-                                                                <option value="Lycra Denim">Lycra Denim</option>
-                                                                <option value="Loopnet">Loopnet</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                          <div class="col-lg-6">
-                                                            <div class="mb-3">
-                                                              <label for="pantClosure" class="form-label">Closure</label>
-                                                              <select class="form-select mb-3" name="key_features[Closure]">
-                                                                <option value="Zip">Zip</option>
-                                                                <option value="Button">Button</option>
-                                                                <option value="Elastic">Elastic</option>
-                                                              </select>
-                                                            </div>
-                                                          </div>
-                                                        </div>
-
-                                                      </div>
-
-
-                                                    <div class="mb-3">
-                                                        <label for="shortDecs" class="form-label"> Description <span class="text-danger">*</span></label>
-                                                        <textarea class="form-control" name="description" id="shortDecs" placeholder="Must enter minimum of a 300 characters" rows="8"></textarea>
-                                                    </div>
-                                                  
-                                                    <div class="row mt-3">
-                                                        <div class="col-lg-6">
-                                                            <div class="form-check form-switch mb-3">
-                                                                <input class="form-check-input" type="checkbox" name="cod_available"  id="exchangeableInput">
-                                                                <label class="form-check-label" for="exchangeableInput">Cod Available</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="form-check form-switch mb-3">
-                                                                <input class="form-check-input" type="checkbox" name="is_returnable"  id="refundableInput">
-                                                                <label class="form-check-label" for="refundableInput">Returnable</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="form-check form-switch mb-3">
-                                                                <input class="form-check-input" type="checkbox" name="is_free_shipping"  id="refundableInput">
-                                                                <label class="form-check-label" for="refundableInput">Free Shipping</label>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                    </div>
-                                                
-                                            </div><!--end col-->
-                                        </div><!--end row-->
-                                    </div>
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end row-->
+                    </div>
 
                     
 
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            
-                                            <div class="col-xxl-12">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Product Images <span class="text-danger">*</span></label>
 
-                                                    <!-- Clickable Dropzone -->
-                                                    <div class="dropzone text-center" id="dropzoneArea">
-                                                        <div class="dz-message needsclick">
-                                                            <div class="mb-3">
-                                                                <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
-                                                            </div>
-                                                            <h4>Drop product images here or click to upload.</h4>
-                                                        </div>
-                                                    </div>
+
+                    <div class="col-12 mt-3">
+                        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                            <h4 class="mb-sm-0">Kids(Girls) Products Create</h4>
+
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item">
+
+                                        <button type="button" class="btn btn-primary " data-bs-toggle="modal"
+                                            data-bs-target=".bs-example-modal-center">
+                                            <i class="bi bi-plus-circle align-baseline me-1"></i>
+                                            Add Category
+                                        </button>
+
+
+                                    </li>
+                                </ol>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+                <div class="row">
+
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <div class="col-xxl-12">
+
+                                        <div class="mb-3">
+                                            <label for="productTitle" class="form-label">Product Title <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="name" id="productTitle"
+                                                placeholder="Enter product title">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <div class="mb-3">
+                                                    <label for="productBrand" class="form-label">Brand <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="brand" class="form-control" value="M2HIT"
+                                                        id="productBrand" placeholder="Enter brand">
                                                 </div>
                                             </div>
-
-                                            <div class="row mt-3" id="previewContainer"></div>
-
-                                                
-                                            </div>
-                                        </div><!--end row-->
-                                    </div>
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end row-->
-
-
-                        
-                        <div class="row">
-                        
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <h5 class="mb-3">Product Variants</h5>
-                                            
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                                 <div class="mb-3">
-                                                    <label class="form-label" for="product-price-input">MRP Price <span class="text-danger">*</span></label>
+                                                    <label for="Modelname" class="form-label">Model name <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="model_name" class="form-control"
+                                                        placeholder="Enter brand">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <div class="mb-3">
+                                                    <label for="hsn_code" class="form-label">HSN Code <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="hsn_code" class="form-control"
+                                                        placeholder="Enter HSN Code">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="weight" class="form-label">Weight (Gm)<span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number"  name="weight" class="form-control" 
+                                                        id="weight" placeholder="Enter brand">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="dimensions_length" class="form-label">Length (Cm) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_length" class="form-control"
+                                                        placeholder="Enter Length">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="dimensions_width" class="form-label">Width (Cm) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="dimensions_width" class="form-control"
+                                                        placeholder="Enter Width">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="dimensions_height" class="form-label">Height (Cm) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="number" inputmode="decimal"  pattern="^\d*([.,]?\d+)?$" name="dimensions_height" class="form-control"
+                                                        placeholder="Enter Height">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="product-price-input">MRP Price <span
+                                                            class="text-danger">*</span></label>
                                                     <div class="input-group has-validation">
                                                         <span class="input-group-text" id="product-price-addon">₹</span>
-                                                        <input type="number" class="form-control" name="variant_mrp_price" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
+                                                        <input type="number" class="form-control"
+                                                            name="product_mrp_price" id="product-price-input"
+                                                            placeholder="Enter price" aria-label="Price"
+                                                            aria-describedby="product-price-addon" required>
                                                         <div class="invalid-feedback">Please Enter a MRP price.</div>
                                                     </div>
                                                 </div>
                                             </div><!--end col-->
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                                 <div class="mb-3">
-                                                    <label class="form-label" for="product-price-input">Selling Price <span class="text-danger">*</span></label>
+                                                    <label class="form-label" for="product-price-input">Selling Price
+                                                        <span class="text-danger">*</span></label>
                                                     <div class="input-group has-validation">
                                                         <span class="input-group-text" id="product-price-addon">₹</span>
-                                                        <input type="number" name="variant_selling_price" class="form-control" id="product-price-input" placeholder="Enter price" aria-label="Price" aria-describedby="product-price-addon" required>
-                                                        <div class="invalid-feedback">Please Enter a selling price.</div>
+                                                        <input type="number" name="product_selling_price"
+                                                            class="form-control" id="product-price-input"
+                                                            placeholder="Enter price" aria-label="Price"
+                                                            aria-describedby="product-price-addon" required>
+                                                        <div class="invalid-feedback">Please Enter a selling price.
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div><!--end col-->
-                                            
-                                            
-                                            <div class="col-lg-6">
-                                                <div class="mb-3">
-                                                    <label for="productBrand" class="form-label">Image <span class="text-danger">*</span></label>
-                                                    <input type="file" name="variant_image" class="form-control" id="productBrand"required>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <div class="mb-3 ">
-                                                    <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
-                                                    <div class="d-flex align-items-center">
-                                                        <input type="color" name="hex_color_code" class="form-control form-control-color w-100" id="productColor" value="#000000" required>
-                                                        <input type="text" class="form-control" name="hex_color_code" id="colorHexDisplay" readonly style="max-width: 120px;">
 
-                                                    </div>
+                                            <div class="col-lg-4">
+                                                <div class="mb-3">
+                                                    <label for="sku" class="form-label">Sku Code <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="sku" class="form-control"
+                                                        placeholder="Enter SKU Code">
                                                 </div>
                                             </div>
+                                            
+
+                                        </div>
+
+
+
+                                        <div class="row">
                                             <div class="col-lg-6">
-                                                <div class="mb-3 ">
-                                                    <label for="productBrand" class="form-label">Size <span class="text-danger">*</span></label>
-                                                <div class="input-group">
-                                                        <input type="text" style="text-transform: uppercase;" class="form-control" id="sizeInput" aria-label="Recipient's username" aria-describedby="button-addon2">
-                                                        <button class="btn btn-info" type="button" id="button-addon2">Add</button>
-                                                    </div>
+                                                <div class="mb-3">
+                                                    <label for="productCategories" class="form-label">
+                                                        Kids (Girls) Set <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-control" id="productCategories" name="category"
+                                                        required>
+                                                        <option value="">Select categories</option>
+                                                        {% for category in categories %}
+                                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+
                                                 </div>
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="mb-3">
-                                                    <label for="productBrand" class="form-label">Selected Size <span class="text-danger">*</span></label>
-                                                    <br/>
-                                                    <input type="hidden" name="variant_sizes" value="" id="selectedSize" required>
-                                                    <div id="selectedSizeContainer"></div>
-                                                </div>
-                                            </div>
-                                        
-                                           <div class="col-lg-6">
-                                                <div class="input-group">
-                                                    <label class="input-group-text" for="inputGroupSelect01">Colors</label>
-                                                    <select class="form-select" id="inputGroupSelect01" name="variant_value">
-    
-                                                        <option value="black">Black</option>
-                                                        <option value="red">Red</option>
-                                                        <option value="green">Green</option>
-                                                        <option value="blue">Blue</option>
-                                                        <option value="yellow">Yellow</option>
-                                                        <option value="orange">Orange</option>
-                                                        <option value="purple">Purple</option>
-                                                        <option value="pink">Pink</option>
-                                                        <option value="white">White</option>
-                                                        <option value="gray">Gray</option>
-                                                        <option value="brown">Brown</option>
-                                                        <option value="violet">Violet</option>
-                                                        <option value="indigo">Indigo</option>
-                                                        <option value="cyan">Cyan</option>
-                                                        <option value="magenta">Magenta</option>
-                                                        <option value="gold">Gold</option>
-                                                        <option value="silver">Silver</option>
-                                                        <option value="beige">Beige</option>
-                                                        <option value="maroon">Maroon</option>
-                                                        <option value="navy">Navy</option>
-                                                        <option value="teal">Teal</option>
-                                                        <option value="lime">Lime</option>
-                                                        <option value="olive">Olive</option>
+                                                    <label for="productOccasions" class="form-label">Occasions<span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-select mb-3" name="occasion">
+                                                        <option value="Casual">Casual</option>
+                                                        <option value="Festival">Festival</option>
+                                                        <option value="Party">Party</option>
+                                                        <option value="Night Out">Night Out</option>
+                                                        <option value="Formal/Office Casual">Formal / Office Casual
+                                                        </option>
                                                     </select>
                                                 </div>
                                             </div>
 
-                                            
-                                        </div><!--end row-->
 
-                                        <div class="hstack gap-2 justify-content-end mb-3">
-                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                            <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i> Cancel</button>
+                                        </div>
+
+
+                                        <!-- Dynamic fields wrapper -->
+                                        <div id="dynamicAttributes">
+
+                                            <!-- T-shirt fields -->
+                                            <div id="tshirtFields" class="row d-none">
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="productSleeve" class="form-label">Sleeve<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3" name="key_features[Sleeve]">
+                                                            <option value="Full Sleeve">Full Sleeve</option>
+                                                            <option value="Half Sleeve">Half Sleeve</option>
+                                                            <option value="Sleeveless">Sleeveless</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="productNeckType" class="form-label">Neck Type <span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3" name="key_features[Neck Type]">
+                                                            <option value="V Neck">V Neck</option>
+                                                            <option value="Round Neck">Round Neck</option>
+                                                            <option value="High Neck">High Neck</option>
+                                                            <option value="Polo Neck">Polo Neck</option>
+                                                            <option value="Dual Collar">Dual Collar</option>
+                                                            <option value="Hooded Collar">Hooded Collar</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="productTSirtFit" class="form-label">TSirt Fit<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3"
+                                                            name="key_features[TShirt Fit]">
+                                                            <option value="Regular">Regular</option>
+                                                            <option value="Slim Fit">Slim Fit</option>
+                                                            <option value="Over Size">Over Size</option>
+                                                            <option value="Polo Fit">Polo Fit</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="productHemLine" class="form-label">HemLine<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3" name="key_features[HemLine]">
+                                                            <option value="Curved">Curved</option>
+                                                            <option value="Stright">Stright</option>
+                                                            <option value="High-Low">High-Low</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="productTShirtFabric" class="form-label">Fabric<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3"
+                                                            name="key_features[TShirt Fabric]">
+                                                            <option value="Cotton">Cotton</option>
+                                                            <option value="Cotton Blend">Cotton Blend</option>
+                                                            <option value="PopCorn">PopCorn</option>
+                                                            <option value="Polyester">Polyester</option>
+                                                            <option value="Lycra">Lycra</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Pant fields -->
+                                            <div id="pantFields" class="row d-none">
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="pantPockets" class="form-label">Pockets<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3" name="key_features[Pockets]">
+                                                            <option value="2">2</option>
+                                                            <option value="4">4</option>
+                                                            <option value="6">6</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="pantFit" class="form-label">PantFit<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3" name="key_features[PantFit]">
+                                                            <option value="Regular">Regular</option>
+                                                            <option value="Relaxed">Relaxed</option>
+                                                            <option value="Jogger">Jogger</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="pantLenght" class="form-label">Lenght<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3" name="key_features[Lenght]">
+                                                            <option value="Full Lenght">Full Lenght</option>
+                                                            <option value="Ankle Lenght">Ankle</option>
+                                                            <option value="3/4th Lenght">3/4th </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="pantFabric" class="form-label">Fabric<span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select mb-3"
+                                                            name="key_features[PantFabric]">
+                                                            <option value="Cotton">Cotton</option>
+                                                            <option value="Cotton Blend">Cotton Blend</option>
+                                                            <option value="Polyester">Polyester</option>
+                                                            <option value="NS Lycra">NS Lycra</option>
+                                                            <option value="Two Way Lycra">Two Way Lycra</option>
+                                                            <option value="Four Way Lycra">Four Way Lycra</option>
+                                                            <option value="Lycra Denim">Lycra Denim</option>
+                                                            <option value="Loopnet">Loopnet</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="pantClosure" class="form-label">Closure</label>
+                                                        <select class="form-select mb-3" name="key_features[Closure]">
+                                                            <option value="Zip">Zip</option>
+                                                            <option value="Button">Button</option>
+                                                            <option value="Elastic">Elastic</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="mb-3">
+                                            <label for="shortDecs" class="form-label"> Description <span
+                                                    class="text-danger">*</span></label>
+                                            <textarea class="form-control" name="description" id="shortDecs"
+                                                placeholder="Must enter minimum of a 300 characters"
+                                                rows="8"></textarea>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-lg-3">
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="cod_available"
+                                                        id="exchangeableInput">
+                                                    <label class="form-check-label" for="exchangeableInput">Cod
+                                                        Available</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="is_free_shipping" >
+                                                    <label class="form-check-label" for="refundableInput">Free
+                                                        Shipping</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox"  name="is_returnable"
+                                                        id="refundableInput">
+                                                    <label class="form-check-label"
+                                                        for="refundableInput">Returnable</label>
+                                                </div>
+                                            </div>
+                                           
+                                            <div class="col-lg-3">
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="is_replaceable"
+                                                        id="is_replaceable">
+                                                    <label class="form-check-label"
+                                                        for="is_replaceable">Replaceable</label>
+                                                </div>
+                                            </div>
+                                            
+
+                                        </div>
+
+                                         <div class="row mt-3">
+                                            <div class="col-lg-6" id="returnPeriodDiv" style="display: none;">
+                                                <div class="mb-3">
+                                                    <label for="return_period" class="form-label">Return Period (Days) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="return_period" class="form-control" 
+                                                        id="return_period" placeholder="Enter Return Period" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6"  id="replacePeriodDiv" style="display: none;">
+                                                <div class="mb-3">
+                                                    <label for="replace_period" class="form-label">Replace Period (Days) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="replace_period" class="form-control" 
+                                                        id="replace_period" placeholder="Enter Replace Period" required>
+                                                </div>
+                                            </div>
                                             
                                         </div>
+                                    </div><!--end col-->
+                                </div><!--end row-->
+                            </div>
+                        </div>
+                    </div><!--end col-->
+                </div><!--end row-->
+
+
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <div class="col-xxl-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Product Images <span
+                                                    class="text-danger">*</span></label>
+
+                                            <!-- Clickable Dropzone -->
+                                            <div class="dropzone text-center" id="productDropzone">
+                                                <div class="dz-message needsclick">
+                                                    <div class="mb-3">
+                                                        <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                                    </div>
+                                                    <h4>Drop product images here or click to upload.</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-3" id="productPreview"></div>
+
+
+                                </div>
+                            </div><!--end row-->
+                        </div>
+                    </div>
+                </div><!--end col-->
+        </div><!--end row-->
+
+
+
+        <div class="row">
+
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <h5 class="mb-3">Product Variants</h5>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Color <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <label class="input-group-text" for="inputGroupSelect01">Colors</label>
+                                        <select class="form-select" id="inputGroupSelect01" name="variant_value">
+
+                                            <option value="black">Black</option>
+                                            <option value="red">Red</option>
+                                            <option value="green">Green</option>
+                                            <option value="blue">Blue</option>
+                                            <option value="yellow">Yellow</option>
+                                            <option value="orange">Orange</option>
+                                            <option value="purple">Purple</option>
+                                            <option value="pink">Pink</option>
+                                            <option value="white">White</option>
+                                            <option value="grey">Grey</option>
+                                            <option value="brown">Brown</option>
+                                            <option value="violet">Violet</option>
+                                            <option value="indigo">Indigo</option>
+                                            <option value="cyan">Cyan</option>
+                                            <option value="magenta">Magenta</option>
+                                            <option value="gold">Gold</option>
+                                            <option value="silver">Silver</option>
+                                            <option value="beige">Beige</option>
+                                            <option value="maroon">Maroon</option>
+                                            <option value="navy">Navy</option>
+                                            <option value="teal">Teal</option>
+                                            <option value="lime">Lime</option>
+                                            <option value="olive">Olive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-lg-6">
+                                <div class="mb-3 ">
+                                    <label for="productBrand" class="form-label">Colour Code <span
+                                            class="text-danger">*</span></label>
+                                    <div class="d-flex align-items-center">
+                                        <input type="color" name="hex_color_code"
+                                            class="form-control form-control-color w-100" id="productColor"
+                                            value="#000000" required>
+                                        <input type="text" class="form-control" id="colorHexDisplay" readonly
+                                            style="max-width: 120px;">
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="">
+                                    <label for="productBrand" class="form-label">Size <span
+                                            class="text-danger">*</span></label>
+                                    <div class="input-group ">
+                                        <div class="position-relative">
+                                            <input type="text" style="text-transform: uppercase;" class="form-control"
+                                                id="sizeInput" placeholder="Type or Select Sizes">
+
+                                            <!-- Dropdown with checkboxes -->
+                                            <div id="sizeDropdown" class="border bg-white shadow rounded p-2"
+                                                style="display:none; position:absolute; z-index:1000; width:100%; max-height:200px; overflow-y:auto;">
+
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="XXS">
+                                                    <label class="form-check-label">XXS</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="XS">
+                                                    <label class="form-check-label">XS</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="S">
+                                                    <label class="form-check-label">S</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="M">
+                                                    <label class="form-check-label">M</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="L">
+                                                    <label class="form-check-label">L</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="XL">
+                                                    <label class="form-check-label">XL</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="XXL">
+                                                    <label class="form-check-label">XXL</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="XXXL">
+                                                    <label class="form-check-label">XXXL</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="4XL">
+                                                    <label class="form-check-label">4XL</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input size-option" type="checkbox"
+                                                        value="5XL">
+                                                    <label class="form-check-label">5XL</label>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between mt-2">
+                                                    <a href="javascript:void(0);" id="clearSizes">Clear Filter</a>
+                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                        id="applySizes">Apply</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
 
 
                                     </div>
                                 </div>
-                                
-                            </div><!--end col-->
+                            </div>
+                            <div class="col-lg-12 mt-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Selected Size <span class="text-danger">*</span></label>
 
-                            
+                                    <table class="table table-bordered mt-3 d-none" id="sizeVariantTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Size</th>
+                                                <th>MRP <span class="text-danger">*</span></th>
+                                                <th>Selling Price <span class="text-danger">*</span></th>
+                                                <th>Discount Price</th>
+                                                <th>Stock <span class="text-danger">*</span></th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <div class="col-lg-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Variant Images <span class="text-danger">*</span></label>
+                                    <div class="dropzone text-center" id="variantDropzone">
+                                        <div class="dz-message needsclick">
+                                            <div class="mb-3">
+                                                <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                            </div>
+                                            <h4>Drop variant images here or click to upload.</h4>
+                                        </div>
+                                    </div>
+                                    <div id="variantImagesError" class="text-danger small mt-1" style="display:none;">
+                                        Please upload at least 1 variant image
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3" id="variantPreview"></div>
+
+                            </div>
+
+
                         </div><!--end row-->
 
+                        <div class="hstack gap-2 justify-content-end mb-3">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i>
+                                Cancel</button>
 
-                        
-                    </form>
+                        </div>
+
+
+                    </div>
                 </div>
-                <!-- container-fluid -->
-            </div>
-            <!-- End Page-content -->
-        <!--start back-to-top-->
-            <button class="btn btn-dark btn-icon" id="back-to-top">
-            <i class="bi bi-caret-up fs-3xl"></i>
-            </button>
-    <!--end back-to-top-->
-        
-        </div>
-        <!-- end main content-->
+
+            </div><!--end col-->
 
 
-<!-- Modal --> 
-<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+        </div><!--end row-->
+
+
+
+        </form>
+    </div>
+    <!-- container-fluid -->
+</div>
+<!-- End Page-content -->
+<!--start back-to-top-->
+<button class="btn btn-dark btn-icon" id="back-to-top">
+    <i class="bi bi-caret-up fs-3xl"></i>
+</button>
+<!--end back-to-top-->
+
+</div>
+<!-- end main content-->
+
+
+<!-- Modal -->
+<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-body text-center p-5">
                 <h5 class="mb-3">Add New Category</h5>
-                <form action="{% url 'dashboard:add_category' %}" method="post" class="row g-3" accept="multipart/form-data">
-                {% csrf_token %}
+                <div  id="addCategoryForm" class="row g-3"
+                    accept="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div  id="categoryAlertWrapper"  class="col-12 mt-3">
+                        
+
+                    </div>
+
+
                     <div class="col-md-12">
                         <label for="fullnameInput" class="form-label">Name
                             <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="fullnameInput" name="name" placeholder="Enter name" required>
+                        <input type="text" class="form-control" id="fullnameInput" name="name" placeholder="Enter name"
+                            required>
                     </div>
-                               
+                    <div class="col-md-12">
+                        <label for="fullnameInput" class="form-label">Gender
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-control" id="productCategories" name="subcategory"
+                            required>
+                            
+                            <option value="Kids(Girls)">Kids(Girls)</option>
+                            <option value="Kids(Boys)">Kids(Boys)</option>
+                            <option value="Womens">Womens</option>
+                            <option value="Mens">Mens</option>
+                            
+                        </select>
+                    </div>
+
                     <div class="col-12">
                         <label for="inputAddress" class="form-label">Description</label>
-                        <input type="text" class="form-control" name="description" id="inputAddress" placeholder="Description">
+                        <input type="text" class="form-control" name="description" id="inputAddress"
+                            placeholder="Description">
                     </div>
                     <div class="col-12">
                         <label for="inputAddress" class="form-label">Image</label>
-                        <input type="file" class="form-control" name="image" accept=".png,.jpeg,.jpg" id="inputAddress" >
+                        <input type="file" class="form-control" name="image" accept=".png,.jpeg,.jpg" id="inputAddress">
                     </div>
-                    
-                    
+
+
                     <div class="col-12">
                         <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Create</button>
+                            <button type="submit" id="submitCategoryBtn" class="btn btn-primary">Create</button>
                         </div>
                     </div>
-                </form>
-                
+                </div>
+
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -511,160 +736,417 @@ Kids(Girls) Products Create
 
 
 
-    <!-- dropzone js -->
-    <script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
-    <!-- init js -->
-    <script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
+<!-- dropzone js -->
+<script src="{% static 'dashboard/libs/dropzone/dropzone-min.js' %}"></script>
+<!-- init js -->
+<script src="{% static 'dashboard/js/pages/ecommerce-create-product.init.js' %}"></script>
 
-
-<script>
-    const colorInput = document.getElementById('productColor');
-    const colorHexDisplay = document.getElementById('colorHexDisplay');
-
-    function updateColorCode() {
-        colorHexDisplay.value = colorInput.value;
-    }
-
-    // Initialize
-    updateColorCode();
-
-    // Update on change
-    colorInput.addEventListener('input', updateColorCode);
-</script>
-
-<!-- Include jQuery if not already included -->
+<!-- jQuery + Dropzone -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        let selectedSizes = [];
-
-        $('#button-addon2').click(function () {
-            let newSize = $('#sizeInput').val().trim().toUpperCase();
-            if (newSize !== "" && !selectedSizes.includes(newSize)) {
-                selectedSizes.push(newSize);
-
-                // Update the hidden input
-                $('#selectedSize').val(selectedSizes.join(','));
-
-                // Create and append the new button
-                $('#selectedSizeContainer').append(`
-                    <button type="button" class="btn rounded-pill btn-primary m-1">${newSize}</button>
-                `);
-
-                // Clear input
-                $('#sizeInput').val('');
-            }
-        });
-    });
-</script>
-<script>
-    document.getElementById('dropzoneArea').addEventListener('click', function () {
-        document.getElementById('fileInput').click();
-    });
-</script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
 
 <script>
-$(document).ready(function () {
     Dropzone.autoDiscover = false;
 
-    var previewContainer = $("#previewContainer");
+    let myDropzone, variantDropzone;
+    let selectedSizes = [];
 
-    var myDropzone = new Dropzone("#dropzoneArea", {
-        url: "#", 
+    // ========================
+    // 1. Product Dropzone
+    // ========================
+    myDropzone = new Dropzone("#productDropzone", {
+        url: "#",
         autoProcessQueue: false,
         uploadMultiple: true,
-        parallelUploads: 10,
-        maxFiles: 20,
         paramName: "product_images",
         previewsContainer: false,
-        clickable: "#dropzoneArea", // only Dropzone handle clicks
+        clickable: "#productDropzone",
         init: function () {
             this.on("addedfile", function (file) {
-                console.log("✅ File added:", file);
-
                 let reader = new FileReader();
                 reader.onload = function (e) {
                     let imgId = file.upload.uuid;
                     let html = `
-                        <div class="col-sm-3 col-6 mb-3 image-card" id="image-${imgId}">
-                            <div class="position-relative border rounded p-1">
-                                <button type="button"
-                                    class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 delete-image-btn"
-                                    data-id="${imgId}">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                                <img src="${e.target.result}" 
-                                    alt="${file.name}" 
-                                    class="img-fluid rounded"
-                                    style="height:150px; width:100%; object-fit:contain;">
-                            </div>
-                        </div>
-                    `;
-                    previewContainer.append(html);
+                <div class="col-sm-3 col-6 mb-3" id="product-${imgId}">
+                    <div class="position-relative border rounded p-1">
+                        <button type="button" class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 remove-product-btn" data-id="${imgId}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height:150px; width:100%; object-fit:contain;">
+                    </div>
+                </div>`;
+                    $("#productPreview").append(html);
                 };
                 reader.readAsDataURL(file);
             });
         }
     });
 
-    // delete button
-    $(document).on("click", ".delete-image-btn", function () {
+    // remove product image
+    $(document).on("click", ".remove-product-btn", function () {
         var id = $(this).data("id");
         var fileToRemove = myDropzone.files.find(f => f.upload.uuid === id);
-        if (fileToRemove) {
-            myDropzone.removeFile(fileToRemove);
+        if (fileToRemove) myDropzone.removeFile(fileToRemove);
+        $("#product-" + id).remove();
+    });
+
+    // ========================
+    // 2. Variant Dropzone
+    // ========================
+    variantDropzone = new Dropzone("#variantDropzone", {
+        url: "#",
+        autoProcessQueue: false,
+        uploadMultiple: true,
+        paramName: "variant_images",
+        previewsContainer: false,
+        clickable: "#variantDropzone",
+        init: function () {
+            this.on("addedfile", function (file) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    let imgId = file.upload.uuid;
+                    let html = `
+                <div class="col-sm-3 col-6 mb-3" id="variant-${imgId}">
+                    <div class="position-relative border rounded p-1">
+                        <button type="button" class="btn btn-sm btn-danger rounded position-absolute top-0 end-0 m-1 remove-variant-btn" data-id="${imgId}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height:150px; width:100%; object-fit:contain;">
+                    </div>
+                </div>`;
+                    $("#variantPreview").append(html);
+                };
+                reader.readAsDataURL(file);
+            });
         }
-        $("#image-" + id).remove();
     });
 
-    // form submit
-   $("#productDropzoneForm").on("submit", function () {
-    myDropzone.files.forEach(function (file, index) {
-        let dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        let fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.name = "product_images";
-        fileInput.files = dataTransfer.files;
-        fileInput.style.display = "none";
-        document.getElementById("productDropzoneForm").appendChild(fileInput);
+    // remove variant image
+    $(document).on("click", ".remove-variant-btn", function () {
+        var id = $(this).data("id");
+        var fileToRemove = variantDropzone.files.find(f => f.upload.uuid === id);
+        if (fileToRemove) variantDropzone.removeFile(fileToRemove);
+        $("#variant-" + id).remove();
     });
-});
 
+    // ========================
+    // 3. Size selection logic
+    // ========================
+    $(document).ready(function () {
+        // Show dropdown on focus
+        $('#sizeInput').on('focus', function () {
+            $('#sizeDropdown').show();
+        });
+
+        // Hide dropdown outside click
+        $(document).click(function (e) {
+            if (!$(e.target).closest('#sizeInput, #sizeDropdown').length) {
+                $('#sizeDropdown').hide();
+            }
+        });
+
+        // Checkbox select
+        $('.size-option').change(function () {
+            let size = $(this).val();
+            if ($(this).is(':checked')) {
+                if (!selectedSizes.includes(size)) selectedSizes.push(size);
+            } else {
+                selectedSizes = selectedSizes.filter(s => s !== size);
+            }
+        });
+
+        // Apply button
+        $('#applySizes').click(function () {
+            updateSelectedSizes();
+            $('#sizeDropdown').hide();
+        });
+
+        // Clear button
+        $('#clearSizes').click(function () {
+            selectedSizes = [];
+            $('.size-option').prop('checked', false);
+            updateSelectedSizes();
+        });
+
+        // Manual entry
+        $('#sizeInput').keypress(function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                let newSize = $(this).val().trim().toUpperCase();
+                if (newSize !== "" && !selectedSizes.includes(newSize)) {
+                    selectedSizes.push(newSize);
+                    updateSelectedSizes();
+                }
+                $(this).val('');
+            }
+        });
+
+        // Update size table
+        function updateSelectedSizes() {
+            $("#sizeVariantTable tbody").empty();
+            if (selectedSizes.length > 0) {
+                $("#sizeVariantTable").removeClass("d-none");
+                selectedSizes.forEach(size => addSizeRow(size));
+            } else {
+                $("#sizeVariantTable").addClass("d-none");
+            }
+        }
+
+        function addSizeRow(size) {
+            if ($("#sizeVariantTable tbody tr[data-size='" + size + "']").length > 0) return;
+            let row = `
+        <tr data-size="${size}">
+            <td><input type="hidden" name="sizes[${size}][size]" value="${size}">${size}</td>
+            <td><input type="number" name="sizes[${size}][mrp]" class="form-control" required></td>
+            <td><input type="number" name="sizes[${size}][price]" class="form-control" required></td>
+            <td><input type="number" name="sizes[${size}][discount_price]" class="form-control"></td>
+            <td><input type="number" name="sizes[${size}][stock]" class="form-control" required></td>
+            <td><button type="button" class="btn btn-sm btn-danger remove-size-row">X</button></td>
+        </tr>`;
+            $("#sizeVariantTable tbody").append(row);
+        }
+
+        // remove row
+        $(document).on("click", ".remove-size-row", function () {
+            $(this).closest("tr").remove();
+        });
+    });
+
+    // ========================
+    // 4. Category toggle
+    // ========================
+    function toggleCategoryFields(selectedCategory) {
+        const tshirtFields = document.getElementById("tshirtFields");
+        const pantFields = document.getElementById("pantFields");
+
+        tshirtFields.classList.add("d-none");
+        pantFields.classList.add("d-none");
+        tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
+        pantFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
+
+        if (selectedCategory === "T-Shirt") {
+            tshirtFields.classList.remove("d-none");
+            tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
+        } else if (selectedCategory === "Pant") {
+            pantFields.classList.remove("d-none");
+            pantFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
+        }
+    }
+
+    document.getElementById("productCategories").addEventListener("change", function () {
+        const selectedText = this.options[this.selectedIndex].text;
+        toggleCategoryFields(selectedText);
+    });
+
+    // ========================
+    // 5. Final Form Submit
+    // ========================
+    $("#productDropzoneForm").off("submit").on("submit", function (e) {
+        console.log("🔍 Form submit started...");
+        let valid = true;
+
+        // 1) Size table validation
+        if ($("#sizeVariantTable tbody tr").length === 0) {
+            alert("⚠️ Please select at least one size.");
+            return false;
+        }
+
+        $("#sizeVariantTable tbody input").each(function () {
+            if ($(this).val().trim() === "") {
+                valid = false;
+                $(this).addClass("is-invalid");
+            } else {
+                $(this).removeClass("is-invalid");
+            }
+        });
+
+        if (!valid) {
+            alert("⚠️ Please fill all required fields in size table.");
+            return false;
+        }
+
+        // 2) Attach product images
+        myDropzone.files.forEach(function (file) {
+            let dt = new DataTransfer();
+            dt.items.add(file);
+            let input = document.createElement("input");
+            input.type = "file";
+            input.name = "product_images";
+            input.files = dt.files;
+            input.style.display = "none";
+            document.getElementById("productDropzoneForm").appendChild(input);
+        });
+
+        // 3) Attach variant images
+        variantDropzone.files.forEach(function (file) {
+            let dt = new DataTransfer();
+            dt.items.add(file);
+            let input = document.createElement("input");
+            input.type = "file";
+            input.name = "variant_images";
+            input.files = dt.files;
+            input.style.display = "none";
+            document.getElementById("productDropzoneForm").appendChild(input);
+        });
+
+        // 4) Collect sizes → JSON
+        let sizes = [];
+        $("#sizeVariantTable tbody tr").each(function () {
+            let size = $(this).data("size");
+            let mrp = $(this).find("input[name='sizes[" + size + "][mrp]']").val();
+            let price = $(this).find("input[name='sizes[" + size + "][price]']").val();
+            let stock = $(this).find("input[name='sizes[" + size + "][stock]']").val();
+            let discount = $(this).find("input[name='sizes[" + size + "][discount_price]']").val();
+
+            sizes.push({
+                size: size,
+                mrp: mrp,
+                price: price,
+                stock: stock,
+                discount_price: discount
+            });
+        });
+
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "sizes_json";
+        input.value = JSON.stringify(sizes);
+        document.getElementById("productDropzoneForm").appendChild(input);
+
+        console.log("✅ Sizes JSON added:", input.value);
+        console.log("✅ Final form ready for submit...");
+    });
+
+
+</script>
+
+
+<!--  category form --> 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const submitBtn = document.getElementById('submitCategoryBtn');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // ✅ Function to show alert
+    function showAlert(message, status = 'success') {
+        const parentDiv = document.getElementById('categoryAlertWrapper');
+
+        // Remove existing alert if any
+        const existing = document.getElementById('categoryAlert');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Create alert div
+        const alertBox = document.createElement('div');
+        alertBox.id = 'categoryAlert';
+        alertBox.className = `alert alert-${status} alert-dismissible fade show`;
+        alertBox.setAttribute('role', 'alert');
+
+        alertBox.innerHTML = `
+            <strong>${message}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        parentDiv.appendChild(alertBox);
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            alertBox.classList.remove('show');
+            alertBox.classList.add('d-none');
+            
+
+        // ✅ Reload page ONLY if success
+        if (status === 'success') {
+            location.reload();
+        }
+
+        }, 5000);
+    }
+
+    submitBtn.addEventListener('click', function (e) {
+        e.preventDefault(); // 🔐 Stop default action
+
+        const formContainer = document.getElementById('addCategoryForm');
+        const formData = new FormData();
+
+        // Append form fields
+        formData.append('name', formContainer.querySelector('[name=name]').value);
+        formData.append('subcategory', formContainer.querySelector('[name=subcategory]').value);
+        formData.append('description', formContainer.querySelector('[name=description]').value);
+
+        const imageInput = formContainer.querySelector('[name=image]');
+        if (imageInput.files.length > 0) {
+            formData.append('image', imageInput.files[0]);
+        }
+
+        // 🔁 Send request
+        fetch("{% url 'dashboard:api_add_category' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showAlert(data.message, 'success');
+                formContainer.querySelector('[name=name]').value = '';
+                formContainer.querySelector('[name=subcategory]').value = '';
+                formContainer.querySelector('[name=description]').value = '';
+                formContainer.querySelector('[name=image]').value = '';
+            } else {
+                showAlert(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Something went wrong. Please try again.', 'danger');
+        });
+    });
 });
 </script>
 
 
-
-
+<!--  category form --> 
+<!-- JavaScript to toggle visibility -->
 
 <script>
-function toggleCategoryFields(selectedCategory) {
-  const tshirtFields = document.getElementById("tshirtFields");
-  const pantFields = document.getElementById("pantFields");
+    const refundableInput = document.getElementById('refundableInput');
+    const returnPeriodDiv = document.getElementById('returnPeriodDiv');
+    const returnPeriodInput = document.getElementById('return_period');
 
-  // Hide + disable both first
-  tshirtFields.classList.add("d-none");
-  pantFields.classList.add("d-none");
-  tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
-  pantFields.querySelectorAll("select, input").forEach(el => el.disabled = true);
+    const replaceableInput = document.getElementById('is_replaceable');
+    const replacePeriodDiv = document.getElementById('replacePeriodDiv');
+    const replacePeriodInput = document.getElementById('replace_period');
 
-  // Show + enable only the chosen one
-  if (selectedCategory === "T-Shirt") {
-    tshirtFields.classList.remove("d-none");
-    tshirtFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
-  } else if (selectedCategory === "Pant") {
-    pantFields.classList.remove("d-none");
-    pantFields.querySelectorAll("select, input").forEach(el => el.disabled = false);
-  }
-}
+    // Function to toggle field
+    function toggleField(checkbox, div, input) {
+        if (checkbox.checked) {
+            div.style.display = 'block';
+            input.setAttribute('required', 'required');
+        } else {
+            div.style.display = 'none';
+            input.removeAttribute('required');
+            input.value = ''; // Optional: clear value if unchecked
+        }
+    }
 
-document.getElementById("productCategories").addEventListener("change", function() {
-  const selectedText = this.options[this.selectedIndex].text;
-  toggleCategoryFields(selectedText);
-});
+    // Initial check (if pre-filled)
+    toggleField(refundableInput, returnPeriodDiv, returnPeriodInput);
+    toggleField(replaceableInput, replacePeriodDiv, replacePeriodInput);
 
+    // On change
+    refundableInput.addEventListener('change', function () {
+        toggleField(this, returnPeriodDiv, returnPeriodInput);
+    });
+
+    replaceableInput.addEventListener('change', function () {
+        toggleField(this, replacePeriodDiv, replacePeriodInput);
+    });
 </script>
+
+
 
 {% endblock content %}

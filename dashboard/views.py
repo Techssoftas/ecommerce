@@ -40,29 +40,43 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 def forgot_password_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
-        if not email:
-            messages.error(request, "Email is required.")
-            return redirect('password_reset')
+        print("request.user:", request.user)
+        new_password = request.POST.get('new_password')
+
+        if not new_password:
+            messages.error(request, "Please provide both email and new password.")
+            return redirect('forgot_password_view')
 
         try:
-            user = User.objects.get(email=email)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_url = f"{request.scheme}://{request.get_host()}/reset/{uid}/{token}/"
+            user = User.objects.get(email=request.user.email)
 
-            # Send email
-            subject = "Reset Your Password"
-            message = f"Hi {user.username},\n\nClick the link below to reset your password:\n{reset_url}\n\nIf you didn’t request this, please ignore this email."
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            # Set new password
+            user.set_password(new_password)
+            user.save()
 
-            messages.success(request, "Password reset email has been sent.")
-            return redirect('password_reset_done')
+            # Send confirmation email
+            subject = "Password Changed Successfully"
+            message = f"""
+                Hi {user.username},
+
+                Your password has been successfully changed.
+
+                Your new password is: {new_password}
+
+                If you did not request this change, please contact support immediately.
+                """
+            send_mail(subject, message.strip(), settings.DEFAULT_FROM_EMAIL, [user.email])
+
+            messages.success(request, "Password changed and confirmation email sent.")
+            return redirect('login_view')  # Redirect to login or wherever appropriate
+
         except User.DoesNotExist:
             messages.error(request, "No user found with this email.")
-            return redirect('password_reset')
+            return redirect('forgot_password_view')
+
     return render(request, 'dashboard/auth/forgot_password_manual.html')
 
 
@@ -297,31 +311,49 @@ def kids_girls_products(request):
 
 @login_required
 @user_passes_test(is_admin)
+
 def product_details(request, product_id):
+    # Get product with related data
     product = get_object_or_404(
-        Product.objects.select_related('category').prefetch_related('images', 'variants', 'reviews'),
+        Product.objects.select_related('category').prefetch_related(
+            'images', 
+            'variants__sizes', 
+            'variants__images', 
+            'reviews__images'
+        ),
         id=product_id
     )
-    reviews = product.reviews.all()
-    # Filter size and color variants
-    size_variants = product.variants.filter( is_active=True)
-    color_variants = product.variants.filter( is_active=True)
-    # Filter approved reviews
+
+    # Approved reviews
     approved_reviews = product.reviews.filter(is_approved=True)
-    
-    # Calculate minimum order total and total revenue
+
+    # Group active color variants and their active size variants
+    color_variants = product.variants.filter(is_active=True)
+    size_variants = []  # List of all sizes across variants
+
+    for variant in color_variants:
+        sizes = variant.sizes.filter(stock__gt=0)  # Only sizes with stock
+        size_variants.extend(sizes)
+
+    # Primary product image
+    primary_image = product.primary_image
+
+    # Minimum order total
     minimum_order_total = product.minimum_order_quantity * product.get_price
+
+    # Total revenue
     total_revenue = product.total_sold * product.get_price
 
     context = {
         'product': product,
-        'reviews':reviews,
-        'size_variants': size_variants,
         'color_variants': color_variants,
+        'size_variants': size_variants,
         'approved_reviews': approved_reviews,
+        'primary_image': primary_image,
         'minimum_order_total': minimum_order_total,
         'total_revenue': total_revenue,
     }
+
     return render(request, 'dashboard/products/product_details.html', context)
 
 
@@ -507,6 +539,7 @@ def mens_product_create(request):
         is_cod_available = request.POST.get('cod_available') == 'on'  
         is_returnable = request.POST.get('is_returnable')   == 'on'
         is_free_shipping = request.POST.get('free_shipping') == 'on'  
+        is_active = request.POST.get('is_active') == 'on'  
         
         discount_price = request.POST.get('discount_price')
         sku = request.POST.get('sku')
@@ -535,11 +568,12 @@ def mens_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
+
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -548,17 +582,18 @@ def mens_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
         # is_trending = request.POST.get('is_trending') == 'on'
         # is_deal_of_day = request.POST.get('is_deal_of_day') == 'on'
-        # is_replaceable = request.POST.get('is_replaceable') == 'on'
+        is_replaceable = request.POST.get('is_replaceable') == 'on'
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -581,10 +616,10 @@ def mens_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -593,19 +628,20 @@ def mens_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
             # is_trending=is_trending,
             # is_deal_of_day=is_deal_of_day,
             is_returnable=is_returnable,
-            # is_replaceable=is_replaceable,
+            is_replaceable=is_replaceable,
             is_cod_available=is_cod_available,
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -678,7 +714,7 @@ def womens_product_create(request):
         is_cod_available = request.POST.get('cod_available') == 'on'  
         is_returnable = request.POST.get('is_returnable')   == 'on'
         is_free_shipping = request.POST.get('free_shipping') == 'on'  
-        
+        is_active = request.POST.get('is_active') == 'on'  
         discount_price = request.POST.get('discount_price')
         sku = request.POST.get('sku')
         if not sku:
@@ -706,11 +742,13 @@ def womens_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -729,8 +767,6 @@ def womens_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
-        # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
             name=name,
@@ -752,10 +788,10 @@ def womens_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -764,7 +800,7 @@ def womens_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -776,7 +812,8 @@ def womens_product_create(request):
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -863,11 +900,11 @@ def kids_boys_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -876,7 +913,7 @@ def kids_boys_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -886,7 +923,8 @@ def kids_boys_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -909,10 +947,10 @@ def kids_boys_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -921,7 +959,7 @@ def kids_boys_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -933,7 +971,8 @@ def kids_boys_product_create(request):
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -1020,11 +1059,11 @@ def kids_girls_product_create(request):
         maximum_order_quantity = request.POST.get('maximum_order_quantity')
         
         barcode = request.POST.get('barcode')
-        hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        hsn_code = int(request.POST.get('hsn_code') or 0)
+        weight = float(request.POST.get('weight') or 0)
+        dimensions_length = float(request.POST.get('dimensions_length') or 0)
+        dimensions_width = float(request.POST.get('dimensions_width') or 0)
+        dimensions_height = float(request.POST.get('dimensions_height') or 0)
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
         meta_title = request.POST.get('meta_title')
@@ -1033,7 +1072,7 @@ def kids_girls_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -1043,7 +1082,8 @@ def kids_girls_product_create(request):
         # warranty_period = request.POST.get('warranty_period')
         # warranty_type = request.POST.get('warranty_type')
         # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
+        return_period = int(request.POST.get('return_period') or 0)
+        replace_period = int(request.POST.get('replace_period')or 0)
         # return_policy = request.POST.get('return_policy')
         category = get_object_or_404(Category, id=category_id)
         product = Product.objects.create(
@@ -1066,10 +1106,10 @@ def kids_girls_product_create(request):
             sku=sku,
             # barcode=barcode,
             hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
+            weight=weight,
+            dimensions_length=dimensions_length,
+            dimensions_width=dimensions_width,
+            dimensions_height=dimensions_height,
             # condition=condition,
             # availability_status=availability_status,
             # meta_title=meta_title,  
@@ -1078,7 +1118,7 @@ def kids_girls_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
+            is_active=is_active,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -1090,7 +1130,8 @@ def kids_girls_product_create(request):
             # warranty_period=warranty_period,
             # warranty_type=warranty_type,
             # warranty_description=warranty_description,
-            # return_period=return_period,
+            return_period=return_period,
+            replace_period=replace_period,
             # return_policy=return_policy
         )   
         # Handle product images
@@ -1135,160 +1176,82 @@ def kids_girls_product_create(request):
     
     return render(request, 'dashboard/products/kids_girls_product_create.html', {'categories': categories})
 
+import uuid
 @login_required
 @user_passes_test(is_admin)
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
     categories = Category.objects.all()
+
     if request.method == 'POST':
         name = request.POST.get('name')
         category_id = request.POST.get('category')
         subcategory = request.POST.get('subcategory')
         description = request.POST.get('description')
         brand = request.POST.get('brand')
-        model_name = request.POST.get('model_name') 
-        is_cod_available = request.POST.get('cod_available') == 'on'  
-        is_returnable = request.POST.get('is_returnable')   == 'on'
-        is_free_shipping = request.POST.get('free_shipping') == 'on'  
-        
-        discount_price = request.POST.get('discount_price')
-        sku = request.POST.get('sku')
-        if not sku:
-            sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+        model_name = request.POST.get('model_name')
+        is_cod_available = request.POST.get('cod_available') == 'on'
+        is_returnable = request.POST.get('is_returnable') == 'on'
+        is_free_shipping = request.POST.get('free_shipping') == 'on'
+        is_active = request.POST.get('is_active') == 'on'  
 
-        short_description = request.POST.get('short_description')
-        
-        specifications = request.POST.get('specifications')
-        key_features = request.POST.get('key_features')
-        subcategory = request.POST.get('subcategory')
-         
-        discount_price = request.POST.get('discount_price')
-        product_mrp_price = request.POST.get('product_mrp_price',0)
-        product_selling_price = request.POST.get('product_selling_price',0)
-        print(product_mrp_price,product_selling_price)
-        stock = request.POST.get('stock',0)
-        minimum_order_quantity = request.POST.get('minimum_order_quantity')
-        maximum_order_quantity = request.POST.get('maximum_order_quantity')
-        
-        barcode = request.POST.get('barcode')
+        discount_price = request.POST.get('discount_price') or 0
+        mrp_price = request.POST.get('product_mrp_price') or 0
+        selling_price = request.POST.get('product_selling_price') or 0
+        stock = request.POST.get('stock') or 0
+        sku = request.POST.get('sku') or product.sku  # Preserve existing SKU
+
         hsn_code = request.POST.get('hsn_code')
-        weight = request.POST.get('weight')
-        dimensions_length = request.POST.get('dimensions_length')
-        dimensions_width = request.POST.get('dimensions_width')
-        dimensions_height = request.POST.get('dimensions_height')
+        short_description = request.POST.get('short_description')
         condition = request.POST.get('condition')
         availability_status = request.POST.get('availability_status')
-        meta_title = request.POST.get('meta_title')
-        meta_description = request.POST.get('meta_description')
-        tags = request.POST.get('tags')
-        #   = request.POST.get('is_free_shipping') == 'on'
-        # delivery_time_min = request.POST.get('delivery_time_min')
-        # delivery_time_max = request.POST.get('delivery_time_max')
-        # is_active = request.POST.get('is_active') == 'on'
-        # is_featured = request.POST.get('is_featured') == 'on'
-        # is_bestseller = request.POST.get('is_bestseller') == 'on'
-        # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
-        # is_trending = request.POST.get('is_trending') == 'on'
-        # is_deal_of_day = request.POST.get('is_deal_of_day') == 'on'
-        # is_replaceable = request.POST.get('is_replaceable') == 'on'
-        # warranty_period = request.POST.get('warranty_period')
-        # warranty_type = request.POST.get('warranty_type')
-        # warranty_description = request.POST.get('warranty_description')
-        # return_period = request.POST.get('return_period')
-        # return_policy = request.POST.get('return_policy')
+
+        # Fetch category
         category = get_object_or_404(Category, id=category_id)
-        product = Product.objects.create(
-            name=name,
-            brand=brand,
-            model_name=model_name,
-            # short_description=short_description,
-            description=description,
-            # specifications=specifications,
-            # key_features=key_features,
-            category=category,
-            subcategory=subcategory,
-            price=product_selling_price,
-            discount_price=discount_price,
-            mrp=product_mrp_price,
-            stock=stock,
-            # minimum_order_quantity=minimum_order_quantity,
-            # maximum_order_quantity=maximum_order_quantity,
-            sku=sku,
-            # barcode=barcode,
-            hsn_code=hsn_code,
-            # weight=weight,
-            # dimensions_length=dimensions_length,
-            # dimensions_width=dimensions_width,
-            # dimensions_height=dimensions_height,
-            # condition=condition,
-            # availability_status=availability_status,
-            # meta_title=meta_title,  
-            # meta_description=meta_description,
-            # tags=tags,
-            is_free_shipping=is_free_shipping,
-            # delivery_time_min=delivery_time_min,
-            # delivery_time_max=delivery_time_max,
-            # is_active=is_active,
-            # is_featured=is_featured,
-            # is_bestseller=is_bestseller,
-            # is_new_arrival=is_new_arrival,
-            # is_trending=is_trending,
-            # is_deal_of_day=is_deal_of_day,
-            is_returnable=is_returnable,
-            # is_replaceable=is_replaceable,
-            is_cod_available=is_cod_available,
-            # warranty_period=warranty_period,
-            # warranty_type=warranty_type,
-            # warranty_description=warranty_description,
-            # return_period=return_period,
-            # return_policy=return_policy
-        )   
+
+        # Update product fields
+        product.name = name
+        product.brand = brand
+        product.model_name = model_name
+        product.description = description
+        product.category = category
+        product.subcategory = subcategory
+        product.price = selling_price
+        product.discount_price = discount_price
+        product.mrp = mrp_price
+        product.stock = stock
+        product.sku = sku
+        product.hsn_code = hsn_code
+        product.is_cod_available = is_cod_available
+        product.is_returnable = is_returnable
+        product.is_free_shipping = is_free_shipping
+        product.is_active = is_active
+
+        product.save()
+
         # Handle product images
         product_images = request.FILES.getlist('product_images')
-        print("Images count:", len(product_images))
-        for idx, image in enumerate(product_images):
-            ProductImage.objects.create(
-                product=product,
-                image=image,
-                is_primary=(idx == 0)
-            )
-        # Handle product variants
-        variant_sizes = request.POST.getlist('variant_sizes')
-        # If it still comes as a single string like "S,M,L,XL"
-        if len(variant_sizes) == 1 and "," in variant_sizes[0]:
-            variant_sizes = [s.strip() for s in variant_sizes[0].split(",")]
+        print("Uploaded images count:", len(product_images))
+        if product_images:
+            # Check if a primary image already exists for the product
+            primary_exists = product.images.filter(is_primary=True).exists()
+            for idx, image in enumerate(product_images):
+                ProductImage.objects.create(
+                    product=product,
+                    image=image,
+                    is_primary=(not primary_exists and idx == 0)
+                )
 
-        variant_mrp = request.POST.get('variant_mrp_price')
-        variant_selling = request.POST.get('variant_selling_price')
-        variant_image = request.FILES.get('variant_image')
-        hex_color_code = request.POST.get('hex_color_code')
-        variant_value = request.POST.get('variant_value')
-        # for size in variant_sizes and hex_color_code:
-        ProductVariant.objects.create(product=product,
-                                    size=variant_sizes,
-                                    variant_value=variant_value,
-                                    hex_color_code=hex_color_code,
-                                    mrp=variant_mrp,
-                                    price=variant_selling,
-                                    variant_image=variant_image,
-                                    sku =sku,   
-                                        )
-        # for color in variant_colors:
-        #     ProductVariant.objects.create(product=product, variant_type='color', hex_color_code=color)
-
-
-
-            
-        messages.success(request, 'Product created successfully!')
+        messages.success(request, 'Product updated successfully!')
         return redirect('dashboard:product_list')
-    
-    
+
     return render(request, 'dashboard/products/product_update.html', {
-      
         'product': product,
+        'categories': categories,
         'variants': product.variants.all(),
-        'categories':categories
     })
+
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -1351,6 +1314,56 @@ def orders_list(request):
         'page_obj': page_obj,  # Pass page_obj for pagination
     })
 
+from django.db.models import Prefetch, Q
+@login_required
+@user_passes_test(is_admin)
+def return_orders(request):
+    # Prefetch only ReturnRequest objects where request_type is 'Return'
+    # Filter ReturnRequest for only 'Return' type requests
+    orders = ReturnRequest.objects.filter(request_type='Return') \
+        .select_related('user', 'order_item__order') \
+        .prefetch_related('order_item__product') \
+        .order_by('-requested_at')
+    
+    # Paginate results - 10 per page
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Status choices for filtering or UI display
+    status_choices = ReturnRequest.STATUS_CHOICES
+
+    return render(request, 'dashboard/orders/return_orders.html', {
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'status_choices': status_choices,
+    })
+
+def exchange_orders(request):
+    # Prefetch only ReturnRequest objects where request_type is 'Exchange'
+    exchange_requests = ReturnRequest.objects.filter(request_type='Exchange')
+
+    exchanged_orders = Order.objects.filter(
+        items__returns__in=exchange_requests
+    ).distinct().select_related(
+        'user', 'payment'
+    ).prefetch_related(
+        'items__product',
+        Prefetch('items__returns', queryset=exchange_requests),
+        'items__returns__scans'
+    ).order_by('-created_at')
+
+    paginator = Paginator(exchanged_orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    total_exchanged = exchanged_orders.count()
+
+    return render(request, 'dashboard/orders/exchange_orders.html', {
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'total_exchanged': total_exchanged
+    })
 
 
 @login_required
@@ -1979,7 +1992,7 @@ from .services.delhivery_service import DelhiveryService
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('dashboard')
 def create_shipping_label(request, order_id):
     """Create shipping label for an order"""
     if request.method == 'POST':
@@ -2001,7 +2014,7 @@ def create_shipping_label(request, order_id):
             else:
                 return JsonResponse({
                 "status": "fail",
-                "message": f"❌ {result.get('error')}"
+                "message": f"❌shipment {result.get('error')}"
             })
                 
         except Exception as e:
@@ -2104,6 +2117,159 @@ def download_shipping_label(request, tracking_id):
         logger.error(f"Error downloading label: {str(e)}")
         return HttpResponse(f'Error: {str(e)}', status=500)
 
+
+def create_return_shipment(request, item_id):
+    try:
+        if request.method == 'POST':
+
+            order_item = get_object_or_404(OrderItem, id=item_id)
+
+            # Find active ReturnRequest for this order_item
+            return_request_qs = order_item.returns.filter(status='Requested').order_by('-requested_at')
+            if not return_request_qs.exists():
+                messages.error(request,'No active return request found for this item.')
+                return redirect("return_orders")
+
+            return_request = return_request_qs.first()
+            order = return_request.order_item.order
+            shipping_address = order.shipping_address
+
+            # Calculate weight & quantity
+            quantity = return_request.quantity
+            weight_per_item = float(order_item.product.weight or 0.5)
+            total_weight = max(0.5, weight_per_item * quantity)
+
+            # Your warehouse / pickup location details
+            pickup_location_name = "M TEX"  # warehouse registered name with Delhivery
+            pickup_address = "Your Warehouse Address Here"
+            pickup_pin = 641606
+            pickup_city = "Tiruppur"
+            pickup_state = "Tamil Nadu"
+            pickup_country = "India"
+            pickup_phone = ["9487332244"]
+
+            shipment_data = {
+                "shipments": [{
+                    "name": shipping_address.contact_person_name or order.user.username,
+                    "add": f"{shipping_address.address_line1}, {shipping_address.address_line2 or ''}".strip(', '),
+                    "pin": int(shipping_address.postal_code),
+                    "city": shipping_address.city,
+                    "state": shipping_address.state,
+                    "country": shipping_address.country or "India",
+                    "phone": [shipping_address.contact_person_number or shipping_address.phone or order.phone],
+                    "order": str(order.order_number),
+                    "payment_mode": "Pickup",  # For return shipments
+                    "return_pin": pickup_pin,
+                    "return_city": pickup_city,
+                    "return_phone": pickup_phone,
+                    "return_add": pickup_address,
+                    "return_state": pickup_state,
+                    "return_country": pickup_country,
+                    "products_desc": "Returned items",
+                    "hsn_code": order_item.product.hsn_code or "6109",
+                    "cod_amount": 0,
+                    "order_date": order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    "total_amount": str(order.total_amount),
+                    "seller_add": pickup_address,
+                    "seller_name": "M TEX",
+                    "seller_gst_tin": "33FLMPM1010A1ZY",
+                    "quantity": quantity,
+                    "waybill": "",
+                    "shipment_width": 18,
+                    "shipment_height": 1,
+                    "shipment_length": 27,
+                    "weight": total_weight,
+                    "shipping_mode": "Surface",
+                    "address_type": shipping_address.type_of_address or "home"
+                }],
+                "pickup_location": {
+                    "name": 'M TEX',
+                }
+            }
+
+            payload = {
+                "format": "json",
+                "data": json.dumps(shipment_data)
+            }
+
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"Token {settings.DELHIVERY_TOKEN}"
+            }
+
+            try:
+                response = requests.post(
+                    "https://track.delhivery.com/api/cmu/create.json",
+                    headers=headers,
+                    data=payload,
+                    timeout=30
+                )
+                logger.info(f"Delhivery return shipment response: {response.status_code} {response.text}")
+
+                if response.status_code in (200, 201):
+                    result = response.json()
+                    if result.get("success"):
+                        waybill = result.get("packages", [{}])[0].get("waybill")
+                        if waybill:
+                            # Update return request status and AWB
+                            return_request.pickup_awb = waybill
+                            return_request.status = "Approved"
+                            return_request.save()
+
+                            messages.success(request, "Return shipment created successfully. Waybill: " + waybill)
+                            # Redirect to return_orders page
+                            return redirect("dashboard:return_orders")
+                        else:
+                            messages.error(request, "Waybill missing in response")
+                            return redirect("dashboard:return_orders")
+                    else:
+                        messages.error(request,result.get("rmk", "Unknown error"))
+                        return redirect("dashboard:return_orders")
+                else:
+                    messages.error(request, f"Delhivery API failed with status {response.status_code}")
+                    return redirect("dashboard:return_orders")
+            except Exception as e:
+                logger.error(f"Error in return shipment creation (Delhivery API): {e}")
+                messages.error(request, f"Error in return shipment creation (API): {str(e)}")
+                return redirect("dashboard:return_orders")
+
+    except Exception as e:
+        logger.error(f"Error in create_return_shipment view: {e}")
+        messages.error(request, f"Something went wrong: {str(e)}")
+        return redirect("dashboard:return_orders")
+
+
+
+def update_return_payment(request, request_id):
+    try:
+        return_request = get_object_or_404(ReturnRequest, id=request_id)
+
+        # ✅ Update ReturnRequest
+        return_request.status = 'Refunded'
+        return_request.processed_at = timezone.now()
+        return_request.save()
+
+        # ✅ Get the associated Order
+        order = return_request.order_item.order
+
+        # ✅ Update Payment
+        try:
+            payment = order.payment
+            payment.status = 'Refunded'
+            payment.save()  # ✅ auto_now=True will update updated_at
+        except Payment.DoesNotExist:
+            messages.warning(request, "Payment record not found for this order.")
+
+        # ✅ Update Order
+        order.status = 'Refunded'
+        order.save()  # ✅ auto_now=True will update updated_at
+
+        messages.success(request, "Refund updated successfully.")
+        return redirect('dashboard:return_orders')
+
+    except Exception as e:
+        messages.error(request, f"Error updating refund: {str(e)}")
+        return redirect('dashboard:return_orders')
 
 def track_order(request, order_id):
     """Track order status from Delhivery"""

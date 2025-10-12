@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
             name='Order',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('order_number', api.models.AlphaNumericFieldfive(blank=True, max_length=5, null=True, unique=True)),
+                ('order_number', api.models.AlphaNumericFieldfive(blank=True, max_length=7, null=True, unique=True)),
                 ('status', models.CharField(choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Processing', 'Processing'), ('Shipped', 'Shipped'), ('Delivered', 'Delivered'), ('Cancelled', 'Cancelled'), ('Refunded', 'Refunded')], default='pending', max_length=20)),
                 ('source', models.CharField(choices=[('cart', 'Cart'), ('buynow', 'Buy Now')], default='cart', max_length=10)),
                 ('total_amount', models.DecimalField(decimal_places=2, max_digits=10)),
