@@ -1093,8 +1093,8 @@ def cod_order_create(request):
         else:
             return Response({"error": "Invalid order type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # COD charges (like ₹90)
-        cod_fee = 90
+        # COD charges (like ₹50)
+        cod_fee = 50
         final_amount = total_amount + cod_fee
 
         # ✅ Create Order

@@ -312,10 +312,10 @@ def render_label_html_and_save(tracking):
                             "hsn_code": "6211",
                             "qty": "N/A",
                             "discount": 0,
-                            "taxable_value": 85.5,
+                            "taxable_value": 47.5,
                             "gst_rate": 5,
-                            "gst_amount": 4.5,
-                            "total": 90.0,
+                            "gst_amount": 2.5,
+                            "total": 50.0,
                         } if is_cod else None,
         }
 

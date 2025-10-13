@@ -53,6 +53,7 @@ urlpatterns = [
     
     path('initiate_payment/', initiate_payment, name='initiate_payment'),
     path('confirm_order/', confirm_order, name='confirm_order'),
+    path('cod_order_create/', cod_order_create, name='cod_order_create'),
     
     
     path('create_return_request/', ReturnRequestCreateView.as_view(), name='create_return_request'),
