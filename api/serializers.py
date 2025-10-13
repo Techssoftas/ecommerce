@@ -69,10 +69,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'password', 'password_confirm'
         ]
 
-    def validate_username(self, value):
-        if CustomUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Username already exists. Please choose a different one.")
-        return value
+
 
     def validate_email(self, value):
         if CustomUser.objects.filter(email=value).exists():
@@ -82,6 +79,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError("Passwords do not match.")
+        
+        first_name = data.get('first_name')
+        if CustomUser.objects.filter(username=first_name).exists():
+            raise serializers.ValidationError("Username already exists. Please choose another first name.")
+
+
         return data
 
     def create(self, validated_data):
