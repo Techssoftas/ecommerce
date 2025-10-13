@@ -194,7 +194,7 @@
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
                         <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
                         {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
-                        <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Delivery Status</th>
+                       <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Order Status</th>
                        <th scope="col" class="cursor-pointer fs-lg" data-sort="label" style="font-family:serif; color:#002147;">Label</th>
                         <th scope="col" class="fs-lg" style="font-family:serif;color:#002147;">Action</th>
                       </tr>
@@ -278,6 +278,7 @@
                               {% endwith %}
                             </h5>
                           </td> {% endcomment %}
+                         
                           <td class="status">
                             <span class="badge
                                 {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
@@ -299,7 +300,7 @@
                             
                             
                                
-                            {% if order.status == 'Pending' %}
+                            {% if order.status == 'Confirmed' %}
                               <form class="create-label-form" action="{% url 'dashboard:create_shipping_label' order.id %}" method="post" style="display:inline;">
                                  {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-primary generate-btn" >Generate Label</button>
