@@ -1048,6 +1048,7 @@ def confirm_order(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@csrf_exempt
 @api_view(['POST'])
 def cod_order_create(request):
     user = request.user
