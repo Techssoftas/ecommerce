@@ -25,8 +25,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dashboard.apps.DashboardConfig',
     # Third party apps
-    'rest_framework',
+   
     'corsheaders',
+    'rest_framework',
     'rest_framework.authtoken',
     'crispy_forms',
     'crispy_bootstrap5',
@@ -147,7 +148,7 @@ from datetime import timedelta
 
 
 # CORS Configuration
-# CORS_ALLOW_ALL_ORIGINS = False
+# CORS_ALLOW_ALL_ORIGINS = True  
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -155,15 +156,19 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.29.150:5173',#my
     'http://192.168.29.3:5173',#naveen
     "https://m2hit.in",
-    "https://mtex.in",  
+    "https://www.m2hit.in",
+    "https://mtex.in", 
+    "https://www.mtex.in", 
     "https://mtex-ecommerce.surge.sh"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://m2hit.in",
-     "https://mtex.in",  
-     "https://mtex-ecommerce.surge.sh",
+    "https://www.m2hit.in",
+    "https://www.mtex.in",
+    "https://mtex.in",  
+    "https://mtex-ecommerce.surge.sh",
 ]
 
 
@@ -261,7 +266,7 @@ LOGGING = {
 RAZORPAY_KEY_ID = "rzp_live_RFnXxVu9Ihl4Rv"
 RAZORPAY_KEY_SECRET = "9hcZNAZmxQOURfKTXUGYKCuG"
 
-# #Test Key
+# # #Test Key
 # RAZORPAY_KEY_ID = "rzp_test_RCJ4LxmMOSnvyB"
 # RAZORPAY_KEY_SECRET = "eB8kvT0n5XI2fQyk9QrmVPJu"
 
