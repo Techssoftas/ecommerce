@@ -61,40 +61,43 @@ class TestProtectedView(APIView):
 
 
 class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
     serializer_class = UserRegistrationSerializer
-    permission_classes = [permissions.AllowAny]
-    
+    permission_classes = [AllowAny]
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+
         if serializer.is_valid():
             user = serializer.save()
-            
-            # Generate JWT tokens
-            refresh = RefreshToken.for_user(user)
-            # Send a welcome email
-            send_mail(
-                subject='Welcome to M TEX Fashion Shop!',
-                message=(
-                    f"Hi {user.first_name},\n\n"
-                    "Welcome to M TEX Fashion Shop! 🎉\n\n"
-                    "Your account has been successfully created.\n"
-                    "We’re excited to have you join our fashion community!\n\n"
-                    "Stay tuned for the latest trends, special offers, and much more.\n\n"
-                    "Thank you for choosing M TEX.\n\n"
-                    "Best regards,\n"
-                    "M TEX Fashion Shop Team"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+
+            # Create token
+            token, _ = Token.objects.get_or_create(user=user)
+
+            # ✅ Send welcome email - safe with try-except
+            try:
+                send_mail(
+                    subject='Welcome to M TEX Fashion Shop!',
+                    message=(
+                        f"Hi {user.first_name},\n\n"
+                        "Welcome to M TEX Fashion Shop! 🎉\n\n"
+                        "Your account has been created successfully.\n"
+                        "Enjoy shopping with us!\n\n"
+                        "Thanks,\nM TEX Team"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False  # ❗ Will raise error if fail
+                )
+            except Exception as e:
+                print(f"⚠️ Email sending failed: {e}")
+                # You could log this instead of print in production
 
             return Response({
+                'token': token.key,
                 'user': UserProfileSerializer(user).data,
-                'message': 'Account Registration successfully..!'
+                'message': 'Account registered successfully!'
             }, status=status.HTTP_201_CREATED)
-        print(serializer.errors)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
