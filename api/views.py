@@ -550,7 +550,10 @@ class OrderApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        orders = Order.objects.filter(user=request.user,payment__status='Completed').order_by('-created_at')
+        orders = Order.objects.filter(
+            Q(user=request.user),
+            Q(payment__status='Completed') | Q(payment__payment_method='Cash on Delivery')
+        ).order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
 
         return Response(serializer.data)
