@@ -1,3 +1,6 @@
+{% load custom_filters %}
+{% load math_filters %}
+
 <!doctype html>
 <html>
 <head>
@@ -65,7 +68,7 @@
               background-color:black;
               color:white;
               width:97%;
-              padding:6px;">COD: Check the payable amount on the app</div>
+              padding:6px;">{% if cod_charge %} COD: Check the payable amount on the app {% else %} PREPAID {% endif %}</div>
 
         <div class="right-block-content" style="display:flex;align-items-center;justify-content-space-between; margin-top:10px; gap:90px;">
       
@@ -170,21 +173,38 @@
           </tr>
         </thead>
         <tbody>
-          {% for item in invoice.items %}
-          <tr>
-            <td>{{ item.description }}</td>
-            <td class="text-center">{{ item.hsn_code }}</td>
-            <td class="text-center">{{ item.qty }}</td>
-            <td class="text-right">{{ item.gross_amount  }}</td>
-            <td class="text-right">{{ item.discount  }}</td>
-            <td class="text-right">{{ item.taxable_value  }}</td>
-            <td class="text-right">
-              {% for tax in item.taxes %}
-                {{ tax.type }}@{{ tax.rate }}%<br/>
-              {% endfor %}
-            </td>
-            <td class="text-right">{{ item.total  }}</td>
-          </tr>
+          {% for item in order_items.items.all %}
+            {% with item.size_variant.price|default_if_none:"0" as price %}
+              {% with price|mul:0.05 as gst_amount %}
+                {% with price|subtract:gst_amount as taxable_value %}
+                  <tr>
+                    <td>
+                      {{ item.product.name|default:""|slice:":10" }}-
+                      {{ item.variant.color_name|default:"" }}-
+                      {{ item.size_variant.size|default:"" }}
+                    </td>
+                    <td class="text-center">{{ item.product.hsn_code|default:"" }}</td>
+                    <td class="text-center">{{ item.quantity|default:"" }}</td>
+                    <td class="text-right">Rs.{{ item.size_variant.mrp|default:"0" }}</td>
+                    <td class="text-right">Rs.{{ item.size_variant.discount_price|default:"0" }}</td>
+
+                    <!-- Taxable Value -->
+                    <td class="text-right taxable">
+                      Rs.{{ taxable_value|floatformat:2 }}
+                    </td>
+
+                    <!-- GST Value -->
+                    <td class="text-right">
+                      IGST @5.0%<br/>
+                      Rs.{{ gst_amount|floatformat:2 }}
+                    </td>
+
+                    <!-- Final Price -->
+                    <td class="text-right">Rs.{{ price|floatformat:2 }}</td>
+                  </tr>
+                {% endwith %}
+              {% endwith %}
+            {% endwith %}
           {% endfor %}
           
           
