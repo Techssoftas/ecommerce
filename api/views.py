@@ -155,37 +155,105 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         email = request.data.get('email')
-        
+
         try:
+            # 1️⃣ user register ah check panrom
             user = User.objects.get(email=email)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
 
-            reset_url = f"http://localhost:5173/reset-password/{uid}/{token}/"  # React URL
+            # 2️⃣ Random 6-digit OTP generate panrom
+            otp = str(random.randint(100000, 999999))
 
-            send_mail(
-                'Reset your password',
-                f'Click the link to reset your password: {reset_url}',
-                'suriyathaagam@gmail.com',  # from email
-                [user.email],
-            )
+            # 3️⃣ OTP ah session la store panrom 10 mins ku
+            request.session['otp'] = otp
+            request.session['email'] = email
+            request.session.set_expiry(600)  # 600 sec = 10 min
 
-            return Response({'message': 'Password reset email sent.'}, status=status.HTTP_200_OK)
+            # 4️⃣ Mail send panrom
+            try:
+                send_mail(
+                    subject='M TEX Fashion - Password Reset OTP',
+                    message=(
+                        f"Dear Customer,\n\n"
+                        f"Your One-Time Password (OTP) for resetting your password is: {otp}\n\n"
+                        "This OTP is valid for 10 minutes.\n"
+                        "If you did not request a password reset, please ignore this email.\n\n"
+                        "Thank you,\n"
+                        "M TEX Fashion Team"
+                    ),
+                    from_email='fashion@mtex.in',
+                    recipient_list=[email],
+                    fail_silently=True  # Don't raise exception on failure
+                )
+
+            except Exception as e:
+                print("Mail send failed:", e)
+
+            # 5️⃣ Success response to frontend
+            return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
 
         except User.DoesNotExist:
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            # Print full traceback to console
             print("Unexpected error:", str(e))
-            # traceback.print_exc()
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from django.contrib.auth.hashers import make_password
+class VerifyOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        otp = request.data.get('otp')
+        email = request.session.get('email')
+        session_otp = request.session.get('otp')
+
+        # 1️⃣ Check if session expired or missing
+        if not email or not session_otp:
+            return Response({'error': 'OTP expired or invalid session'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2️⃣ Check OTP match
+        if otp == session_otp:
+            # ✅ OTP verified successfully
+            request.session['otp_verified'] = True
+            return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        
+class SetNewPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+        email = request.session.get('email')
+        otp_verified = request.session.get('otp_verified')
+
+        if not otp_verified:
+            return Response({'error': 'OTP not verified'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not email:
+            return Response({'error': 'Session expired. Please try again.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+            user.password = make_password(new_password)
+            user.save()
+
+            # ✅ clear session after reset
+            request.session.flush()
+
+            return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 class PasswordResetConfirmView(APIView):
     permission_classes =[permissions.AllowAny]
