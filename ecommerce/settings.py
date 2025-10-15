@@ -48,6 +48,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+SESSION_COOKIE_SECURE = True  # set to True only in HTTPS
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'None'  # important when using withCredentials and different domain
+
+
 ROOT_URLCONF = 'ecommerce.urls'
 
 TEMPLATES = [
