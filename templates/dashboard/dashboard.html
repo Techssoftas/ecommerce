@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
-
+{% load custom_filters %}
 <div class="main-content">
   <div class="page-content">
     <div class="container-fluid">
@@ -359,325 +359,257 @@
             <div class="card-header align-items-center d-flex">
               <h4 class="card-title mb-0 flex-grow-1 fs-bold" style="font-family:serif;">Latest Orders</h4>
               <div class="flex-shrink-0">
-                <div class="dropdown card-header-dropdown sortble-dropdown">
-                  <a
-                    class="text-reset dropdown-btn"
-                    href="#"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <span class="fw-semibold text-uppercase fs-12"
-                      >Sort by: </span
-                    ><span class="text-muted dropdown-title ">Order Date</span>
-                    <i class="mdi mdi-chevron-down ms-1"></i>
-                  </a>
-                  <div class="dropdown-menu dropdown-menu-end">
-                    <button class="dropdown-item sort" data-sort="order_date">
-                      Order Date
-                    </button>
-                    <button class="dropdown-item sort" data-sort="order_id">
-                      Order ID
-                    </button>
-                    <button class="dropdown-item sort" data-sort="amount">
-                      Amount
-                    </button>
-                    <button class="dropdown-item sort" data-sort="status">
-                      Status
-                    </button>
-                  </div>
-                </div>
+                <div class="dropdown card-header-dropdown sortble-dropdown flex-shrink-0">
+                        <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="text-muted dropdown-title" id="sort-title">Order Date</span> <i class="mdi mdi-chevron-down ms-1"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                          <button class="dropdown-item sort" data-sort="order_date">Order Date</button>
+                          <button class="dropdown-item sort" data-sort="order_id">Order ID</button>
+                          <button class="dropdown-item sort" data-sort="amount">Amount</button>
+                          <button class="dropdown-item sort" data-sort="customer">Customer</button>
+                          <button class="dropdown-item sort" data-sort="payment_method">Payment Method</button>
+                          <button class="dropdown-item sort" data-sort="status">Status</button>
+                        </div>
+                      </div>
               </div>
             </div>
             <div class="card-body">
-              <div class="table-responsive">
-                <table
-                  class="table table-borderless table-centered align-middle table-nowrap mb-0"
-                >
-                  <thead class="text-muted table-light">
-                    <tr>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="order_date"
-                        style="font-family:serif; color:#002147;">
-                        Order Date
-                      </th>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="order_id"
-                        style="font-family:serif; color:#002147;">
-                        Order ID
-                      </th>
-                      <th
-                        scope="col"
-                        class="cursor-pointer fs-lg"
-                        data-sort="shop"
-                        style="font-family:serif; color:#002147;">
-                        Shop
-                      </th>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="customer"
-                        style="font-family:serif; color:#002147;">
-                        Customers
-                      </th>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="products"
-                        style="font-family:serif; color:#002147;">
-                        Products
-                      </th>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="amount"
-                        style="font-family:serif; color:#002147;">
-                        Amount
-                      </th>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="status"
-                        style="font-family:serif; color:#002147;">
-                        Status
-                      </th>
-                      <th
-                        scope="col"
-                        class=" cursor-pointer fs-lg"
-                        data-sort="rating"
-                        style="font-family:serif; color:#002147;">
-                        Rating
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="list">
-                    <tr>
-                      <td class="order_date" style="font-family:sans-serif;">15 Feb, 2023</td>
-                      <td class="order_id">
-                        <a
-                          href="apps-ecommerce-order-overview.html"
-                          class="fw-medium link-primary"
-                          style="font-family:sans-serif;"
-                          >#TBS250011</a
-                        >
-                      </td>
-                      <td class="shop">
-                        <img
-                          src="{% static 'dashboard/images/companies/img-7.png' %}"
-                          alt=""
-                          class="avatar-xxs rounded-circle"
-                        />
-                      </td>
-                      <td class="customer" style="font-family:sans-serif;">Alex Smith</td>
-                      <td class="products" style="font-family:sans-serif;">Clothes</td>
-                      <td class="amount">
-                        <span class="fw-medium" style="font-family:sans-serif;">₹109.00</span>
-                      </td>
-                      <td class="status">
-                        <span class="badge bg-secondary-subtle text-secondary"
-                          >New</span
-                        >
-                      </td>
-                      <td class="rating">
-                        <h5 class="fs-md fw-medium mb-0">-</h5>
-                      </td>
-                    </tr>
-                    <!-- end tr -->
-                    <tr>
-                      <td class="order_date">14 Feb, 2023</td>
-                      <td class="order_id">
-                        <a
-                          href="apps-ecommerce-order-overview.html"
-                          class="fw-medium link-primary"
-                          >#TBS250010</a
-                        >
-                      </td>
-                      <td class="shop">
-                        <img
-                          src="{% static 'dashboard/images/companies/img-1.png' %}"
-                          alt=""
-                          class="avatar-xxs rounded-circle"
-                        />
-                      </td>
-                      <td class="customer">Jansh Brown</td>
-                      <td class="products">Kitchen Storage</td>
-                      <td class="amount">
-                        <span class="fw-medium">₹149.00</span>
-                      </td>
-                      <td class="status">
-                        <span class="badge bg-warning-subtle text-warning"
-                          >Pending</span
-                        >
-                      </td>
-                      <td class="rating">
-                        <h5 class="fs-md fw-medium mb-0">
-                          <i class="ph-star align-baseline text-warning"></i>
-                          4.5
-                        </h5>
-                      </td>
-                    </tr>
-                    <!-- end tr -->
-                    <tr>
-                      <td class="order_date">30 Jan, 2023</td>
-                      <td class="order_id">
-                        <a
-                          href="apps-ecommerce-order-overview.html"
-                          class="fw-medium link-primary"
-                          >#TBS250009</a
-                        >
-                      </td>
-                      <td class="shop">
-                        <img
-                          src="{% static 'dashboard/images/companies/img-2.png' %}"
-                          alt=""
-                          class="avatar-xxs rounded-circle"
-                        />
-                      </td>
-                      <td class="customer">Ayaan Bowen</td>
-                      <td class="products">Bike Accessories</td>
-                      <td class="amount">
-                        <span class="fw-medium">₹215.00</span>
-                      </td>
-                      <td class="status">
-                        <span class="badge bg-danger-subtle text-danger"
-                          >Out of Delivered</span
-                        >
-                      </td>
-                      <td class="rating">
-                        <h5 class="fs-md fw-medium mb-0">
-                          <i class="ph-star align-baseline text-warning"></i>
-                          4.9
-                        </h5>
-                      </td>
-                    </tr>
-                    <!-- end tr -->
-                    <tr>
-                      <td class="order_date">25 Jan, 2023</td>
-                      <td class="order_id">
-                        <a
-                          href="apps-ecommerce-order-overview.html"
-                          class="fw-medium link-primary"
-                          >#TBS250008</a
-                        >
-                      </td>
-                      <td class="shop">
-                        <img
-                          src="{% static 'dashboard/images/companies/img-3.png' %}"
-                          alt=""
-                          class="avatar-xxs rounded-circle"
-                        />
-                      </td>
-                      <td class="customer">Prezy Mark</td>
-                      <td class="products">Furniture</td>
-                      <td class="amount">
-                        <span class="fw-medium">₹199.00</span>
-                      </td>
-                      <td class="status">
-                        <span class="badge bg-primary-subtle text-primary"
-                          >Shipping</span
-                        >
-                      </td>
-                      <td class="rating">
-                        <h5 class="fs-md fw-medium mb-0">
-                          <i class="ph-star align-baseline text-warning"></i>
-                          4.3
-                        </h5>
-                      </td>
-                    </tr>
-                    <!-- end tr -->
-                    <tr>
-                      <td class="order_date">19 Jan, 2023</td>
-                      <td class="order_id">
-                        <a
-                          href="apps-ecommerce-order-overview.html"
-                          class="fw-medium link-primary"
-                          >#TBS250007</a
-                        >
-                      </td>
-                      <td class="shop">
-                        <img
-                          src="{% static 'dashboard/images/companies/img-4.png' %}"
-                          alt=""
-                          class="avatar-xxs rounded-circle"
-                        />
-                      </td>
-                      <td class="customer">Vihan Hudda</td>
-                      <td class="products">Bags and Wallets</td>
-                      <td class="amount">
-                        <span class="fw-medium">₹330.00</span>
-                      </td>
-                      <td class="status">
-                        <span class="badge bg-success-subtle text-success"
-                          >Delivered</span
-                        >
-                      </td>
-                      <td class="rating">
-                        <h5 class="fs-md fw-medium mb-0">
-                          <i class="ph-star align-baseline text-warning"></i>
-                          4.7
-                        </h5>
-                      </td>
-                    </tr>
-                    <!-- end tr -->
-                    <tr>
-                      <td class="order_date">16 Jan, 2023</td>
-                      <td class="order_id">
-                        <a
-                          href="apps-ecommerce-order-overview.html"
-                          class="fw-medium link-primary"
-                          >#TBS250006</a
-                        >
-                      </td>
-                      <td class="shop">
-                        <img
-                          src="{% static 'dashboard/images/companies/img-5.png' %}"
-                          alt=""
-                          class="avatar-xxs rounded-circle"
-                        />
-                      </td>
-                      <td class="customer">Vihan Hudda</td>
-                      <td class="products">Bags and Wallets</td>
-                      <td class="amount">
-                        <span class="fw-medium">₹745.11</span>
-                      </td>
-                      <td class="status">
-                        <span class="badge bg-warning-subtle text-warning"
-                          >Pending</span
-                        >
-                      </td>
-                      <td class="rating">
-                        <h5 class="fs-md fw-medium mb-0">
-                          <i class="ph-star align-baseline text-warning"></i>
-                          4.6
-                        </h5>
-                      </td>
-                    </tr>
-                    <!-- end tr -->
-                  </tbody>
-                  <!-- end tbody -->
-                </table>
-                <!-- end table -->
-                <div class="noresult" style="display: none">
-                  <div class="text-center">
-                    <lord-icon
-                      src="https://cdn.lordicon.com/msoeawqm.json"
-                      trigger="loop"
-                      colors="primary:#405189,secondary:#0ab39c"
-                      style="width: 75px; height: 75px"
-                    ></lord-icon>
-                    <h5 class="mt-2">Sorry! No Result Found</h5>
-                    <p class="text-muted mb-0">
-                      We've searched more than 150+ transactions We did not find
-                      any transactions for you search.
-                    </p>
+                <div class="table-responsive">
+                  <!-- start table -->
+                  <table class="table table-centered align-middle table-nowrap mb-0">
+                    <thead class="text-muted table-light">
+                      <tr>
+                        <th>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="option" id="checkAll" />
+                            <label class="form-check-label" for="checkAll"></label>
+                          </div>
+                        </th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_id" style="font-family:serif; color:#002147;">Order ID</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="order_date" style="font-family:serif; color:#002147;">Order Date</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="products" style="font-family:serif;color:#002147;">Products</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="customer" style="font-family:serif;color:#002147;">Customer</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="payment_method" style="font-family:serif;color:#002147;">Payment Method</th>
+                        <th scope="col" class="cursor-pointer fs-lg" data-sort="amount" style="font-family:serif;color:#002147;">Amount</th>
+                        {% comment %} <th scope="col" class="sort cursor-pointer" data-sort="rating">Rating</th> {% endcomment %}
+                       <th scope="col" class="cursor-pointer fs-lg" data-sort="status" style="font-family:serif;color:#002147;">Order Status</th>
+                      </tr>
+                    </thead>
+                    <tbody class="list form-check-all" id="order-table-body">
+                      {% for order in orders %}
+                        <tr data-order-id="{{ order.order_number }}"
+                          data-order-date="{{ order.created_at|date:'Y-m-d' }}"
+                          data-delivery-date="
+                                                        {% if order.status == 'delivered' %}
+                            {{ order.updated_at|date:'Y-m-d' }}
+                          {% elif order.items.first %}
+                            {{ order.created_at|add_days:order.items.first.product.delivery_time_max|date:'Y-m-d' }}
+                          {% else %}
+                            {{ order.created_at|date:'Y-m-d' }}
+                          {% endif %}
+                                                    "
+                          data-products="{% for item in order.items.all %}
+                            {{ item.product.name }}{% if item.variant %}
+                              
+                              
+                               ({{ item.variant.variant_value }})
+
+
+                            {% endif %}
+                            
+                            
+
+
+                            {% if not forloop.last %}, {% endif %}
+                          {% endfor %}"
+                          data-customer="{{ order.user.username }}"
+                          data-payment-method="{% if order.payment %}
+                            {{ order.payment.get_payment_method_display }}
+                          {% else %}
+                            
+                            
+                            COD
+
+
+                          {% endif %}"
+                          data-amount="{{ order.total_amount }}"
+                          data-status="{{ order.get_status_display }}">
+                          <th>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="chk_child" value="{{ order.id }}" />
+                              <label class="form-check-label"></label>
+                            </div>
+                          </th>
+                          <td class="order_id" style="font-family:sans-serif;">
+                            <a href="{% url 'dashboard:order_detail' order.order_number %}" class="fw-medium link-primary" style="font-family:sans-serif;">{{ order.order_number }}</a>
+                          </td>
+                          <td class="order_date">{{ order.created_at|date:'d M, Y' }}</td>
+                          
+                          <td class="products" style="font-family:sans-serif;">
+                            {% with item=order.items.all.0 %}
+                              {{ item.product.name|slice:':30' }}{% if item.variant.sizes %}
+                                ({{ item.variant.color_name }})
+                              {% endif %}
+                            {% endwith %}
+                          </td>
+                          <td class="customer" style="font-family:sans-serif;">{{ order.user.username }}</td>
+                          <td class="payment_method" style="font-family:sans-serif;">
+                            {% if order.payment %}
+                              {{ order.payment.get_payment_method_display }}
+                            {% else %}
+                              COD
+                            {% endif %}
+                          </td>
+                          <td class="amount" style="font-family:sans-serif;">
+                            <span class="fw-medium" style="font-family:sans-serif;">₹{{ order.total_amount }}</span>
+                          </td>
+                          {% comment %} <td class="rating">
+                            <h5 class="fs-md fw-medium mb-0">
+                              {% with avg_rating=order.items.first.product.average_rating %}
+                                {% if avg_rating > 0 %}
+                                  {{ avg_rating|floatformat:1 }}/5
+                                {% else %}
+                                  -
+                                {% endif %}
+                              {% endwith %}
+                            </h5>
+                          </td> {% endcomment %}
+                         
+                          <td class="status">
+                            <span class="badge
+                                {% if order.status == 'Delivered' or order.status == 'Confirmed' %}
+                                    bg-success-subtle text-success
+                                {% elif order.status == 'Processing' or order.status == 'Ready to Ship' %}
+                                    bg-info-subtle text-info
+                                {% elif order.status == 'Cancelled' or order.status == 'Refunded' %}
+                                    bg-danger-subtle text-danger
+                                {% else %}
+                                    bg-warning-subtle text-warning
+                                {% endif %}">
+                                {{ order.status }}
+                            </span>
+
+
+                          </td>
+                           
+                        </tr>
+                      {% empty %}
+                        <tr>
+                          <td colspan="11" class="text-center">No orders found</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  <!-- end table -->
+                  <div class="noresult" style="display: none">
+                    <div class="text-center py-4">
+                      <i class="ph-magnifying-glass fs-1 text-primary"></i>
+                      <h5 class="mt-2">Sorry! No Result Found</h5>
+                      <p class="text-muted mb-0">We've searched more than 150+ orders We did not find any orders for you search.</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center justify-content-sm-end mt-2">
+                  <div class="pagination-wrap hstack gap-2">
+                    <a class="page-item pagination-prev {% if not page_obj.has_previous %}disabled{% endif %}"
+                      href="{% if page_obj.has_previous %}
+                        
+                        
+                        ?page={{ page_obj.previous_page_number }}{% if current_status %}
+                          
+                          
+                          &status={{ current_status }}
+                        {% endif %}
+                      {% else %}
+                        
+                        
+                        javascript:void(0)
+
+
+                      {% endif %}">
+                      <i class="mdi mdi-chevron-left align-middle" style="color:#002147;"></i>
+                    </a>
+                    <ul class="pagination listjs-pagination mb-0">
+                      <!-- Show first page and ellipsis if needed -->
+                      {% if page_obj.number > 3 %}
+                        <li class="page-item">
+                          <a class="page-link"
+                            style="color:#002147;"
+                            href="?page=1{% if current_status %}
+                              
+                              
+                              &status={{ current_status }}
+                            {% endif %}">
+                            1
+                          </a>
+                        </li>
+                        {% if page_obj.number > 4 %}
+                          <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                          </li>
+                        {% endif %}
+                      {% endif %}
+
+                      <!-- Show pages around current page -->
+                      {% for num in page_obj.paginator.page_range %}
+                        {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                          <li class="page-item  {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link"
+                              style="background-color:#002147;border-color:#002147;"
+                              href="?page={{ num }}{% if current_status %}
+                                
+                                
+                                &status={{ current_status }}
+                              {% endif %}">
+                              {{ num }}
+                            </a>
+                          </li>
+                        {% endif %}
+                      {% endfor %}
+
+                      <!-- Show ellipsis and last page if needed -->
+                      {% with total_pages=page_obj.paginator.num_pages %}
+                        {% if page_obj.number < total_pages|add:'- 2' %}
+                          {% if page_obj.number < total_pages|add:'- 3' %}
+                            <li class="page-item disabled">
+                              <span class="page-link">...</span>
+                            </li>
+                          {% endif %}
+                          <li class="page-item">
+                            <a class="page-link"
+                              style="color:#002147;"
+                              href="?page={{ total_pages }}{% if current_status %}
+                                
+                                
+                                &status={{ current_status }}
+                              {% endif %}">
+                              {{ total_pages }}
+                            </a>
+                          </li>
+                        {% endif %}
+                      {% endwith %}
+                    </ul>
+                    <a class="page-item pagination-next {% if not page_obj.has_next %}disabled{% endif %}"
+                      href="{% if page_obj.has_next %}
+                        
+                        
+                        ?page={{ page_obj.next_page_number }}{% if current_status %}
+                          
+                          
+                          &status={{ current_status }}
+                        {% endif %}
+                      {% else %}
+                        
+                        
+                        javascript:void(0)
+
+
+                      {% endif %}">
+                      <i class="mdi mdi-chevron-right align-middle" style="color:#002147;"></i>
+                    </a>
                   </div>
                 </div>
               </div>
-            </div>
           </div>
         </div>
         <!--end col-->

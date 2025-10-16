@@ -104,13 +104,29 @@ def dashboard(request):
     # Low stock products
     low_stock_products = Product.objects.filter(stock__lt=10).order_by('stock')[:5]
     
+    # Fetch orders with related user, payment, and order items
+    orders = Order.objects.select_related('user', 'payment').prefetch_related('items__product').all().order_by('-created_at')
+    
+    # Filter by status if provided
+    status_filter = request.GET.get('status')
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+    
+    # Pagination
+    paginator = Paginator(orders, 10)  # 10 orders per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+
     context = {
+        'orders': page_obj,
         'total_products': total_products,
         'total_orders': total_orders,
         'total_customers': total_customers,
         'total_revenue': total_revenue,
         'recent_orders': recent_orders,
         'low_stock_products': low_stock_products,
+        'page_obj': page_obj, 
     }
     return render(request, 'dashboard/dashboard.html', context)
 
