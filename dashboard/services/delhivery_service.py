@@ -20,7 +20,7 @@ class DelhiveryService:
     
     def __init__(self):
         self.token = settings.DELHIVERY_TOKEN
-        self.base_url = "https://track.delhivery.com/api/cmu/create.json" # production URL  
+        self.base_url = "https://track.delhivery.com/api/cmu/create.json"  # | production URL   "https://track.delhivery.com/api/cmu/create.json"  | Test URL "https://staging-express.delhivery.com/api/cmu/create.json"
         # self.base_url = "https://staging-express.delhivery.com/api/cmu/create.json" # staging URL  
         self.pickup_location = settings.DELHIVERY_PICKUP_LOCATION
         self.company_name = settings.DELHIVERY_COMPANY_NAME
@@ -79,15 +79,15 @@ class DelhiveryService:
                     'return_pin': '641606',
                     'return_city': 'Tiruppur',
                     'return_phone': '9487332244',
-                    'return_add': self.pickup_location,
+                    'return_add': "2/227 D, ANGALAPARMESHWARI NAGAR, Mudalipalayam, Tiruppur, 641606",
                     'return_state': 'Tamil Nadu',
                     'return_country': 'India',
                     'products_desc': 'Clothing Items',
                     'hsn_code': first_item.product.hsn_code or '6109',
                     'order_date': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                     'total_amount': str(order.total_amount),
-                    'seller_add': self.pickup_location,
-                    'seller_name': self.company_name,
+                    'seller_add': "2/227 D, ANGALAPARMESHWARI NAGAR, Mudalipalayam, Tiruppur, 641606",
+                    'seller_name': 'M TEX',
                     'seller_cst': self.gst_tin,
                     'quantity': total_quantity,
                     'waybill': '',
@@ -192,7 +192,115 @@ class DelhiveryService:
             logger.error(f"Exception in create_shipment: {str(e)}")
             return {'success': False, 'error': str(e)}
 
-    
+    def create_bulk_shipments(self, orders):
+        """
+        Create multiple shipments in one Delhivery API call.
+        """
+        try:
+            shipments = []
+
+            for order in orders:
+                try:
+                    is_cod = order.payment.payment_method == 'Cash on Delivery'
+                except Payment.DoesNotExist:
+                    is_cod = False
+
+                payment_mode_value = "COD" if is_cod else "Prepaid"
+                cod_amount_value = str(order.total_amount) if is_cod else "0"
+
+                # Calculate total quantity & weight
+                total_quantity = sum(item.quantity for item in order.items.all())
+                total_weight = max(0.5, sum(float(item.product.weight or 0.5) * item.quantity for item in order.items.all()))
+                first_item = order.items.first()
+
+                if not (order.shipping_address and order.shipping_address.postal_code and order.shipping_address.city and order.shipping_address.state):
+                    logger.warning(f"Skipping order {order.order_number}: Missing address info")
+                    continue
+
+                shipment = {
+                    "name": order.shipping_address.contact_person_name or order.user.username,
+                    "add": f"{order.shipping_address.address_line1}, {order.shipping_address.address_line2 or ''}".strip(', '),
+                    "pin": order.shipping_address.postal_code,
+                    "city": order.shipping_address.city,
+                    "state": order.shipping_address.state,
+                    "country": order.shipping_address.country or "India",
+                    "phone": order.shipping_address.contact_person_number or order.phone,
+                    "order": str(order.order_number),
+                    "payment_mode": payment_mode_value,
+                    "cod_amount": cod_amount_value,
+                    "return_pin": "641606",
+                    "return_city": "Tiruppur",
+                    "return_phone": "9487332244",
+                    "return_add": "2/227 D, ANGALAPARMESHWARI NAGAR, Mudalipalayam, Tiruppur, 641606",
+                    "return_state": "Tamil Nadu",
+                    "return_country": "India",
+                    "products_desc": "Clothing Items",
+                    "hsn_code": first_item.product.hsn_code or "6109",
+                    "order_date": order.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
+                    "total_amount": str(order.total_amount),
+                    "seller_add": "2/227 D, ANGALAPARMESHWARI NAGAR, Mudalipalayam, Tiruppur, 641606",
+                    "seller_name": "M TEX",
+                    "seller_cst": self.gst_tin,
+                    "quantity": total_quantity,
+                    "shipment_width": 18,
+                    "shipment_height": 2,
+                    "shipment_length": 27,
+                    "weight": total_weight,
+                    "seller_gst_tin": self.gst_tin,
+                    "shipping_mode": "Surface",
+                    "address_type": f"{order.shipping_address.type_of_address}",
+                }
+                shipments.append(shipment)
+            
+            if not shipments:
+                return {"success": False, "error": "No valid shipments to send"}
+
+            payload = {
+                "format": "json",
+                "data": json.dumps({
+                    "shipments": shipments,
+                    "pickup_location": {"name": "M TEX"}
+                })
+            }
+
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"Token {self.token}"
+            }
+
+            response = requests.post(self.base_url, headers=headers, data=payload, timeout=60)
+            logger.info(f"Delhivery bulk shipment response: {response.text}")
+
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                    created_waybills = []
+                    for pkg in result.get("packages", []):
+                        refnum = pkg.get("refnum")
+                        waybill = pkg.get("waybill")
+                        order = Order.objects.filter(order_number=refnum).first()
+                        if order:
+                            tracking, _ = OrderTracking.objects.get_or_create(
+                                order=order,
+                                defaults={
+                                    "awb_number": waybill,
+                                    "current_status": "Shipment Created",
+                                    "raw_data": pkg,
+                                },
+                            )
+                            order.status = "Ready to Ship"
+                            order.save()
+                            created_waybills.append(waybill)
+                    return {"success": True, "waybills": created_waybills, "response": result}
+                else:
+                    return {"success": False, "error": result.get("rmk", "Unknown error")}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}: {response.text}"}
+
+        except Exception as e:
+            logger.exception("Bulk shipment creation failed")
+            return {"success": False, "error": str(e)}
+
   
     def generate_shipping_label(self, tracking):
         """Generate and download shipping label PDF"""

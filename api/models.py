@@ -36,21 +36,21 @@ class AlphaNumericFieldfive(models.CharField):
 class CustomUser(AbstractUser):
 
     USER_TYPES = (
-        ('customer', 'Customer'),
-        ('admin', 'Admin'),
+        ('customer', 'customer'),
+        ('admin', 'admin'),
     )
     user_type = models.CharField(max_length=10, choices=USER_TYPES, default='customer')
-    email = models.EmailField(unique=True) 
-    phone = models.CharField(max_length=15, blank=True, null=True)
+    email = models.EmailField( blank=True, null=True)
+    phone = models.CharField(max_length=15, unique=True)
     address = models.TextField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = ['username']  # if needed
     def __str__(self):
-        return f"{self.username}"
+        return f"{self.username}" or f"{self.phone}"
 
 class Category(models.Model):
     SUB_CATEGORY = (
@@ -693,3 +693,13 @@ class ShippingAddress(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.address_line1}, {self.city}"
+    
+
+
+class PasswordResetOTP(models.Model):
+    phone = models.CharField(max_length=15)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=10)

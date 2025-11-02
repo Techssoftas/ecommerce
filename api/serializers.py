@@ -71,17 +71,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 
-    def validate_email(self, value):
-        if CustomUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email is already registered.")
+    def validate_phone(self, value):
+        if CustomUser.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("PhoneNumber is already registered.")
         return value
+    # def validate_email(self, value):
+    #     if CustomUser.objects.filter(email=value).exists():
+    #         raise serializers.ValidationError("Email is already registered.")
+    #     return value
     
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError("Passwords do not match.")
         
-        first_name = data.get('first_name')
-        if CustomUser.objects.filter(username=first_name).exists():
+        username = data.get('username')
+        print("First Name:", username)
+        if CustomUser.objects.filter(username=username).exists():
             raise serializers.ValidationError("Username already exists. Please choose another first name.")
 
 
@@ -92,9 +97,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
 
         # Set username = first_name
-        first_name = validated_data.get('first_name')
-        validated_data['username'] = first_name
+        
         user = CustomUser.objects.create_user(**validated_data)
+        username = validated_data.get('username')
+        user.first_name = username
         user.set_password(password)
         user.save()
 

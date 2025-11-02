@@ -968,37 +968,78 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 </script>
 <script>
-    document.getElementById('generateBulkLabelForm').addEventListener('submit', function (e) {
-        const fromDateInput = document.getElementById('fromInputdate');
-        const toDateInput = document.getElementById('toInputdate');
-        const fromDate = fromDateInput.value;
-        const toDate = toDateInput.value;
+document.getElementById('generateBulkLabelForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-        // Clear old error messages
-        document.getElementById('fromDateError').textContent = '';
-        document.getElementById('toDateError').textContent = '';
-        fromDateInput.classList.remove('is-invalid');
-        toDateInput.classList.remove('is-invalid');
+    const fromDateInput = document.getElementById('fromInputdate');
+    const toDateInput = document.getElementById('toInputdate');
+    const fromDate = fromDateInput.value;
+    const toDate = toDateInput.value;
 
-        // Validate only if both dates are selected
-        if (fromDate && toDate) {
-            const from = new Date(fromDate);
-            const to = new Date(toDate);
+    document.getElementById('fromDateError').textContent = '';
+    document.getElementById('toDateError').textContent = '';
+    fromDateInput.classList.remove('is-invalid');
+    toDateInput.classList.remove('is-invalid');
 
-            if (from >= to) {
-                e.preventDefault(); // Stop form submission
+    if (fromDate && toDate) {
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
+        if (from >= to) {
+            const errorMsg = "From Date must be earlier than To Date.";
+            document.getElementById('fromDateError').textContent = errorMsg;
+            document.getElementById('toDateError').textContent = errorMsg;
+            fromDateInput.classList.add('is-invalid');
+            toDateInput.classList.add('is-invalid');
+            return;
+        }
+    }
 
-                const errorMsg = "From Date must be earlier than To Date.";
-
-                // Show error under both fields
-                document.getElementById('fromDateError').textContent = errorMsg;
-                document.getElementById('toDateError').textContent = errorMsg;
-
-                // Add red border
-                fromDateInput.classList.add('is-invalid');
-                toDateInput.classList.add('is-invalid');
-            }
+    // 🟡 Show SweetAlert loading
+    Swal.fire({
+        title: 'Generating Shipments...',
+        html: '<img src="/static/dashboard/images/loading.gif" width="200" height="200" /><br><br>Please wait while we generate bulk labels.',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
     });
+
+    try {
+        const response = await fetch(`/bulk-create-shipments/?from_date=${fromDate}&to_date=${toDate}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const total = data.shipment_result.waybills ? data.shipment_result.waybills.length : 0;
+            const failed = data.shipment_result.error ? data.shipment_result.error : null;
+
+            let htmlContent = `<b>${total}</b> shipments generated successfully.`;
+            if (failed && Array.isArray(failed)) {
+                htmlContent += `<br><br><b>Failed Orders:</b><br>${failed.join('<br>')}`;
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Bulk Shipment Completed ✅',
+                html: htmlContent,
+                confirmButtonText: 'OK'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed!',
+                text: data.error || 'Something went wrong.'
+            });
+        }
+
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.message
+        });
+    }
+});
 </script>
+
 {% endblock %}

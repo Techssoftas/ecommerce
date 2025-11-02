@@ -1,25 +1,35 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout,get_user_model
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 from api.models import *
 import uuid
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 def is_admin(user):
     return user.is_authenticated and user.user_type == 'admin'
 
 # Authentication Views
+@csrf_exempt
 def login_view(request):
     if request.user.is_authenticated and request.user.user_type == 'admin':
         return redirect('dashboard:dashboard')
     
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+        print("Password received:", password)
+        print("Login attempt for phone:", phone )
+        user = authenticate(request, phone=phone, password=password)
         
         if user and user.user_type == 'admin':
             login(request, user)
@@ -29,18 +39,11 @@ def login_view(request):
     
     return render(request, 'dashboard/auth/login.html')
 
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
-from django.conf import settings
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import get_user_model
+
 
 User = get_user_model()
 
-
+@csrf_exempt
 def forgot_password_view(request):
     if request.method == 'POST':
         print("request.user:", request.user)
@@ -89,7 +92,7 @@ def logout_view(request):
 
 # Dashboard Home
 @login_required
-@user_passes_test(is_admin)
+# @user_passes_test(is_admin)
 def dashboard(request):
     # Statistics
     total_products = Product.objects.count()
@@ -375,6 +378,7 @@ def product_details(request, product_id):
 
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def product_create(request):
     categories = Category.objects.all()
@@ -524,6 +528,7 @@ def product_create(request):
     return render(request, 'dashboard/products/product_create.html', {'categories': categories})
 import json
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def mens_product_create(request):
     categories = Category.objects.all()
@@ -717,6 +722,7 @@ def mens_product_create(request):
     return render(request, 'dashboard/products/mens_product_create.html', {'categories': categories})
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def womens_product_create(request):
     categories = Category.objects.all()
@@ -875,6 +881,7 @@ def womens_product_create(request):
     return render(request, 'dashboard/products/womens_product_create.html', {'categories': categories})
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def kids_boys_product_create(request):
     categories = Category.objects.all()
@@ -1034,6 +1041,7 @@ def kids_boys_product_create(request):
     return render(request, 'dashboard/products/kids_boys_product_create.html', {'categories': categories})
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def kids_girls_product_create(request):
     categories = Category.objects.all()
@@ -1192,8 +1200,8 @@ def kids_girls_product_create(request):
     
     return render(request, 'dashboard/products/kids_girls_product_create.html', {'categories': categories})
 
-import uuid
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
@@ -1270,6 +1278,7 @@ def product_edit(request, pk):
 
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def product_delete(request, pk):
     product = get_object_or_404(Product, id=pk)
@@ -1293,6 +1302,7 @@ def delete_review(request, review_id):
 from datetime import datetime, timedelta
 # Order Management
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def orders_list(request):
     # Fetch orders with related user, payment, and order items
@@ -1383,6 +1393,7 @@ def exchange_orders(request):
 
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def order_detail(request, order_number):
     order = get_object_or_404(Order, order_number=order_number)
@@ -1653,6 +1664,7 @@ def stock_management(request):
     })
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def update_stock(request, pk):
     product = get_object_or_404(Product, pk=pk)
@@ -1677,6 +1689,7 @@ def update_stock(request, pk):
 
 # Product Variant Management
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 
 def variant_create(request, product_id):
@@ -1739,8 +1752,8 @@ def variant_create(request, product_id):
 
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
-
 def variant_edit(request, product_id, variant_id):
     product = get_object_or_404(Product, pk=product_id)
     variant = get_object_or_404(ProductVariant, pk=variant_id, product=product)
@@ -1782,8 +1795,7 @@ def variant_delete(request, product_id, variant_id):
     messages.success(request, "Variant deleted successfully.")
     return redirect('dashboard:product_edit', pk=product_pk)
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+
 @csrf_exempt
 def delete_product_image(request, image_id):
     print('DELETE')
@@ -1846,6 +1858,7 @@ def customers_list(request):
 
 
 @login_required
+@csrf_exempt
 @user_passes_test(is_admin)
 def add_category(request):
     if request.method == 'POST':
@@ -1864,6 +1877,7 @@ from django.http import JsonResponse
 
 from django.db import IntegrityError
 
+@csrf_exempt
 def api_add_category(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -1992,6 +2006,7 @@ def size_variant_delete(request, product_id, pk):
     })
 
 from django.views.decorators.http import require_POST
+@csrf_exempt
 @require_POST
 def delete_variant_image(request, pk):
     try:
@@ -2009,6 +2024,7 @@ import json
 import logging
 
 logger = logging.getLogger('dashboard')
+@csrf_exempt
 def create_shipping_label(request, order_id):
     """Create shipping label for an order"""
     if request.method == 'POST':
@@ -2048,7 +2064,7 @@ import requests
 
 
 logger = logging.getLogger(__name__)
-
+@csrf_exempt
 def create_pickup(request, order_id):
     """Create pickup for a shipped order"""
 
@@ -2111,7 +2127,7 @@ def create_pickup(request, order_id):
 
     return JsonResponse({'status': 'fail', 'message': 'Invalid request method'}, status=405)
 
-
+@csrf_exempt
 def download_shipping_label(request, tracking_id):
     """Download shipping label PDF"""
     try:
@@ -2133,7 +2149,7 @@ def download_shipping_label(request, tracking_id):
         logger.error(f"Error downloading label: {str(e)}")
         return HttpResponse(f'Error: {str(e)}', status=500)
 
-
+@csrf_exempt
 def create_return_shipment(request, item_id):
     try:
         if request.method == 'POST':
@@ -2254,6 +2270,70 @@ def create_return_shipment(request, item_id):
         messages.error(request, f"Something went wrong: {str(e)}")
         return redirect("dashboard:return_orders")
 
+
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import datetime, timedelta
+import requests
+from api.models import Order
+from .services.delhivery_service import DelhiveryService
+
+@login_required
+@csrf_exempt
+def bulk_create_shipments_view(request):
+    try:
+        from_date = request.GET.get("from_date")
+        to_date = request.GET.get("to_date")
+
+        if not from_date or not to_date:
+            return JsonResponse({"success": False, "error": "from_date and to_date required"}, status=400)
+
+        start = datetime.strptime(from_date, "%Y-%m-%d")
+        end = datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=1)
+        
+        # Make timezone-aware
+        start = timezone.make_aware(start)
+        end = timezone.make_aware(end)
+
+        orders = Order.objects.filter(
+            status="Confirmed",
+            payment__status="Completed",
+            created_at__range=[start, end]
+        ).select_related("shipping_address", "user")
+
+        if not orders.exists():
+            return JsonResponse({"success": False, "error": "No eligible orders found"}, status=404)
+
+        delhivery = DelhiveryService()
+        result = delhivery.create_bulk_shipments(orders)
+        # Pickup request if shipment success
+        pickup_data = None
+        if result.get("success"):
+            pickup_payload = {
+                "pickup_time": "14:00:00",
+                "pickup_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "pickup_location": delhivery.pickup_location,
+                "expected_package_count": len(result.get("waybills", []))
+            }
+
+            pickup_response = requests.post(
+                "https://track.delhivery.com/fm/request/new/",
+                json=pickup_payload,
+                headers={"Authorization": f"Token {delhivery.token}", "Content-Type": "application/json"},
+                timeout=30
+            )
+
+            pickup_data = pickup_response.json() if pickup_response.status_code == 200 else {"error": pickup_response.text}
+
+        return JsonResponse({
+            "success": True,
+            "message": "Bulk shipment process completed",
+            "shipment_result": result,
+            "pickup_response": pickup_data
+        })
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 def update_return_payment(request, request_id):

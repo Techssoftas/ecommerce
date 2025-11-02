@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
     'dashboard.apps.DashboardConfig',
     # Third party apps
    
@@ -38,21 +39,27 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    # 'api.middleware.JWTAuthenticationMiddleware',
-    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # top
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-SESSION_COOKIE_SECURE = True  # set to True only in HTTPS
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = 'None'  # important when using withCredentials and different domain
+# SESSION_COOKIE_NAME = 'sessionid'
+# SESSION_COOKIE_SECURE = False   # set to True only in HTTPS
+# CSRF_COOKIE_SECURE = False
+# SESSION_COOKIE_SAMESITE = 'None'  # important when using withCredentials and different domain
+
+
+CRONJOBS = [
+    ('0 0 * * *', 'api.cron.delete_expired_otps'),  # every day at midnight
+]
 
 
 ROOT_URLCONF = 'ecommerce.urls'
@@ -158,6 +165,7 @@ from datetime import timedelta
 # CORS_ALLOW_ALL_ORIGINS = True  
 
 CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",
     "http://localhost:5173",
     "http://192.168.29.20:5173",#yogavarthini
     'http://192.168.29.150:5173',#my
@@ -170,6 +178,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:5173",
     "http://localhost:5173",
     "https://m2hit.in",
     "https://www.m2hit.in",
@@ -213,7 +222,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Login URLs
 LOGIN_URL = '/login_view/'
 LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/dashboard/login/'
 
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
@@ -302,3 +310,14 @@ EMAIL_HOST_PASSWORD = 'L3g7#R83s$X#'  # App password if enabled
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+#SMS Settings
+
+MSG91_API_KEY = "470722Ae1mHUuQ3W6902fc0fP1"  # auth key
+MSG91_SENDER_ID = "MTEXTE"            # BSNL header name
+MSG91_ROUTE = "4"                     # transactional route
+MSG91_REG_TEMPLATE_ID = "69059476c859393d1f62a803"  # BSNL DLT template ID for registration
+MSG91_TEMPLATE_ORDER_CONFIRMED = "6905efb8f9021a148f13ac92" 
+
+

@@ -1,9 +1,7 @@
 from rest_framework import generics, status, permissions,viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import login, logout
@@ -13,7 +11,6 @@ from .models import *
 from .serializers import *
 from rest_framework.generics import RetrieveAPIView,UpdateAPIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
-from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from django.conf import settings
@@ -25,6 +22,11 @@ from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_decode
+from api.models import CustomUser,PasswordResetOTP
+from api.utils import send_sms
+from api.utils import send_order_sms
+from django.conf import settings
+import http.client
 User = get_user_model()
 
 # Authentication Views
@@ -33,15 +35,14 @@ User = get_user_model()
 class EmailLoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        email = request.data.get("email")
+        phone = request.data.get("phone")
         password = request.data.get("password")
 
-        if not email or not password:
-            return Response({"error": "Email and password required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not phone or not password:
+            return Response({"error": "PhoneNumber and password required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # authenticate will automatically use USERNAME_FIELD = 'email'
-        user = authenticate(request, email=email, password=password)
-
+        user = authenticate(request, phone=phone, password=password)
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             return Response({
@@ -51,7 +52,7 @@ class EmailLoginView(APIView):
                
             }, status=status.HTTP_200_OK)
 
-        return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"error": "Invalid Phonenumber or Password"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class TestProtectedView(APIView):
     permission_classes = [IsAuthenticated]
@@ -60,11 +61,22 @@ class TestProtectedView(APIView):
         return Response({"message": "Authenticated user", "email": request.user.email})
 
 
+import http.client
+import json
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.conf import settings
+
+
 class RegisterView(generics.CreateAPIView):
-    serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    serializer_class = UserRegistrationSerializer
+    
 
     def create(self, request, *args, **kwargs):
+        print("RegisterView", request.data)
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
@@ -73,31 +85,78 @@ class RegisterView(generics.CreateAPIView):
             # Create token
             token, _ = Token.objects.get_or_create(user=user)
 
-            # ✅ Send welcome email - safe with try-except
+            # ✅ Send welcome SMS - safe with try-except
             try:
-                send_mail(
-                    subject='Welcome to M TEX Fashion Shop!',
-                    message=(
-                        f"Hi {user.first_name},\n\n"
-                        "Welcome to M TEX Fashion Shop! 🎉\n\n"
-                        "Your account has been created successfully.\n"
-                        "Enjoy shopping with us!\n\n"
-                        "Thanks,\nM TEX Team"
-                    ),
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False  # ❗ Will raise error if fail
-                )
+                print("User phone:", str(user.phone))
+                
+                # Phone number ah string ah convert panrom
+                mobile = str(user.phone).strip()
+
+                # 91 prefix check panni add panrom
+                if not mobile.startswith('91'):
+                    # 10 digits iruntha 91 add panrom
+                    if len(mobile) == 10 and mobile.isdigit():
+                        mobile = '91' + mobile
+                    else:
+                        print(f"⚠️ Invalid phone format: {mobile}")
+                        raise ValueError("Invalid phone number format")
+
+                print(f"📱 Sending Welcome SMS to: {mobile}")
+
+                # MSG91 SMS send panrom
+                conn = http.client.HTTPSConnection("control.msg91.com")
+
+                # Payload prepare panrom
+                payload = {
+                    "template_id": '69059476c859393d1f62a803',  # Registration template ID
+                    "short_url": "1",
+                    "recipients": [
+                        {
+                            "mobiles": mobile,
+                            "var": user.first_name  # Template la ##var## variable ku value
+                        }
+                    ]
+                }
+
+                # JSON string ah convert panrom
+                payload_json = json.dumps(payload)
+
+                # Headers set panrom
+                headers = {
+                    'accept': "application/json",
+                    'authkey': '470722Ae1mHUuQ3W6902fc0fP1' , # MSG91 authkey
+                    'content-type': "application/json"
+                }
+
+                # API request send panrom
+                conn.request("POST", "/api/v5/flow", payload_json, headers)
+
+                # Response vaangurom
+                res = conn.getresponse()
+                data = res.read()
+
+                # Response decode panni parse panrom
+                response_data = json.loads(data.decode("utf-8"))
+                
+                print(f"📱 MSG91 Response: {response_data}")
+
+                # Success ah send aacha nu check panrom
+                if response_data.get('type') == 'success':
+                    print(f"✅ Welcome SMS sent to {mobile} successfully!")
+                else:
+                    print(f"⚠️ SMS sending failed: {response_data.get('message', 'Unknown error')}")
+
             except Exception as e:
-                print(f"⚠️ Email sending failed: {e}")
-                # You could log this instead of print in production
+                print(f"⚠️ SMS sending failed: {e}")
+                # SMS fail aanalum registration success ah irukkanum
 
             return Response({
                 'token': token.key,
                 'user': UserProfileSerializer(user).data,
                 'message': 'Account registered successfully!'
             }, status=status.HTTP_201_CREATED)
-
+            
+        print("Registration Error:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -155,95 +214,149 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+import random
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        phone = request.data.get('phone')
 
         try:
-            # 1️⃣ user register ah check panrom
-            user = User.objects.get(email=email)
+            user = CustomUser.objects.get(phone=phone)
 
-            # 2️⃣ Random 6-digit OTP generate panrom
             otp = str(random.randint(100000, 999999))
 
-            # 3️⃣ OTP ah session la store panrom 10 mins ku
-            request.session['otp'] = otp
-            request.session['email'] = email
-            request.session.set_expiry(600)  # 600 sec = 10 min
+            # Old OTPs delete panrom (same phone ku multiple OTP irukatha)
+            PasswordResetOTP.objects.filter(phone=phone).delete()
 
-            # 4️⃣ Mail send panrom
-            try:
-                send_mail(
-                    subject='M TEX Fashion - Password Reset OTP',
-                    message=(
-                        f"Dear Customer,\n\n"
-                        f"Your One-Time Password (OTP) for resetting your password is: {otp}\n\n"
-                        "This OTP is valid for 10 minutes.\n"
-                        "If you did not request a password reset, please ignore this email.\n\n"
-                        "Thank you,\n"
-                        "M TEX Fashion Team"
-                    ),
-                    from_email='fashion@mtex.in',
-                    recipient_list=[email],
-                    fail_silently=True  # Don't raise exception on failure
-                )
+            # New OTP store
+            PasswordResetOTP.objects.create(phone=phone, otp=otp)
 
-            except Exception as e:
-                print("Mail send failed:", e)
+            print(f"OTP for {phone}: {otp}")
+            formatted_phone = phone
+            if not phone.startswith('91'):
+                formatted_phone = '91' + phone
+            
+            # MSG91 SMS send function call panrom
+            sms_sent = self.send_otp_sms(formatted_phone, otp)
+            if sms_sent:
+                return Response({
+                    'message': 'OTP sent successfully',
+                    'phone': formatted_phone
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error': 'Failed to send OTP'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            # 5️⃣ Success response to frontend
-            return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response({
+                'error': 'User not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        except User.DoesNotExist:
-            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+    def send_otp_sms(self, phone, otp):
+        """
+        MSG91 API use panni SMS send panrom
+        """
+        try:
+            # HTTPS connection create panrom
+            conn = http.client.HTTPSConnection("control.msg91.com")
+
+            # Request body prepare panrom
+            payload = {
+                "template_id": "6905a16bfe379201c74c5e32",  # Ungaloda template ID podunga
+                "short_url": "1",  # URL shorten venam na 0
+                "recipients": [
+                    {
+                        "mobiles": phone,  # 91XXXXXXXXXX format la irukkanum
+                        "number": otp  # Template la ##OTP## iruntha indha variable pass aagum
+                    }
+                ]
+            }
+
+            # JSON string ah convert panrom
+            payload_json = json.dumps(payload)
+
+            # Headers set panrom
+            headers = {
+                'accept': "application/json",
+                'authkey': "470722Ae1mHUuQ3W6902fc0fP1",  # Ungaloda authkey podunga
+                'content-type': "application/json"
+            }
+
+            # API request send panrom
+            conn.request("POST", "/api/v5/flow", payload_json, headers)
+
+            # Response vaangurom
+            res = conn.getresponse()
+            data = res.read()
+
+            # Response decode panni check panrom
+            response_data = json.loads(data.decode("utf-8"))
+            
+            print(f"MSG91 Response: {response_data}")
+
+            # Success ah send aacha nu check panrom
+            if response_data.get('type') == 'success':
+                return True
+            else:
+                return False
 
         except Exception as e:
-            print("Unexpected error:", str(e))
-            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"Error sending SMS: {str(e)}")
+            return False
+
 
 from django.contrib.auth.hashers import make_password
+from django.utils import timezone
+from datetime import timedelta
+from .models import PasswordResetOTP
+
 class VerifyOTPView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        phone = request.data.get('phone')
         otp = request.data.get('otp')
-        email = request.session.get('email')
-        session_otp = request.session.get('otp')
+        print("VerifyOTPView",phone,otp)
+        try:
+            otp_obj = PasswordResetOTP.objects.filter(phone=phone).last()
 
-        # 1️⃣ Check if session expired or missing
-        if not email or not session_otp:
-            return Response({'error': 'OTP expired or invalid session'}, status=status.HTTP_400_BAD_REQUEST)
+            if not otp_obj:
+                return Response({'error': 'OTP not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 2️⃣ Check OTP match
-        if otp == session_otp:
-            # ✅ OTP verified successfully
-            request.session['otp_verified'] = True
-            return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            if otp_obj.is_expired():
+                otp_obj.delete()  # delete expired
+                return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if otp_obj.otp == otp:
+                otp_obj.delete()  # verified => delete to prevent reuse
+                return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print("Error verifying OTP:", e)
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 class SetNewPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         new_password = request.data.get('new_password')
         confirm_password = request.data.get('confirm_password')
-        email = request.session.get('email')
-        otp_verified = request.session.get('otp_verified')
-
-        if not otp_verified:
-            return Response({'error': 'OTP not verified'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not email:
+        phone = request.data.get('phone')
+        print("SetNewPasswordView",phone,new_password,confirm_password)
+        if not phone:
             return Response({'error': 'Session expired. Please try again.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if new_password != confirm_password:
             return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(phone=phone)
             user.password = make_password(new_password)
             user.save()
 
@@ -1071,7 +1184,8 @@ def confirm_order(request):
             phone=user.phone or '',
             email=user.email,
             notes='',
-            source=order_type
+            source=order_type,
+            status='Confirmed'
         )
 
         if order_type == 'cart':
@@ -1104,6 +1218,28 @@ def confirm_order(request):
             status='Completed',
             gateway_response=data
         )
+
+        # after Payment.objects.create(...)
+        try:
+            
+            authkey = settings.MSG91_API_KEY        # or settings.MSG91_AUTHKEY
+            template_id = settings.MSG91_TEMPLATE_ORDER_CONFIRMED      # or settings.MSG91_TEMPLATE_ORDER_CONFIRM
+
+            user_mobile = user.phone
+            user_name = user.first_name or user.username
+            order_id = str(order.order_number)
+
+            sms_result = send_order_sms(authkey, template_id, user_mobile, user_name, order_id)
+
+            if not sms_result["success"]:
+                logger.warning(f"SMS not sent for order {order_id}: {sms_result['detail']}")
+            else:
+                logger.info(f"SMS sent successfully to {user_mobile}")
+
+        except Exception as e:
+            logger.exception(f"Non-fatal SMS send error: {str(e)}")
+
+
 
         # 5. Update stock
         for item in order.items.all():
@@ -1182,7 +1318,7 @@ def cod_order_create(request):
             email=user.email,
             notes='Cash on Delivery order',
             source=order_type,
-            status='Confirmed'  # COD orders start as pending
+            status='Pending'  # COD orders start as pending
         )
 
         # ✅ Create Order Items
@@ -1215,6 +1351,28 @@ def cod_order_create(request):
             status='Pending',
             gateway_response={}
         )
+
+        # after Payment.objects.create(...)
+        try:
+            
+            authkey = settings.MSG91_API_KEY        # or settings.MSG91_AUTHKEY
+            template_id = settings.MSG91_TEMPLATE_ORDER_CONFIRMED      # or settings.MSG91_TEMPLATE_ORDER_CONFIRM
+
+           
+            user_mobile = user.phone
+            user_name = user.get_full_name() or user.username
+            order_id = str(order.order_number)
+
+            sms_result = send_order_sms(authkey, template_id, user_mobile, user_name, order_id)
+
+            if not sms_result["success"]:
+                logger.warning(f"SMS not sent for order {order_id}: {sms_result['detail']}")
+            else:
+                logger.info(f"SMS sent successfully to {user_mobile}")
+
+        except Exception as e:
+            logger.exception(f"Non-fatal SMS send error: {str(e)}")
+
 
         # ✅ Reduce stock
         for item in order.items.all():

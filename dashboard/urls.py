@@ -84,6 +84,10 @@ urlpatterns = [
     path('create_pickup/<int:order_id>/', create_pickup, name='create_pickup'),
     path('create_return_shipment/<str:item_id>/', create_return_shipment, name='create_return_shipment'),
     
+    # bulk_create_shipments
+    path("bulk-create-shipments/", bulk_create_shipments_view, name="bulk_create_shipments"),
+
+
     path('update_return_payment/<str:request_id>/', update_return_payment, name='update_return_payment'),
     # path('create-shipping-label/<int:order_id>/', create_shipping_label, name='create_shipping_label'),
     path('download-label/<int:tracking_id>/', download_shipping_label, name='download_shipping_label'),
