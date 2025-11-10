@@ -526,6 +526,23 @@ def product_create(request):
     
     
     return render(request, 'dashboard/products/product_create.html', {'categories': categories})
+
+from django.views.decorators.http import require_GET
+from django.db.models.functions import Lower
+
+@login_required
+@csrf_exempt
+@user_passes_test(is_admin)
+@require_GET
+def sku_available(request):
+    sku = (request.GET.get("sku") or "").strip()
+    if not sku:
+        # empty sku -> unavailable nu return pannrom so user fill panna vendiyathu
+        return JsonResponse({"available": False, "reason": "empty"})
+    # case-insensitive check (A123 == a123)
+    exists = Product.objects.annotate(sku_l=Lower("sku")).filter(sku_l=sku.lower()).exists()
+    return JsonResponse({"available": not exists})
+
 import json
 @login_required
 @csrf_exempt
@@ -649,7 +666,7 @@ def mens_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            is_active=is_active,
+            is_active=True,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -878,7 +895,7 @@ def womens_product_create(request):
         return redirect('dashboard:womens_products')
     
     
-    return render(request, 'dashboard/products/womens_product_create.html', {'categories': categories})
+    return render(request, 'dashboard/products/womens_product_create.html', {'categories': categories,})
 
 @login_required
 @csrf_exempt
@@ -936,7 +953,7 @@ def kids_boys_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        is_active = request.POST.get('is_active') == 'on'
+        # is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -982,7 +999,7 @@ def kids_boys_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            is_active=is_active,
+            is_active=True,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,
@@ -1096,7 +1113,7 @@ def kids_girls_product_create(request):
         #   = request.POST.get('is_free_shipping') == 'on'
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
-        is_active = request.POST.get('is_active') == 'on'
+        # is_active = request.POST.get('is_active') == 'on'
         # is_featured = request.POST.get('is_featured') == 'on'
         # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
@@ -1142,7 +1159,7 @@ def kids_girls_product_create(request):
             is_free_shipping=is_free_shipping,
             # delivery_time_min=delivery_time_min,
             # delivery_time_max=delivery_time_max,
-            is_active=is_active,
+            is_active=True,
             # is_featured=is_featured,
             # is_bestseller=is_bestseller,
             # is_new_arrival=is_new_arrival,

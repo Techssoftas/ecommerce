@@ -166,11 +166,21 @@ Mens Products Create
 
                                             <div class="col-lg-4">
                                                 <div class="mb-3">
-                                                    <label for="sku" class="form-label">Sku Code <span
-                                                            class="text-danger">*</span></label>
-                                                    <input type="text" name="sku" class="form-control"
-                                                        placeholder="Enter SKU Code">
-                                                </div>
+                                                    <label for="skuInput" class="form-label">
+                                                        Sku Code <span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <input type="text" id="skuInput" name="sku" class="form-control"
+                                                            placeholder="Enter SKU Code" autocomplete="off" aria-describedby="SkuCodeError">
+
+                                                    <!-- helper: checking state (optional) -->
+                                                    <div id="skuChecking" class="form-text d-none">Checking availability…</div>
+
+                                                    <!-- error -->
+                                                    <div class="text-danger d-none" id="SkuCodeError">SKU Code Already Exists..! Enter new SKU Code</div>
+                                                    </div>
+
+
                                             </div>
                                             
 
@@ -225,6 +235,7 @@ Mens Products Create
                                                         <select class="form-select mb-3" name="key_features[Sleeve]">
                                                             <option value="Full Sleeve">Full Sleeve</option>
                                                             <option value="Half Sleeve">Half Sleeve</option>
+                                                            <option value="Short Sleeve">Short Sleeve</option>
                                                             <option value="Sleeveless">Sleeveless</option>
                                                         </select>
                                                     </div>
@@ -640,7 +651,7 @@ Mens Products Create
                         </div><!--end row-->
 
                         <div class="hstack gap-2 justify-content-end mb-3">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="submit" id="submitBtn" class="btn btn-primary">Submit</button>
                             <button type="reset" class="btn btn-danger"><i class="ph-x align-middle"></i>
                                 Cancel</button>
 
@@ -1144,5 +1155,88 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 
+<!-- SKU availability check -->
+<script>
+(function() {
+  const skuInput     = document.getElementById('skuInput');
+  const errorDiv     = document.getElementById('SkuCodeError');
+  const checkingDiv  = document.getElementById('skuChecking');
+  const submitBtn    = document.getElementById('submitBtn');
+
+  // helper functions
+  function showError() {
+    skuInput.classList.add('is-invalid');
+    skuInput.classList.remove('is-valid');
+    errorDiv.classList.remove('d-none');
+    checkingDiv.classList.add('d-none');
+    if (submitBtn) submitBtn.disabled = true;
+  }
+
+  function showOK() {
+    skuInput.classList.remove('is-invalid');
+    skuInput.classList.add('is-valid');
+    errorDiv.classList.add('d-none');
+    checkingDiv.classList.add('d-none');
+    if (submitBtn) submitBtn.disabled = false;
+  }
+
+  function clearState() {
+    skuInput.classList.remove('is-invalid', 'is-valid');
+    errorDiv.classList.add('d-none');
+    checkingDiv.classList.add('d-none');
+    if (submitBtn) submitBtn.disabled = false;
+  }
+
+  // debounce utility
+  function debounce(fn, delay = 400) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
+  let controller; // to cancel in-flight requests
+
+  async function checkSku(value) {
+    const sku = value.trim();
+    if (!sku) { clearState(); return; }
+
+    // cancel previous request if any
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    checkingDiv.classList.remove('d-none');
+
+    try {
+      const res = await fetch(`/sku-available/?sku=${encodeURIComponent(sku)}`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!res.ok) throw new Error('Network error');
+
+      const data = await res.json();
+
+      if (data.available === true) {
+        showOK();
+      } else {
+        showError();
+      }
+    } catch (e) {
+      // network/cancel—don’t block user
+      checkingDiv.classList.add('d-none');
+      // keep button enabled so user can retry submit
+      // optionally: toast/console.warn(e)
+    }
+  }
+
+  const debouncedCheck = debounce((e) => checkSku(e.target.value), 400);
+
+  // fire while typing + on blur (final check)
+  skuInput.addEventListener('input', debouncedCheck);
+  skuInput.addEventListener('blur', (e) => checkSku(e.target.value));
+})();
+</script>
 
 {% endblock content %}

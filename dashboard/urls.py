@@ -30,6 +30,8 @@ urlpatterns = [
     path('product_details/<str:product_id>/', product_details, name='product_details'),
     path('products/create/', product_create, name='product_create'),
     
+    path("sku-available/", sku_available, name="sku_available"),
+
     path('mens_product_create/', mens_product_create, name='mens_product_create'),
     path('womens_product_create/', womens_product_create, name='womens_product_create'),
     path('kids_boys_product_create/', kids_boys_product_create, name='kids_boys_product_create'),
