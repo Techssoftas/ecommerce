@@ -194,7 +194,7 @@ class ProductSerializer(serializers.ModelSerializer):
     discount_price = serializers.DecimalField(max_digits=10, decimal_places=2, allow_null=True)
     primary_image = serializers.SerializerMethodField()
     new_variant  = serializers.SerializerMethodField()
-
+    is_new_arrival = serializers.BooleanField()
     class Meta:
         model = Product
         fields = [

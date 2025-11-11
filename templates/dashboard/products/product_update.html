@@ -196,6 +196,12 @@ Products Create
                                                     <div class="row mt-3">
                                                         <div class="col-lg-2">
                                                             <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="is_new_arrival" {% if product.is_new_arrival %}checked{% endif %} class="form-check-input" id="is_new_arrival">
+                                                                <label class="form-check-label" for="is_new_arrival">New Arrival</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2">
+                                                            <div class="form-check form-switch mb-3">
                                                                 <input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %} class="form-check-input" id="is_active">
                                                                 <label class="form-check-label" for="is_active">Is Showing</label>
                                                             </div>
