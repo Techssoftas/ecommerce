@@ -50,6 +50,10 @@ urlpatterns = [
     #Variants Size
     path("product/<int:product_id>/variant/size/<int:pk>/edit/", size_variant_edit, name="size_variant_edit"),
     path("product/<int:product_id>/variant/size/<int:pk>/delete/",size_variant_delete,name="size_variant_delete",),
+   
+    path('product/<int:product_id>/variant/<int:variant_id>/size/<int:size_id>/delete/',
+        variant_size_delete, name='variant_size_delete'),
+   
     # Assuming you're using 'dashboard' namespace
     path("variant/image/<int:pk>/delete/", delete_variant_image, name="delete_variant_image"),
 

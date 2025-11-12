@@ -570,8 +570,8 @@ Products Create
 
 
                                                             <!-- EditVariantModal  --> 
-                                                            <div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="EditVariantModal-{{ variant.id }}" aria-labelledby="EditVariantModal-{{ variant.id }}" aria-hidden="true">
-                                                                <div class="modal-dialog modal-dialog-centered">
+                                                            <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="EditVariantModal-{{ variant.id }}" aria-labelledby="EditVariantModal-{{ variant.id }}" aria-hidden="true">
+                                                                <div class="modal-dialog modal-lg">
                                                                     <div class="modal-content">
                                                                         <div class="modal-body text-center p-5">
                                                                             <h5 class="mb-3">Edit Variant -  {{variant.color_name }}</h5>
@@ -579,7 +579,7 @@ Products Create
                                                                             {% csrf_token %}
                                                                                 <div class="row mt-3">
                                                                                                                                                 
-                                                                                    <div class="col-lg-12">
+                                                                                    <div class="col-lg-6">
                                                                                         <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
                                                                                             
                                                                                         <div class="input-group">
@@ -615,7 +615,7 @@ Products Create
                                                                                     </div>
                                                                                     
                                                                                 
-                                                                                    <div class="col-lg-12 mt-2">
+                                                                                    <div class="col-lg-6">
                                                                                         <div class="mb-3 ">
                                                                                             <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
                                                                                             <div class="d-flex align-items-center">
@@ -638,6 +638,86 @@ Products Create
                                                                                     
                                                                                 </div><!--end row-->
 
+                                                                                <div class="row">
+                                                                                    <!-- ===== SIZES (EDIT) ===== -->
+                                                                                    <div class="col-lg-12 mt-3">
+                                                                                    <label class="form-label">Size <span class="text-danger">*</span></label>
+
+                                                                                    <!-- Master checkbox list (scoped by variant.id) -->
+
+                                                                                    <div id="sizeOptions-edit-{{ variant.id }}" class="d-flex flex-wrap gap-2">
+                                                                                    {% for s in size_list %}
+                                                                                        {% comment %} check if this variant already has this size {% endcomment %}
+                                                                                        {% with has_s=False sz_obj=None %}
+                                                                                        {% for sz in variant.sizes.all %}
+                                                                                            {% if sz.size|upper == s %}
+                                                                                            {% with has_s=True sz_obj=sz %}{% endwith %}
+                                                                                            {% endif %}
+                                                                                        {% endfor %}
+                                                                                        <label class="me-2 mb-2" id="sizeLabel-{{ variant.id }}-{{ s }}">
+                                                                                            <input type="checkbox"
+                                                                                                class="sizeOptionEdit"
+                                                                                                value="{{ s }}"
+                                                                                                {% if has_s %}
+                                                                                                    checked disabled
+                                                                                                    data-existing="1"
+                                                                                                    data-size-id="{{ sz_obj.id }}"
+                                                                                                {% else %}
+                                                                                                    data-existing="0"
+                                                                                                {% endif %}>
+                                                                                            {{ s }}
+                                                                                        </label>
+                                                                                        {% endwith %}
+                                                                                    {% endfor %}
+                                                                                    </div>
+
+                                                                                    <!-- Custom size add (type + Enter) -->
+                                                                                    <div class="input-group mt-2">
+                                                                                    <input type="text" id="customSizeInput-edit-{{ variant.id }}" class="form-control"
+                                                                                            placeholder="Type custom size (e.g. 36) and press Enter">
+                                                                                    </div>
+                                                                                   
+
+                                                                                    <!-- Table -->
+                                                                                    <div class="col-lg-12 mt-3" id="sizeTableWrapper-edit-{{ variant.id }}" style="display:none;">
+                                                                                    <table class="table table-bordered" id="sizeTable-edit-{{ variant.id }}">
+                                                                                        <thead>
+                                                                                        <tr>
+                                                                                            <th>Size</th>
+                                                                                            <th>MRP <span class="text-danger">*</span></th>
+                                                                                            <th>Selling Price <span class="text-danger">*</span></th>
+                                                                                            <th>Discount Price</th>
+                                                                                            <th>Stock <span class="text-danger">*</span></th>
+                                                                                            <th>Action</th>
+                                                                                        </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                            {% for sz in variant.sizes.all %}
+                                                                                            <tr data-size="{{ sz.size|upper }}" data-existing="1" data-size-id="{{ sz.id }}">
+                                                                                                <td>
+                                                                                                {{ sz.size|upper }}
+                                                                                                <input type="hidden" class="size" value="{{ sz.size|upper }}">
+                                                                                                <input type="hidden" class="size_id" value="{{ sz.id }}">
+                                                                                                </td>
+                                                                                                <td><input type="number" class="form-control mrp" step="0.01" value="{{ sz.mrp }}" required></td>
+                                                                                                <td><input type="number" class="form-control price" step="0.01" value="{{ sz.price }}" required></td>
+                                                                                                <td><input type="number" class="form-control discount_price" step="0.01" value="{{ sz.discount_price|default:0 }}"></td>
+                                                                                                <td><input type="number" class="form-control stock" step="1" value="{{ sz.stock }}" required></td>
+                                                                                                <td>
+                                                                                                <button type="button"
+                                                                                                        class="btn btn-outline-danger btn-sm btn-delete-existing"
+                                                                                                        data-size-id="{{ sz.id }}">Delete</button>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                            {% endfor %}
+                                                                                        </tbody>                    
+                                                                                    </table>
+                                                                                    </div>
+
+                                                                                    <!-- JSON payload (scoped to this form) -->
+                                                                                    <input type="hidden" name="sizes_json" id="sizesJson-edit-{{ variant.id }}">
+
+                                                                                </div>
 
                                                                                 <div class="row">
                                                                                     <div class="col-xxl-12">
@@ -730,6 +810,7 @@ Products Create
                                                     </div>
                                                 </div>
                                             </div>
+                                            </div>
 
                                         {% endfor %}
                               
@@ -803,8 +884,8 @@ Products Create
 
 
 <!-- Modal --> 
-<div class="modal fade bs-example-modal-center" tabindex="-1" role="dialog" id="AddVariantModal" aria-labelledby="AddVariantModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="AddVariantModal" aria-labelledby="AddVariantModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body text-center p-5">
                 <h5 class="mb-3">Add New Variant</h5>
@@ -812,7 +893,7 @@ Products Create
                 {% csrf_token %}
                      <div class="row mt-3">
                          
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
                                 
                             <div class="input-group">
@@ -847,7 +928,7 @@ Products Create
                         </div>
                         
                        
-                        <div class="col-lg-12 mt-2">
+                        <div class="col-lg-6">
                             <div class="mb-3 ">
                                 <label for="productBrand" class="form-label">Colour Code <span class="text-danger">*</span></label>
                                 <div class="d-flex align-items-center">
@@ -1525,4 +1606,214 @@ toggleReturnPeriod();
 toggleReplacePeriod();
 
 </script>
+
+
+
+<!-- Edit Variant Size Management -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+(function(){
+  function getCookie(name){
+    let v = null;
+    if (document.cookie && document.cookie !== '') {
+      document.cookie.split(';').forEach(function(c){
+        const t = c.trim();
+        if (t.startsWith(name+'=')) v = decodeURIComponent(t.substring(name.length+1));
+      });
+    }
+    return v;
+  }
+
+  // handle all edit variant forms
+  document.querySelectorAll("form[id^='EditVariantForm-']").forEach(function(form){
+    const variantId = form.id.split("-")[1];
+    const sizeOptionsBox = document.getElementById(`sizeOptions-edit-${variantId}`);
+    const customInput = document.getElementById(`customSizeInput-edit-${variantId}`);
+    const tableWrapper = document.getElementById(`sizeTableWrapper-edit-${variantId}`);
+    const table = document.getElementById(`sizeTable-edit-${variantId}`);
+    const tbody = table ? table.querySelector("tbody") : null;
+    const jsonInput = document.getElementById(`sizesJson-edit-${variantId}`);
+
+    if (!tbody) return;
+    function toggleWrapper(){ tableWrapper.style.display = tbody.children.length ? 'block' : 'none'; }
+    toggleWrapper();
+
+    function rowFor(sizeUpper){ return tbody.querySelector(`tr[data-size="${sizeUpper}"]`); }
+
+    // Autofill source finder: prefer first existing row, else last row
+    function autofillValues(){
+      let source = tbody.querySelector('tr[data-existing="1"]');
+      if (!source){
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        if (rows.length) source = rows[rows.length-1];
+      }
+      if (!source) return { mrp:'', price:'', discount_price:'', stock:'' };
+      return {
+        mrp: source.querySelector('.mrp')?.value || '',
+        price: source.querySelector('.price')?.value || '',
+        discount_price: source.querySelector('.discount_price')?.value || '',
+        stock: source.querySelector('.stock')?.value || ''
+      };
+    }
+
+    // add row (new size)
+    function addRow(sizeUpper, isNew){
+      if (rowFor(sizeUpper)) return;
+      const vals = autofillValues();
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-size', sizeUpper);
+      tr.setAttribute('data-existing', isNew ? '0' : '1');
+
+      tr.innerHTML = `
+        <td>${sizeUpper}<input type="hidden" class="size" value="${sizeUpper}"></td>
+        <td><input type="number" class="form-control mrp" step="0.01" value="${vals.mrp}" required></td>
+        <td><input type="number" class="form-control price" step="0.01" value="${vals.price}" required></td>
+        <td><input type="number" class="form-control discount_price" step="0.01" value="${vals.discount_price}"></td>
+        <td><input type="number" class="form-control stock" step="1" value="${vals.stock}" required></td>
+        <td><button type="button" class="btn btn-outline-danger btn-sm btn-cancel-row">Cancel</button></td>
+      `;
+      tbody.appendChild(tr);
+      toggleWrapper();
+    }
+
+    // remove row (and uncheck & remove checkbox if non-existing)
+    function removeRow(sizeUpper){
+      const tr = rowFor(sizeUpper);
+      if (tr) tr.remove();
+      const cb = sizeOptionsBox.querySelector(`input.sizeOptionEdit[value="${sizeUpper}"]`);
+      if (cb){
+        // if cb was disabled (existing), remove the label entirely
+        if (cb.disabled){
+          const label = document.getElementById(`sizeLabel-${variantId}-${sizeUpper}`);
+          if (label) label.remove();
+        } else {
+          cb.checked = false;
+        }
+      }
+      toggleWrapper();
+    }
+
+    // when checkbox changed (only enabled checkboxes cause change)
+    sizeOptionsBox.addEventListener('change', function(e){
+      if (!e.target.classList.contains('sizeOptionEdit')) return;
+      if (e.target.disabled) return;
+      const sizeUpper = (e.target.value||'').toUpperCase();
+      if (e.target.checked) {
+        addRow(sizeUpper, true); // new
+      } else {
+        removeRow(sizeUpper);
+      }
+    });
+
+    // custom input Enter
+    customInput.addEventListener('keydown', function(e){
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const val = (customInput.value||'').trim().toUpperCase();
+      if (!val) return;
+
+      // if size already exists in DB (disabled checkbox present) -> scroll to that row
+      const existingCb = sizeOptionsBox.querySelector(`input.sizeOptionEdit[value="${val}"]`);
+      if (existingCb && existingCb.disabled){
+        // ensure its row visible
+        const tr = rowFor(val);
+        if (tr){
+          tr.scrollIntoView({behavior:'smooth', block:'center'});
+          tr.classList.add('flash-animate');
+          setTimeout(()=>tr.classList.remove('flash-animate'), 1200);
+        }
+        customInput.value = '';
+        return;
+      }
+
+      // create/ensure checkbox checked
+      if (!existingCb){
+        const label = document.createElement('label');
+        label.className = 'me-2 mb-2';
+        label.id = `sizeLabel-${variantId}-${val}`;
+        label.innerHTML = `<input type="checkbox" class="sizeOptionEdit" value="${val}" checked> ${val}`;
+        sizeOptionsBox.appendChild(label);
+      } else {
+        existingCb.checked = true;
+      }
+      // add new row autofilled
+      addRow(val, true);
+      customInput.value = '';
+    });
+
+    // table delegation: Cancel button (for new rows)
+    tbody.addEventListener('click', function(e){
+      if (e.target.classList.contains('btn-cancel-row')){
+        const tr = e.target.closest('tr');
+        const sizeUpper = tr.getAttribute('data-size');
+        const isExisting = tr.getAttribute('data-existing') === '1';
+        if (!isExisting){
+          removeRow(sizeUpper);
+        } else {
+          // existing row cancel should not appear (we use delete flow)
+          alert('Existing size - use Delete button.');
+        }
+      }
+      // handle delete existing click
+      if (e.target.classList.contains('btn-delete-existing')){
+        const tr = e.target.closest('tr');
+        const sizeId = e.target.getAttribute('data-size-id');
+        const sizeUpper = tr.getAttribute('data-size');
+        if (!sizeId) return;
+        // confirm with Swal
+        Swal.fire({
+          title: `Delete size ${sizeUpper}?`,
+          text: "This will remove the size from this variant.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, delete",
+        }).then((res)=>{
+          if (!res.isConfirmed) return;
+          // call delete endpoint (POST)
+          fetch(`/product/{{ product.id }}/variant/${variantId}/size/${sizeId}/delete/`, {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: JSON.stringify({})
+          }).then(r => r.json())
+            .then(data => {
+              if (data.success){
+                // remove row and remove the checkbox label
+                removeRow(sizeUpper);
+                Swal.fire('Deleted','Size removed','success');
+              } else {
+                Swal.fire('Error', data.message || 'Could not delete','error');
+              }
+            }).catch(()=> Swal.fire('Error','Network error','error'));
+        });
+      }
+    });
+
+    // submit => build sizes_json
+    form.addEventListener('submit', function(){
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const payload = rows.map(r => ({
+        size: r.querySelector('.size')?.value || r.getAttribute('data-size'),
+        size_id: r.querySelector('.size_id')?.value || null,
+        mrp: r.querySelector('.mrp')?.value || '',
+        price: r.querySelector('.price')?.value || '',
+        discount_price: r.querySelector('.discount_price')?.value || '',
+        stock: r.querySelector('.stock')?.value || '',
+      }));
+      if (jsonInput) jsonInput.value = JSON.stringify(payload);
+    });
+
+  }); // end form loop
+})();
+</script>
+
+<style>
+/* optional visual cue when we scroll to existing row */
+.flash-animate{ animation: flash 1s ease; }
+@keyframes flash { 0%{background: #fff;} 50%{background:#fff7cc;} 100%{background:#fff;} }
+</style>
+
+
 {% endblock content %}

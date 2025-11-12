@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout,get_user_model
 from django.contrib import messages
 from django.http import JsonResponse
@@ -1295,11 +1296,14 @@ def product_edit(request, pk):
 
         messages.success(request, 'Product updated successfully!')
         return redirect('dashboard:product_list')
-
+    
+    size_list = ['XXS','XS','S','M','L','XL','XXL','XXXL']
     return render(request, 'dashboard/products/product_update.html', {
         'product': product,
         'categories': categories,
         'variants': product.variants.all(),
+        'size_list': size_list,
+        
     })
 
 
@@ -1778,6 +1782,23 @@ def variant_create(request, product_id):
     })
 
 
+import json
+from django.db import transaction
+from django.utils.text import slugify
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+
+def generate_sku(product, variant, size_value):
+    # simple SKU: PRODUCTNAME-VARIANTCOLOR-SIZE-<idhash>
+    base = f"{product.name[:10]}-{variant.color_name[:8]}-{size_value}"
+    base = slugify(base).upper()
+    # ensure unique by appending a short random / timestamp if collision
+    # but to keep simple, append count
+    existing = SizeVariant.objects.filter(sku__startswith=base).count()
+    if existing:
+        return f"{base}-{existing+1}"
+    return base
+
 @login_required
 @csrf_exempt
 @user_passes_test(is_admin)
@@ -1786,32 +1807,91 @@ def variant_edit(request, product_id, variant_id):
     variant = get_object_or_404(ProductVariant, pk=variant_id, product=product)
 
     if request.method == 'POST':
-        # Get form fields
+        # existing fields
         color_name = request.POST.get('color_name', '').strip()
         hex_color_code = request.POST.get('hex_color_code', '').strip()
-        variant_images = request.FILES.getlist('variant_images')  # multiple files
-        print("variant_images", variant_images)
-        # Update fields
+        variant_images = request.FILES.getlist('variant_images')
+
         variant.color_name = color_name
         variant.hex_color_code = hex_color_code
         variant.save()
 
-        # Handle image uploads
         if variant_images:
             for image_file in variant_images:
-                ProductVariantImage.objects.create(
-                    variant=variant,
-                    image=image_file
-                )
+                ProductVariantImage.objects.create(variant=variant, image=image_file)
+
+        sizes_json = request.POST.get('sizes_json')
+        if sizes_json:
+            try:
+                sizes_data = json.loads(sizes_json)
+            except Exception as e:
+                sizes_data = []
+                # optional: messages.error(request, 'Invalid sizes data.')
+
+            # Use transaction to avoid partial updates
+            with transaction.atomic():
+                for item in sizes_data:
+                    size_val = (item.get('size') or '').strip()
+                    if not size_val:
+                        continue
+                    size_id = item.get('size_id')
+                    mrp = item.get('mrp') or None
+                    price = item.get('price') or None
+                    discount_price = item.get('discount_price') or None
+                    stock = item.get('stock') or 0
+
+                    if size_id:
+                        # update existing
+                        try:
+                            sz = SizeVariant.objects.get(pk=size_id, variant=variant)
+                            sz.mrp = mrp or sz.mrp
+                            sz.price = price or sz.price
+                            sz.discount_price = discount_price if discount_price not in [None, ''] else sz.discount_price
+                            sz.stock = int(stock or sz.stock)
+                            sz.save()
+                        except SizeVariant.DoesNotExist:
+                            # fallback: create new
+                            sku = generate_sku(product, variant, size_val)
+                            SizeVariant.objects.create(
+                                variant=variant,
+                                size=size_val,
+                                sku=sku,
+                                mrp=mrp or 0,
+                                price=price or 0,
+                                discount_price=discount_price or 0,
+                                stock=int(stock or 0)
+                            )
+                    else:
+                        # create new size for this variant
+                        # check unique_together to avoid duplicates
+                        existing = SizeVariant.objects.filter(variant=variant, size__iexact=size_val).first()
+                        if existing:
+                            # update existing instead of creating duplicate
+                            existing.mrp = mrp or existing.mrp
+                            existing.price = price or existing.price
+                            existing.discount_price = discount_price if discount_price not in [None, ''] else existing.discount_price
+                            existing.stock = int(stock or existing.stock)
+                            existing.save()
+                        else:
+                            sku = generate_sku(product, variant, size_val)
+                            SizeVariant.objects.create(
+                                variant=variant,
+                                size=size_val,
+                                sku=sku,
+                                mrp=mrp or 0,
+                                price=price or 0,
+                                discount_price=discount_price or 0,
+                                stock=int(stock or 0)
+                            )
 
         messages.success(request, 'Product variant updated successfully!')
         return redirect('dashboard:product_edit', pk=product_id)
 
     return render(request, 'dashboard/products/variant_edit.html', {
         'product': product,
-        'variant': variant
+        'variant': variant,
+        'size_list': ['XXS','XS','S','M','L','XL','XXL','XXXL'],
     })
-
 
 @login_required
 @user_passes_test(is_admin)
@@ -2032,7 +2112,22 @@ def size_variant_delete(request, product_id, pk):
         "message": "Invalid request."
     })
 
-from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def variant_size_delete(request, product_id, variant_id, size_id):
+    # security: ensure this product & variant belong to user / store as needed
+    product = get_object_or_404(Product, pk=product_id)
+    variant = get_object_or_404(ProductVariant, pk=variant_id, product=product)
+    sz = get_object_or_404(SizeVariant, pk=size_id, variant=variant)
+
+    try:
+        sz.delete()
+        return JsonResponse({"success": True, "message": "Size deleted"})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)})
+
+
 @csrf_exempt
 @require_POST
 def delete_variant_image(request, pk):
