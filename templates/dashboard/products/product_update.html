@@ -1027,27 +1027,67 @@ Products Create
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
 
+
 <script>
-$(document).ready(function () {
-    $(".color-picker").each(function () {
-        let colorInput = $(this);
-        let variantId = this.id.replace("productColor-", ""); // "add" or variant.id
-        let colorHexDisplay = $(`#colorHexDisplay-${variantId}`);
+document.addEventListener('DOMContentLoaded', function () {
 
-        function updateColorCode() {
-            let colorVal = colorInput.val();
-            colorHexDisplay.val(colorVal);
-            colorHexDisplay.css("background-color", colorVal);
-            colorHexDisplay.css("color", "#fff");
+  // contrast helper - returns '#000' or '#fff' for readability
+  function getContrastColor(hex) {
+    if (!hex) return '#000';
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const r = parseInt(hex.substring(0,2), 16);
+    const g = parseInt(hex.substring(2,4), 16);
+    const b = parseInt(hex.substring(4,6), 16);
+    const luminance = (0.299*r + 0.587*g + 0.114*b);
+    return luminance > 186 ? '#000' : '#fff';
+  }
+
+  // bind all existing color pickers
+  function bindColorPickers() {
+    document.querySelectorAll('.color-picker').forEach(function(colorInput) {
+      // extract suffix after first '-' (supports productColor-<id-with-dashes> or productColor-add)
+      const parts = colorInput.id.split('-');
+      const suffix = parts.slice(1).join('-'); // e.g. "23" or "add"
+      const display = document.getElementById('colorHexDisplay-' + suffix);
+      const preview = document.getElementById('variantColorPreview-' + suffix);
+
+      function apply(hex) {
+        if (!hex) return;
+        if (display) {
+          display.value = hex;
+          display.style.backgroundColor = hex;
+          display.style.color = getContrastColor(hex);
         }
+        if (preview) preview.style.backgroundColor = hex;
+      }
 
-        updateColorCode(); // init
-        colorInput.on("input", updateColorCode);
+      // initialize once from current value
+      apply(colorInput.value);
+
+      // update live on input (color picker drag) and change (fallback)
+      colorInput.addEventListener('input', function() { apply(this.value); });
+      colorInput.addEventListener('change', function() { apply(this.value); });
     });
+  }
+
+  // initial bind
+  bindColorPickers();
+
+  // If modals are added/changed dynamically, re-bind when any Bootstrap modal is shown.
+  // Works with Bootstrap 4/5 which fire 'shown.bs.modal' on the modal element.
+  document.querySelectorAll('.modal').forEach(function(modalEl) {
+    modalEl.addEventListener('shown.bs.modal', function () {
+      // re-bind in case modal DOM was inserted or ids are present now
+      bindColorPickers();
+      // also trigger input on color pickers inside this modal to force preview update
+      modalEl.querySelectorAll('.color-picker').forEach(function(ci){ ci.dispatchEvent(new Event('input')); });
+    });
+  });
+
 });
-
-
 </script>
+
 
 <!-- Include jQuery if not already included -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
