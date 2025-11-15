@@ -31,6 +31,141 @@ User = get_user_model()
 
 # Authentication Views
 
+import random, http.client, json
+from django.core.cache import cache
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class SendOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    print("SendOTPView")
+    def post(self, request):
+        phone = str(request.data.get('phone')).strip()
+
+        if not phone:
+            return Response({'error': 'Phone number required'}, status=400)
+
+        # Generate random 6-digit OTP
+        otp = random.randint(100000, 999999)
+        print(f"Generated OTP for {phone}: {otp}")
+        # Save OTP in cache for 5 min
+        cache.set(f"otp_{phone}", otp, timeout=300)
+
+        # Send OTP SMS via MSG91
+        try:
+            conn = http.client.HTTPSConnection("control.msg91.com")
+            payload = {
+                "template_id": "YOUR_OTP_TEMPLATE_ID",  
+                "recipients": [{"mobiles": phone, "otp": otp}]
+            }
+            headers = {
+                'accept': "application/json",
+                'authkey': 'YOUR_MSG91_AUTH_KEY',
+                'content-type': "application/json"
+            }
+            conn.request("POST", "/api/v5/otp", json.dumps(payload), headers)
+            res = conn.getresponse()
+            print("MSG91 Response:", res.read().decode())
+        except Exception as e:
+            print("⚠️ OTP Send Failed:", e)
+
+        return Response({'message': f'OTP sent successfully to {phone}'}, status=200)
+
+from rest_framework.authtoken.models import Token
+
+class LoginVerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        phone = str(request.data.get('phone')).strip()
+        otp = str(request.data.get('otp')).strip()
+
+        if not phone or not otp:
+            return Response({'error': 'Phone and OTP required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # OTP check
+        saved_otp = cache.get(f"otp_{phone}")
+        if str(saved_otp) != str(otp):
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # OTP valid → delete cache
+        cache.delete(f"otp_{phone}")
+
+        # Check if user exists or not
+        user, created = User.objects.get_or_create(phone=phone)
+
+        if created:
+            # If new user, set defaults like in your RegisterView
+            username = phone  # or generate any default username
+            user.username = username
+            user.first_name = username
+            user.set_password(phone)  # optional default password
+            user.save()
+
+            # ✅ Send Welcome SMS (same as RegisterView logic)
+            try:
+                print("📱 Sending Welcome SMS to:", phone)
+                mobile = str(phone).strip()
+
+                # 91 prefix check panni add panrom
+                if not mobile.startswith('91'):
+                    if len(mobile) == 10 and mobile.isdigit():
+                        mobile = '91' + mobile
+                    else:
+                        print(f"⚠️ Invalid phone format: {mobile}")
+                        raise ValueError("Invalid phone number format")
+
+                conn = http.client.HTTPSConnection("control.msg91.com")
+
+                payload = {
+                    "template_id": '69059476c859393d1f62a803',  # same registration template
+                    "short_url": "1",
+                    "recipients": [
+                        {
+                            "mobiles": mobile,
+                            "var": user.first_name
+                        }
+                    ]
+                }
+
+                headers = {
+                    'accept': "application/json",
+                    # 'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
+                    'content-type': "application/json"
+                }
+
+                conn.request("POST", "/api/v5/flow", json.dumps(payload), headers)
+                res = conn.getresponse()
+                data = res.read()
+                response_data = json.loads(data.decode("utf-8"))
+
+                print("📲 MSG91 Response:", response_data)
+
+                if response_data.get('type') == 'success':
+                    print("✅ Welcome SMS sent successfully!")
+                else:
+                    print(f"⚠️ SMS failed: {response_data.get('message', 'Unknown error')}")
+
+            except Exception as e:
+                print(f"⚠️ SMS sending failed: {e}")
+
+        # Create token for both new/existing user
+        token, _ = Token.objects.get_or_create(user=user)
+
+        return Response({
+            'message': 'Login successful' if not created else 'Account created successfully!',
+            # 'is_new_user': created,
+            'token': token.key,
+            'user': {
+                'username': user.first_name,
+                'phone': user.phone,
+            }
+        }, status=status.HTTP_200_OK)
 
 class EmailLoginView(APIView):
     permission_classes = [AllowAny]
@@ -1065,6 +1200,115 @@ client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_S
 #     except Payment.DoesNotExist:
 #         return Response({"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND)
 
+
+# views.py
+import json
+from decimal import Decimal
+
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import status, permissions
+
+import razorpay
+
+from .models import Product, ProductVariant, SizeVariant, ShippingAddress, CustomUser
+
+# init razorpay client (make sure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET exist in settings)
+client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])  # keep only authenticated; if you want guest support, change this
+def create_order(request):
+   
+    user = request.user
+    if not user.is_authenticated:
+        return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    data = request.data
+    order_type = data.get('type')
+
+    # calculate total_amount similarly to your initiate_payment
+    if order_type == 'cart':
+        try:
+            cart = Cart.objects.get(user=user)
+            if not cart.items.exists():
+                return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+            total_amount = cart.total_price
+        except Cart.DoesNotExist:
+            return Response({"error": "No cart found"}, status=status.HTTP_400_BAD_REQUEST)
+
+    elif order_type == 'buynow':
+        product_id = data.get('product_id')
+        variant_id = data.get('variant_id')
+        size_variant_id = data.get('size_variant_id')
+        quantity = int(data.get('quantity', 1))
+        if not (product_id and variant_id and size_variant_id):
+            return Response({"error": "Missing product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            product = Product.objects.get(id=product_id, is_active=True)
+            variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+            size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+            # assuming size_variant.get_price returns Decimal or float
+            price = Decimal(size_variant.get_price)
+            total_amount = price * quantity
+        except (Product.DoesNotExist, ProductVariant.DoesNotExist, SizeVariant.DoesNotExist):
+            return Response({"error": "Invalid product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # optional: save shipping address if provided
+    shipping_id = None
+    shipping_data = data.get('shipping')
+    if shipping_data:
+        
+        shipping_obj = ShippingAddress.objects.create(
+            user=user,
+            type_of_address=shipping_data.get('type_of_address', 'home'),
+            state=shipping_data.get('state', ''),
+            contact_person_name=shipping_data.get('contact_person_name'),
+            contact_person_number=shipping_data.get('phone'),
+            postal_code=shipping_data.get('postal_code'),
+            address_line1=shipping_data.get('address_line1'),
+            city=shipping_data.get('city'),
+            country=shipping_data.get('country', 'India'),
+            phone=shipping_data.get('phone'),
+        )
+        shipping_id = shipping_obj.id
+
+    # create razorpay order (server-side)
+    try:
+        amount_paise = int((Decimal(total_amount) * 100).quantize(0))  # ensure integer paise
+        notes = {
+            "user_id": str(user.id),
+            "type": order_type,
+            "shipping_id": str(shipping_id) if shipping_id else "",
+            "payload": json.dumps(data)
+        }
+        razorpay_order = client.order.create({
+            "amount": amount_paise,
+            "currency": "INR",
+            "payment_capture": "1",
+            "notes": notes
+        })
+
+        return Response({
+            "key": settings.RAZORPAY_KEY_ID,
+            "order_id": razorpay_order.get('id'),
+            "amount": razorpay_order.get('amount'),
+            "currency": razorpay_order.get('currency'),
+            "shipping_id": shipping_id
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        # catch Razorpay errors or Decimal conversion errors
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 @api_view(['POST'])
 def initiate_payment(request):
     user = request.user  
@@ -1135,7 +1379,8 @@ def initiate_payment(request):
 def confirm_order(request):
     user = request.user
     data = request.data
-
+    print('user',user)
+    print('data',data)
     if not user.is_authenticated:
         return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -1151,8 +1396,8 @@ def confirm_order(request):
         shipping_address_id = data.get("shipping_address_id")
 
         # ✅ Get the address object
-        shipping_address = get_object_or_404(ShippingAddress, id=shipping_address_id, user=user)
-
+        shipping_address = get_object_or_404(ShippingAddress, id=shipping_address_id)
+        print("shipping_address",shipping_address)
 
         if order_type == 'cart':
             cart = Cart.objects.get(user=user)
@@ -1162,10 +1407,10 @@ def confirm_order(request):
             total_amount = cart.total_price
 
         elif order_type == 'buynow':
-            product_id = notes_data.get('product_id')
-            variant_id = notes_data.get('variant_id')
-            size_variant_id = notes_data.get('size_variant_id')
-            quantity = int(notes_data.get('quantity', 1))
+            product_id = data.get('product_id') or notes_data.get("product_id")
+            variant_id = data.get('variant_id') or notes_data.get("variant_id")
+            size_variant_id = data.get('size_variant_id') or notes_data.get("size_variant_id")
+            quantity = int(data.get('quantity', 1)) or int(notes_data.get("quantity", 1))
 
             product = Product.objects.get(id=product_id, is_active=True)
             variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
@@ -1182,7 +1427,7 @@ def confirm_order(request):
             billing_address=shipping_address.address_line1,
             shipping_address=shipping_address, 
             phone=user.phone or '',
-            email=user.email,
+            email = user.email or f"{user.phone}@gmail.com",
             notes='',
             source=order_type,
             status='Confirmed'

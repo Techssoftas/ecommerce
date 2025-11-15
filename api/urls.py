@@ -10,6 +10,9 @@ app_name = 'api'
 
 urlpatterns = [
     # JWT Authentication
+    path('sendotpview/', SendOTPView.as_view(), name='sendotpview'),
+    path('loginverifyotpview/', LoginVerifyOTPView.as_view(), name='loginverifyotpview'),
+    
     path('login/', EmailLoginView.as_view(), name='email_login'),
     path('register/', RegisterView.as_view(), name='register'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
@@ -52,7 +55,9 @@ urlpatterns = [
 
     # path('create_order/', create_order, name='create_order'),
     # path('verify_payment/', verify_payment, name='verify_payment'),
-    
+       
+    path('create-order/', create_order, name='create_order'),
+        
     path('initiate_payment/', initiate_payment, name='initiate_payment'),
     path('confirm_order/', confirm_order, name='confirm_order'),
     path('cod_order_create/', cod_order_create, name='cod_order_create'),
