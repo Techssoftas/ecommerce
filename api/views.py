@@ -1223,7 +1223,7 @@ client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_S
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])  # keep only authenticated; if you want guest support, change this
 def create_order(request):
-   
+    print("create_order",request.data)
     user = request.user
     if not user.is_authenticated:
         return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -1307,6 +1307,211 @@ def create_order(request):
         # catch Razorpay errors or Decimal conversion errors
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+# orders/views.py  (or appropriate app views.py)
+from decimal import Decimal, ROUND_HALF_UP
+import json
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])   # Allow guest + logged-in
+def create_magic_checkout(request):
+    """
+    Endpoint: /api/create-magic-checkout/
+    Supports:
+      - type = 'cart'   -> requires authenticated user (server-side cart)
+      - type = 'buynow' -> works for guest or authenticated (requires product/variant/size/qty)
+    Returns:
+      { key, order_id, amount, currency, shipping_id, local_order_id }
+    """
+    user = request.user if request.user.is_authenticated else None
+    data = request.data or {}
+    order_type = data.get('type')
+
+    # --- compute total_amount (Decimal) ---
+    try:
+        if order_type == 'cart':
+            if not user:
+                return Response(
+                    {"error": "Cart checkout requires login. Use buynow for guest purchases."},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            try:
+                cart = Cart.objects.get(user=user)
+                if not cart.items.exists():
+                    return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+                total_amount = Decimal(cart.total_price)  # ensure your cart.total_price returns numeric
+            except Cart.DoesNotExist:
+                return Response({"error": "No cart found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif order_type == 'buynow':
+            product_id = data.get('product_id')
+            variant_id = data.get('variant_id')
+            size_variant_id = data.get('size_variant_id')
+            quantity = int(data.get('quantity', 1))
+
+            if not (product_id and variant_id and size_variant_id):
+                return Response({"error": "Missing product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                product = Product.objects.get(id=product_id, is_active=True)
+                variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+                size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+
+                # get unit price from model - adjust attribute/method name as per your code
+                if hasattr(size_variant, 'get_price') and callable(size_variant.get_price):
+                    unit_price = Decimal(size_variant.get_price())
+                elif hasattr(size_variant, 'price'):
+                    unit_price = Decimal(size_variant.price)
+                else:
+                    raise AttributeError("SizeVariant missing price getter")
+
+                unit_price = unit_price.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                total_amount = (unit_price * Decimal(quantity)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+            except (Product.DoesNotExist, ProductVariant.DoesNotExist, SizeVariant.DoesNotExist, AttributeError) as e:
+                return Response({"error": "Invalid product/variant/size: " + str(e)},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({"error": "Error calculating amount: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # --- optional: save shipping address if frontend sent it ---
+    shipping_id = None
+    shipping_data = data.get('shipping')
+    if shipping_data:
+        try:
+            shipping_obj = ShippingAddress.objects.create(
+                user=user,
+                type_of_address=shipping_data.get('type_of_address', 'home'),
+                state=shipping_data.get('state', '')[:128],
+                contact_person_name=shipping_data.get('contact_person_name', '')[:255],
+                contact_person_number=shipping_data.get('phone', '')[:30],
+                postal_code=shipping_data.get('postal_code', '')[:20],
+                address_line1=shipping_data.get('address_line1', '')[:1024],
+                city=shipping_data.get('city', '')[:128],
+                country=shipping_data.get('country', 'India')[:128],
+                phone=shipping_data.get('phone', '')[:30],
+            )
+            shipping_id = shipping_obj.id
+        except Exception:
+            shipping_id = None  # don't block checkout if save fails
+
+    # --- create Razorpay order ---
+    try:
+        amount_paise = int((total_amount * 100).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+
+        notes = {
+            "user_id": str(user.id) if user else "",
+            "type": order_type,
+            "shipping_id": str(shipping_id) if shipping_id else "",
+            "payload_summary": json.dumps({
+                "product_id": data.get('product_id'),
+                "variant_id": data.get('variant_id'),
+                "size_variant_id": data.get('size_variant_id'),
+                "quantity": data.get('quantity'),
+                "guest_phone": (shipping_data.get('phone') if shipping_data else "")
+            })
+        }
+
+        razorpay_order = client.order.create({
+            "amount": amount_paise,
+            "currency": "INR",
+            "payment_capture": 1,
+            "notes": notes
+        })
+
+        # optional: create local pending Order row
+        try:
+            local_order = Order.objects.create(
+                user=user,
+                amount=total_amount,
+                provider_order_id=razorpay_order.get('id'),
+                status='pending',
+                metadata=notes  # adjust field if you have JSONField or text
+            )
+            local_order_id = local_order.id
+        except Exception:
+            local_order_id = None
+
+        # return Response({
+        #     "key": settings.RAZORPAY_KEY_ID,
+        #     "order_id": razorpay_order.get('id'),
+        #     "amount": razorpay_order.get('amount'),
+        #     "currency": razorpay_order.get('currency'),
+        #     "shipping_id": shipping_id,
+        #     "local_order_id": local_order_id
+        # })
+
+        payment_link = client.payment_link.create({
+        "amount": amount_paise,
+        "currency": "INR",
+        "description": "Order",
+        "customer": {"name": 'suriya', "contact": '+919514152359'},
+        "callback_url": "http://m2hit.in/api/callback_url/",
+        "callback_method": "get"
+        })
+        return Response({"checkout_url": payment_link.get("short_url"),
+                        "key": settings.RAZORPAY_KEY_ID,
+                        "order_id": razorpay_order.get('id'),
+                        "shipping_id": shipping_id,
+                        "local_order_id": local_order_id,
+                        
+                        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": "Payment provider error: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def callback_url(request):
+    print("Callback Data:", request.query_params)
+    return Response({"message": "Payment successful! Thank you for your purchase."}, status=status.HTTP_200_OK)
+
+# views.py
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def create_razorpay_order(request):
+    data = {
+        "amount": request.data['amount'],
+        "currency": "INR",
+        "receipt": request.data['receipt'],
+        "notes": request.data.get('notes', {})
+    }
+    order = client.order.create(data=data)
+    return Response({"order_id": order['id']})
+
+
+
+@api_view(['GET', 'OPTIONS','POST'])
+@permission_classes([permissions.AllowAny])
+def shipping_info(request):
+    # Sample: get data from Razorpay request (usually POST/JSON)
+    import json
+    data = json.loads(request.body)
+    addresses = data.get('addresses', [])
+    response_addresses = []
+
+    # Sample response, flat shipping fee ₹50 (5000 paise), COD support true, COD fee ₹30 (3000 paise)
+    for addr in addresses:
+        response_addresses.append({
+            "id": addr.get("id", "0"),
+            "zipcode": addr.get("zipcode"),
+            "country": addr.get("country", "IN"),
+            "shipping_methods": [
+                {
+                    "id": "delhivery_standard",
+                    "name": "Delhivery Standard",
+                    "serviceable": True,
+                    "shipping_fee": 0,
+                    "cod": True,
+                    "cod_fee": 5000
+                }
+            ]
+        })
+
+    return JsonResponse({"addresses": response_addresses})
 
 
 @api_view(['POST'])

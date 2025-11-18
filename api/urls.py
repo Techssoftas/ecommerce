@@ -62,6 +62,14 @@ urlpatterns = [
     path('confirm_order/', confirm_order, name='confirm_order'),
     path('cod_order_create/', cod_order_create, name='cod_order_create'),
     
+    #create-magic-checkout
+    path('create-magic-checkout/', create_magic_checkout, name='create-magic-checkout'),
+    path('callback_url/', callback_url, name='callback_url'),
+    
+    path('create-razorpay-order/', create_razorpay_order, name='create_razorpay_order'),
+
+    path('razorpay/shipping_info/', shipping_info, name='shipping_info/'),
+    
     
     path('create_return_request/', ReturnRequestCreateView.as_view(), name='create_return_request'),
 
