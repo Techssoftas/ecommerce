@@ -171,6 +171,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.29.150:5173',#my
     'http://192.168.29.3:5173',#naveen
     'https://santhiya.d2k2gry4kzssr.amplifyapp.com',
+    'https://suriya.d2k2gry4kzssr.amplifyapp.com',
     "https://m2hit.in",
     "https://www.m2hit.in",
     "https://mtex.in", 
