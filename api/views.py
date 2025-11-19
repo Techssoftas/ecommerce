@@ -1515,10 +1515,12 @@ def shipping_info(request):
 
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def initiate_payment(request):
+    print("initiate_payment",request.data)
     user = request.user  
-    if not user.is_authenticated:
-        return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    # if not user.is_authenticated:
+    #     return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
     data = request.data
     order_type = data.get('type')  # 'cart' or 'buynow'
