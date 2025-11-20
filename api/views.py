@@ -1507,11 +1507,11 @@ def shipping_info(request):
         addresses = data.get('addresses', [])
         
         # Validate required fields
-        if not all([order_id, razorpay_order_id, contact, addresses]):
-            return Response(
-                {"error": "Missing required fields"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # if not all([order_id, razorpay_order_id, contact, addresses]):
+        #     return Response(
+        #         {"error": "Missing required fields"}, 
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
         
         # Process each address and add shipping methods
         response_addresses = []
