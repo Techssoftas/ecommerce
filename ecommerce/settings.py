@@ -271,10 +271,13 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'api': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        }
     }
 }
-
-
 
 
 
