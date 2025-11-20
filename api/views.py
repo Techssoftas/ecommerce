@@ -29,6 +29,9 @@ from django.conf import settings
 import http.client
 User = get_user_model()
 
+import logging
+logger = logging.getLogger(__name__)
+
 # Authentication Views
 
 import random, http.client, json
