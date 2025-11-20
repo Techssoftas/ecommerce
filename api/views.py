@@ -1491,7 +1491,7 @@ def shipping_info(request):
     Razorpay Magic Checkout Shipping Info API
     Returns shipping serviceability, COD serviceability, shipping fees and COD fees
     """
-    print("shipping_info request:", request.data)
+    logger.info(f"shipping_info request: {request.data}")
     
     try:
         data = request.data
