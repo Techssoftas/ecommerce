@@ -70,7 +70,7 @@ urlpatterns = [
     
     path('create-razorpay-order/', create_razorpay_order, name='create_razorpay_order'),
 
-    path('razorpay/shipping_info/', shipping_info, name='shipping_info/'),
+    path('razorpay/shipping_info/', shipping_info, name='shipping_info'),
     
     
     path('create_return_request/', ReturnRequestCreateView.as_view(), name='create_return_request'),

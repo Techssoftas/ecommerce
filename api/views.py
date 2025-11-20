@@ -1484,7 +1484,7 @@ def create_razorpay_order(request):
 
 
 
-@api_view(['GET', 'OPTIONS','POST'])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def shipping_info(request):
     """
