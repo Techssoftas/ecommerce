@@ -63,6 +63,8 @@ urlpatterns = [
     path('cod_order_create/', cod_order_create, name='cod_order_create'),
     
     #create-magic-checkout
+    path('magic_checkout_initiate_payment/', magic_checkout_initiate_payment, name='magic_checkout_initiate_payment'),
+
     path('create-magic-checkout/', create_magic_checkout, name='create-magic-checkout'),
     path('callback_url/', callback_url, name='callback_url'),
     

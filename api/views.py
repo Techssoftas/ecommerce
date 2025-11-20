@@ -1487,31 +1487,85 @@ def create_razorpay_order(request):
 @api_view(['GET', 'OPTIONS','POST'])
 @permission_classes([permissions.AllowAny])
 def shipping_info(request):
-    # Sample: get data from Razorpay request (usually POST/JSON)
-    import json
-    data = json.loads(request.body)
-    addresses = data.get('addresses', [])
-    response_addresses = []
-
-    # Sample response, flat shipping fee ₹50 (5000 paise), COD support true, COD fee ₹30 (3000 paise)
-    for addr in addresses:
-        response_addresses.append({
-            "id": addr.get("id", "0"),
-            "zipcode": addr.get("zipcode"),
-            "country": addr.get("country", "IN"),
-            "shipping_methods": [
+    """
+    Razorpay Magic Checkout Shipping Info API
+    Returns shipping serviceability, COD serviceability, shipping fees and COD fees
+    """
+    print("shipping_info request:", request.data)
+    
+    try:
+        data = request.data
+        
+        # Extract request parameters
+        order_id = data.get('order_id')
+        razorpay_order_id = data.get('razorpay_order_id')
+        email = data.get('email')
+        contact = data.get('contact')
+        addresses = data.get('addresses', [])
+        
+        # Validate required fields
+        if not all([order_id, razorpay_order_id, contact, addresses]):
+            return Response(
+                {"error": "Missing required fields"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Process each address and add shipping methods
+        response_addresses = []
+        
+        for address in addresses:
+            address_id = address.get('id')
+            zipcode = address.get('zipcode')
+            state_code = address.get('state_code', '')
+            country = address.get('country')
+            
+            # Validate address fields
+            if not all([address_id, zipcode, country]):
+                continue
+            
+            # Define shipping methods
+            # You can customize this based on your business logic
+            shipping_methods = [
                 {
-                    "id": "delhivery_standard",
-                    "name": "Delhivery Standard",
+                    "id": "1",
+                    "description": "Free shipping with COD available",
+                    "name": "Standard Delivery (5-7 days)",
                     "serviceable": True,
-                    "shipping_fee": 0,
-                    "cod": True,
-                    "cod_fee": 5000
+                    "shipping_fee": 0,  # Free shipping (0 paise)
+                    "cod": True,  # COD enabled
+                    "cod_fee": 5000  # ₹50 COD fee (5000 paise)
+                },
+                {
+                    "id": "2",
+                    "description": "Express delivery without COD",
+                    "name": "Express Delivery (2-3 days)",
+                    "serviceable": True,
+                    "shipping_fee": 0,  # Free shipping (0 paise)
+                    "cod": False,  # COD not available for express
+                    "cod_fee": 0  # No COD fee (0 paise)
                 }
             ]
-        })
-
-    return JsonResponse({"addresses": response_addresses})
+            
+            # Build response for this address
+            response_addresses.append({
+                "id": address_id,
+                "zipcode": zipcode,
+                "state_code": state_code,
+                "country": country,
+                "shipping_methods": shipping_methods
+            })
+        
+        # Return response in Razorpay format
+        return Response({
+            "addresses": response_addresses
+        }, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        print(f"Shipping info error: {str(e)}")
+        return Response(
+            {"error": "Failed to process shipping info"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
@@ -1847,6 +1901,148 @@ def cod_order_create(request):
         })
 
     except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def magic_checkout_initiate_payment(request):
+    print("initiate_payment", request.data)
+    user = request.user
+
+    data = request.data
+    order_type = data.get('type')  # 'cart' or 'buynow'
+
+    line_items = []
+    total_amount = 0
+
+    # -----------------------------------------------------------
+    # CASE 1 : CART CHECKOUT
+    # -----------------------------------------------------------
+    if order_type == 'cart':
+        try:
+            cart = Cart.objects.get(user=user)
+            if not cart.items.exists():
+                return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+            for item in cart.items.all():
+                product = item.product
+                variant = item.variant
+                size_variant = item.size_variant
+
+                price = size_variant.get_price
+                quantity = item.quantity
+                total_amount += price * quantity
+
+                line_items.append({
+                    "sku": str(product.sku or ""),
+                    "variant_id": str(variant.id),
+                    "other_product_codes": {
+                        "upc": product.upc or "",
+                        "ean": product.ean or "",
+                        "unspsc": product.unspsc or "",
+                    },
+                    "price": int(price * 100),
+                    "offer_price": int(price * 100),
+                    "tax_amount": 0,
+                    "quantity": quantity,
+                    "name": product.name,
+                    "description": product.description or "",
+                    "weight": product.weight or 0,
+                    "dimensions": {
+                        "length": product.length or 0,
+                        "width": product.width or 0,
+                        "height": product.height or 0,
+                    },
+                    "image_url": product.image.url if product.image else "",
+                    "product_url": product.get_absolute_url() if hasattr(product, "get_absolute_url") else "",
+                    "notes": {}
+                })
+
+        except Cart.DoesNotExist:
+            return Response({"error": "No cart found"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    # -----------------------------------------------------------
+    # CASE 2 : BUY NOW CHECKOUT
+    # -----------------------------------------------------------
+    elif order_type == 'buynow':
+        product_id = data.get('product_id')
+        variant_id = data.get('variant_id')
+        size_variant_id = data.get('size_variant_id')
+        quantity = int(data.get('quantity', 1))
+
+        if not (product_id and variant_id and size_variant_id):
+            return Response({"error": "Missing product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            product = Product.objects.get(id=product_id, is_active=True)
+            variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+            size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+
+            price = float(size_variant.get_price)
+            total_amount = price * quantity
+
+            line_items.append({
+                "sku": str(product.sku or ""),
+                "variant_id": str(variant.id),
+                "other_product_codes": {
+                    "upc": "",
+                    "ean": "",
+                    "unspsc": "",
+                },
+                "price": int(price * 100),
+                "offer_price": int(price * 100),
+                "tax_amount": 0,
+                "quantity": quantity,
+                "name": product.name,
+                "description": 'product.description',
+                "weight":  0,
+                "dimensions": {
+                    "length":  0,
+                    "width": 0,
+                    "height":  0,
+                },
+                "image_url":  "",
+                "product_url": "",
+                "notes": {}
+            })
+
+        except (Product.DoesNotExist, ProductVariant.DoesNotExist, SizeVariant.DoesNotExist):
+            return Response({"error": "Invalid product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    # -----------------------------------------------------------
+    # CREATE RAZORPAY ORDER WITH MAGIC CHECKOUT FORMAT
+    # -----------------------------------------------------------
+    try:
+        payload = {
+            "amount": int(total_amount * 100),  # Must be integer in paise
+            "currency": "INR",
+            "receipt": f"rcpt_{user.id}",
+            "notes": {
+                "user_id": str(user.id),
+                "type": order_type,
+                "data": json.dumps(data)
+            },
+            "line_items_total": int(total_amount * 100),  # Must be integer in paise
+            "line_items": line_items,
+        }
+
+        razorpay_order = client.order.create(payload)
+
+        return Response({
+            "razorpay_order_id": razorpay_order['id'],
+            "amount": razorpay_order['amount'],
+            "currency": razorpay_order['currency'],
+            "line_items": line_items
+        })
+
+    except razorpay.errors.BadRequestError as e:
+        print("Razorpay Error:", str(e))
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
