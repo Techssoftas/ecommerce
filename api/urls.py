@@ -65,8 +65,7 @@ urlpatterns = [
     #create-magic-checkout
     path('magic_checkout_initiate_payment/', magic_checkout_initiate_payment, name='magic_checkout_initiate_payment'),
 
-    path('create-magic-checkout/', create_magic_checkout, name='create-magic-checkout'),
-    path('callback_url/', callback_url, name='callback_url'),
+    path('verify-payment/', verify_payment, name='verify_payment'),
     
     path('create-razorpay-order/', create_razorpay_order, name='create_razorpay_order'),
 

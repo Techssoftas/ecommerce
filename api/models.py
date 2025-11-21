@@ -552,6 +552,7 @@ class Payment(models.Model):
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='Pending')
     transaction_id = models.CharField(max_length=200, blank=True, null=True)
     payment_id = models.CharField(max_length=200, blank=True, null=True)  # e.g., Razorpay payment_id
+    signature_id = models.CharField(max_length=200, blank=True, null=True)  # e.g., Razorpay signature
     gateway_response = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -679,6 +680,7 @@ class ShippingAddress(models.Model):
     contact_person_number = models.CharField(max_length=100, blank=True, null=True)
     address_line1 = models.CharField(max_length=255, blank=True, null=True)
     address_line2 = models.CharField(max_length=255, blank=True, null=True)
+    landmark = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)

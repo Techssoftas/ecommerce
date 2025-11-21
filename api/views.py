@@ -1310,167 +1310,300 @@ def create_order(request):
         # catch Razorpay errors or Decimal conversion errors
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-# orders/views.py  (or appropriate app views.py)
-from decimal import Decimal, ROUND_HALF_UP
-import json
 
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
-@permission_classes([permissions.AllowAny])   # Allow guest + logged-in
-def create_magic_checkout(request):
-    """
-    Endpoint: /api/create-magic-checkout/
-    Supports:
-      - type = 'cart'   -> requires authenticated user (server-side cart)
-      - type = 'buynow' -> works for guest or authenticated (requires product/variant/size/qty)
-    Returns:
-      { key, order_id, amount, currency, shipping_id, local_order_id }
-    """
-    user = request.user if request.user.is_authenticated else None
-    data = request.data or {}
-    order_type = data.get('type')
-
-    # --- compute total_amount (Decimal) ---
-    try:
-        if order_type == 'cart':
-            if not user:
-                return Response(
-                    {"error": "Cart checkout requires login. Use buynow for guest purchases."},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-            try:
-                cart = Cart.objects.get(user=user)
-                if not cart.items.exists():
-                    return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
-                total_amount = Decimal(cart.total_price)  # ensure your cart.total_price returns numeric
-            except Cart.DoesNotExist:
-                return Response({"error": "No cart found"}, status=status.HTTP_400_BAD_REQUEST)
-
-        elif order_type == 'buynow':
-            product_id = data.get('product_id')
-            variant_id = data.get('variant_id')
-            size_variant_id = data.get('size_variant_id')
-            quantity = int(data.get('quantity', 1))
-
-            if not (product_id and variant_id and size_variant_id):
-                return Response({"error": "Missing product/variant/size"}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                product = Product.objects.get(id=product_id, is_active=True)
-                variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
-                size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
-
-                # get unit price from model - adjust attribute/method name as per your code
-                if hasattr(size_variant, 'get_price') and callable(size_variant.get_price):
-                    unit_price = Decimal(size_variant.get_price())
-                elif hasattr(size_variant, 'price'):
-                    unit_price = Decimal(size_variant.price)
-                else:
-                    raise AttributeError("SizeVariant missing price getter")
-
-                unit_price = unit_price.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-                total_amount = (unit_price * Decimal(quantity)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-
-            except (Product.DoesNotExist, ProductVariant.DoesNotExist, SizeVariant.DoesNotExist, AttributeError) as e:
-                return Response({"error": "Invalid product/variant/size: " + str(e)},
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
-
-    except Exception as e:
-        return Response({"error": "Error calculating amount: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    # --- optional: save shipping address if frontend sent it ---
-    shipping_id = None
-    shipping_data = data.get('shipping')
-    if shipping_data:
-        try:
-            shipping_obj = ShippingAddress.objects.create(
-                user=user,
-                type_of_address=shipping_data.get('type_of_address', 'home'),
-                state=shipping_data.get('state', '')[:128],
-                contact_person_name=shipping_data.get('contact_person_name', '')[:255],
-                contact_person_number=shipping_data.get('phone', '')[:30],
-                postal_code=shipping_data.get('postal_code', '')[:20],
-                address_line1=shipping_data.get('address_line1', '')[:1024],
-                city=shipping_data.get('city', '')[:128],
-                country=shipping_data.get('country', 'India')[:128],
-                phone=shipping_data.get('phone', '')[:30],
-            )
-            shipping_id = shipping_obj.id
-        except Exception:
-            shipping_id = None  # don't block checkout if save fails
-
-    # --- create Razorpay order ---
-    try:
-        amount_paise = int((total_amount * 100).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
-
-        notes = {
-            "user_id": str(user.id) if user else "",
-            "type": order_type,
-            "shipping_id": str(shipping_id) if shipping_id else "",
-            "payload_summary": json.dumps({
-                "product_id": data.get('product_id'),
-                "variant_id": data.get('variant_id'),
-                "size_variant_id": data.get('size_variant_id'),
-                "quantity": data.get('quantity'),
-                "guest_phone": (shipping_data.get('phone') if shipping_data else "")
-            })
-        }
-
-        razorpay_order = client.order.create({
-            "amount": amount_paise,
-            "currency": "INR",
-            "payment_capture": 1,
-            "notes": notes
-        })
-
-        # optional: create local pending Order row
-        try:
-            local_order = Order.objects.create(
-                user=user,
-                amount=total_amount,
-                provider_order_id=razorpay_order.get('id'),
-                status='pending',
-                metadata=notes  # adjust field if you have JSONField or text
-            )
-            local_order_id = local_order.id
-        except Exception:
-            local_order_id = None
-
-        # return Response({
-        #     "key": settings.RAZORPAY_KEY_ID,
-        #     "order_id": razorpay_order.get('id'),
-        #     "amount": razorpay_order.get('amount'),
-        #     "currency": razorpay_order.get('currency'),
-        #     "shipping_id": shipping_id,
-        #     "local_order_id": local_order_id
-        # })
-
-        payment_link = client.payment_link.create({
-        "amount": amount_paise,
-        "currency": "INR",
-        "description": "Order",
-        "customer": {"name": 'suriya', "contact": '+919514152359'},
-        "callback_url": "http://m2hit.in/api/callback_url/",
-        "callback_method": "get"
-        })
-        return Response({"checkout_url": payment_link.get("short_url"),
-                        "key": settings.RAZORPAY_KEY_ID,
-                        "order_id": razorpay_order.get('id'),
-                        "shipping_id": shipping_id,
-                        "local_order_id": local_order_id,
-                        
-                        }, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        return Response({"error": "Payment provider error: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
 @permission_classes([permissions.AllowAny])
-def callback_url(request):
-    print("Callback Data:", request.query_params)
-    return Response({"message": "Payment successful! Thank you for your purchase."}, status=status.HTTP_200_OK)
+def verify_payment(request):
+    """
+    Razorpay payment verification and order creation
+    Steps:
+    1. Verify payment signature
+    2. Get customer data from Razorpay order
+    3. Create/Get user and authenticate
+    4. Create Order and ShippingAddress
+    5. Update payment status
+    """
+    data = request.data
+    
+    try:
+        # ✅ STEP 1: Verify Razorpay payment signature
+        try:
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': data.get('razorpay_order_id'),
+                'razorpay_payment_id': data.get('razorpay_payment_id'),
+                'razorpay_signature': data.get('razorpay_signature')
+            })
+        except Exception as e:
+            logger.error(f"Payment signature verification failed: {str(e)}")
+            return Response({
+                "error": "Invalid payment signature",
+                "message": "Payment verification failed. Illa signature match aagala."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # ✅ STEP 2: Fetch full payment details from Razorpay
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+        
+        try:
+            razorpay_order = client.order.fetch(razorpay_order_id)
+            logger.info(f"Razorpay Order Data: {razorpay_order}")
+        except Exception as e:
+            logger.error(f"Failed to fetch Razorpay order: {str(e)}")
+            return Response({
+                "error": "Failed to fetch order details",
+                "message": "Razorpay la irundhu data get panna mudila."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # ✅ STEP 2.1: Fetch Payment Details from Razorpay
+        payment_details = {}
+        try:
+            if razorpay_payment_id:
+                payment_details = client.payment.fetch(razorpay_payment_id)
+                logger.info(f"Razorpay Payment Details: {payment_details}")
+        except Exception as e:
+            logger.warning(f"Failed to fetch payment details: {str(e)}")
+        
+        # ✅ STEP 3: Extract customer details from Razorpay response
+        customer_details = razorpay_order.get('customer_details', {})
+        
+        raw_phone = customer_details.get('contact', '')
+        customer_phone = raw_phone.replace('+91', '').replace('+', '').strip()
+        customer_email = customer_details.get('email', '')
+        
+        shipping_data = customer_details.get('shipping_address', {})
+        billing_data = customer_details.get('billing_address', {})
+        address_data = shipping_data if shipping_data else billing_data
+        customer_name = address_data.get('name', 'Customer')
+        
+        # ✅ STEP 4: Get order notes for product details
+        notes = razorpay_order.get('notes', {})
+        order_type = notes.get('type', 'cart')
+        
+        try:
+            product_data = json.loads(notes.get('data', '{}'))
+        except:
+            product_data = {}
+        
+        # ✅ STEP 5: Create or Get User
+        try:
+            user = CustomUser.objects.filter(phone=customer_phone).first()
+            
+            if user:
+                logger.info(f"Existing user found: {customer_phone}")
+                is_new_user = False
+            else:
+                logger.info(f"Creating new user: {customer_phone}")
+                user = CustomUser.objects.create_user(
+                    username=address_data.get('name', customer_name) if address_data.get('name', customer_name) else customer_phone,
+                    phone=customer_phone,
+                    password=customer_phone,
+                    email=customer_email if customer_email else None,
+                    first_name=customer_name.split()[0] if customer_name else '',
+                    last_name=' '.join(customer_name.split()[1:]) if len(customer_name.split()) > 1 else '',
+                    user_type='customer'
+                )
+                is_new_user = True
+                logger.info(f"New user created successfully: {customer_phone}")
+        
+        except Exception as e:
+            logger.error(f"User creation/retrieval failed: {str(e)}")
+            return Response({
+                "error": "User creation failed",
+                "message": f"User account create panna mudila: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # ✅ STEP 6: Generate tokens for authentication
+        try:
+            token, _ = Token.objects.get_or_create(user=user)
+        except Exception as e:
+            logger.error(f"Token generation failed: {str(e)}")
+            return Response({
+                "error": "Authentication failed",
+                "message": "Token generate panna mudila."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # ✅ STEP 7: Create Order and Shipping Address in a transaction
+        try:
+            with transaction.atomic():
+                # Create Shipping Address
+                shipping_address = ShippingAddress.objects.create(
+                    user=user,
+                    contact_person_name=address_data.get('name', customer_name),
+                    contact_person_number=address_data.get('contact', customer_phone).replace('+91', '').replace('+', ''),
+                    address_line1=address_data.get('line1', ''),
+                    address_line2=address_data.get('line2', ''),
+                    city=address_data.get('city', ''),
+                    state=address_data.get('state', ''),
+                    country=address_data.get('country', 'IN'),
+                    postal_code=address_data.get('zipcode', ''),
+                    phone=address_data.get('contact', customer_phone).replace('+91', '').replace('+', ''),
+                    type_of_address=address_data.get('tag', 'home').lower(),
+                    landmark=address_data.get('landmark', ''),
+                    is_default=True
+                )
+                logger.info(f"Shipping address created: {shipping_address.id}")
+                
+                # Create Order
+                order = Order.objects.create(
+                    user=user,
+                    source=order_type,
+                    total_amount=razorpay_order.get('amount', 0) / 100,
+                    shipping_address=shipping_address,
+                    billing_address=f"{billing_data.get('line1', '')}, {billing_data.get('line2', '')}, {billing_data.get('city', '')}, {billing_data.get('state', '')}, {billing_data.get('zipcode', '')}",
+                    phone=customer_phone,
+                    email=customer_email,
+                    status='Confirmed'
+                )
+                logger.info(f"Order created: {order.order_number}")
+                
+                # ✅ STEP 8: Create Order Items based on order type
+                if order_type == 'buynow':
+                    product_id = product_data.get('product_id')
+                    variant_id = product_data.get('variant_id')
+                    size_variant_id = product_data.get('size_variant_id')
+                    quantity = product_data.get('quantity', 1)
+                    
+                    if product_id and size_variant_id:
+                        product = Product.objects.get(id=product_id)
+                        size_variant = SizeVariant.objects.get(id=size_variant_id)
+                        variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
+                        
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            variant=variant,
+                            size_variant=size_variant,
+                            quantity=quantity,
+                            price=size_variant.get_price
+                        )
+                        
+                        size_variant.stock -= quantity
+                        size_variant.save()
+                        logger.info(f"Order item created for Buy Now")
+                
+                elif order_type == 'cart':
+                    cart = Cart.objects.filter(user=user).first()
+                    if cart:
+                        for cart_item in cart.items.all():
+                            OrderItem.objects.create(
+                                order=order,
+                                product=cart_item.product,
+                                variant=cart_item.variant,
+                                size_variant=cart_item.varient_size,
+                                quantity=cart_item.quantity,
+                                price=cart_item.varient_size.get_price if cart_item.varient_size else cart_item.product.get_price
+                            )
+                            
+                            if cart_item.varient_size:
+                                cart_item.varient_size.stock -= cart_item.quantity
+                                cart_item.varient_size.save()
+                        
+                        cart.items.all().delete()
+                        logger.info(f"Cart items converted to order items and cart cleared")
+                
+                # ✅ STEP 9: Create/Update Payment record - FIXED LOGIC
+                # Check payment method from payment_details
+                payment_method_from_razorpay = payment_details.get('method', '')
+                payment_status_from_razorpay = payment_details.get('status', '')
+                
+                # Determine if COD or Online Payment
+                is_cod = payment_method_from_razorpay == 'cod'
+                
+                if is_cod:
+                    # COD Order
+                    payment_method_label = 'Cash on Delivery'
+                    payment_status = 'Pending'
+                    logger.info("COD order detected - Setting payment method as Cash on Delivery")
+                else:
+                    # Online Payment (wallet, card, upi, netbanking, etc.)
+                    payment_method_label = 'Razorpay'
+                    # Check if payment is captured/authorized
+                    if payment_status_from_razorpay in ['captured', 'authorized']:
+                        payment_status = 'Completed'
+                    else:
+                        payment_status = 'Pending'
+                    logger.info(f"Online payment detected - Method: {payment_method_from_razorpay}, Status: {payment_status}")
+                
+                payment, created = Payment.objects.update_or_create(
+                    order=order,
+                    defaults={
+                        'payment_method': payment_method_label,
+                        'amount': order.total_amount,
+                        'status': payment_status,
+                        'transaction_id': razorpay_order_id,
+                        'payment_id': razorpay_payment_id,
+                        'signature_id': razorpay_signature,
+                        'gateway_response': payment_details if payment_details else razorpay_order
+                    }
+                )
+                logger.info(f"Payment record {'created' if created else 'updated'}: {payment.id} | Method: {payment_method_label} | Status: {payment_status}")
+        
+        except Product.DoesNotExist:
+            logger.error("Product not found")
+            return Response({
+                "error": "Product not found",
+                "message": "Product database la illa."
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        except SizeVariant.DoesNotExist:
+            logger.error("Size variant not found")
+            return Response({
+                "error": "Size variant not found",
+                "message": "Size variant database la illa."
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            logger.error(f"Order creation failed: {str(e)}")
+            return Response({
+                "error": "Order creation failed",
+                "message": f"Order create panna mudila: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # ✅ STEP 10: Success Response
+        return Response({
+            "success": True,
+            "message": "Payment verified and order created successfully!",
+            "user": {
+                "id": user.id,
+                "phone": user.phone,
+                "email": user.email,
+                "username": user.get_full_name(),
+                "first_name": user.get_full_name(),
+            },
+            "order": {
+                "order_number": order.order_number,
+                "order_id": order.id,
+                "total_amount": float(order.total_amount),
+                "status": order.status
+            },
+            "payment": {
+                "method": payment_method_label,
+                "status": payment_status
+            },
+            'token': token.key,
+        }, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in payment verification: {str(e)}")
+        return Response({
+            "error": "Payment verification failed",
+            "message": f"Unexpected error: {str(e)}"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # views.py
 @api_view(['POST'])
@@ -1538,15 +1671,7 @@ def shipping_info(request):
                     "cod": True,  # COD enabled
                     "cod_fee": 5000  # ₹50 COD fee (5000 paise)
                 },
-                {
-                    "id": "2",
-                    "description": "Express delivery without COD",
-                    "name": "Express Delivery (2-3 days)",
-                    "serviceable": True,
-                    "shipping_fee": 0,  # Free shipping (0 paise)
-                    "cod": False,  # COD not available for express
-                    "cod_fee": 0  # No COD fee (0 paise)
-                }
+                
             ]
             
             # Build response for this address
@@ -1559,6 +1684,8 @@ def shipping_info(request):
             })
         
         # Return response in Razorpay format
+        print(response_addresses)
+
         return Response({
             "addresses": response_addresses
         }, status=status.HTTP_200_OK)
@@ -1643,8 +1770,6 @@ def initiate_payment(request):
 def confirm_order(request):
     user = request.user
     data = request.data
-    print('user',user)
-    print('data',data)
     if not user.is_authenticated:
         return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -1912,7 +2037,6 @@ def cod_order_create(request):
 def magic_checkout_initiate_payment(request):
     print("initiate_payment", request.data)
     user = request.user
-
     data = request.data
     order_type = data.get('type')  # 'cart' or 'buynow'
 
@@ -1957,8 +2081,8 @@ def magic_checkout_initiate_payment(request):
                         "width": product.width or 0,
                         "height": product.height or 0,
                     },
-                    "image_url": product.image.url if product.image else "",
-                    "product_url": product.get_absolute_url() if hasattr(product, "get_absolute_url") else "",
+                    "image_url":  "",
+                    "product_url": "",
                     "notes": {}
                 })
 
@@ -2022,10 +2146,11 @@ def magic_checkout_initiate_payment(request):
     # CREATE RAZORPAY ORDER WITH MAGIC CHECKOUT FORMAT
     # -----------------------------------------------------------
     try:
+        
         payload = {
             "amount": int(total_amount * 100),  # Must be integer in paise
             "currency": "INR",
-            "receipt": f"rcpt_{user.id}",
+            "receipt": f"rcpt_{timezone.now().strftime('%Y%m%d%H%M%S')}",
             "notes": {
                 "user_id": str(user.id),
                 "type": order_type,
@@ -2036,7 +2161,6 @@ def magic_checkout_initiate_payment(request):
         }
 
         razorpay_order = client.order.create(payload)
-
         return Response({
             "razorpay_order_id": razorpay_order['id'],
             "amount": razorpay_order['amount'],
