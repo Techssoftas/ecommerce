@@ -2055,34 +2055,42 @@ def magic_checkout_initiate_payment(request):
             for item in cart.items.all():
                 product = item.product
                 variant = item.variant
-                size_variant = item.size_variant
+                size_variant = item.varient_size
 
                 price = size_variant.get_price
                 quantity = item.quantity
                 total_amount += price * quantity
 
+                # 🔥 GET DEFAULT IMAGE FROM ProductVariantImage
+                default_image = variant.images.filter(is_default=True).first()
+
+                image_url = ""
+                if default_image:
+                    # request.build_absolute_uri() use get full URL 
+                    image_url = request.build_absolute_uri(default_image.image.url)
+
                 line_items.append({
                     "sku": str(product.sku or ""),
                     "variant_id": str(variant.id),
                     "other_product_codes": {
-                        "upc": product.upc or "",
-                        "ean": product.ean or "",
-                        "unspsc": product.unspsc or "",
+                        "upc":  "",
+                        "ean":  "",
+                        "unspsc":  "",
                     },
                     "price": int(price * 100),
                     "offer_price": int(price * 100),
                     "tax_amount": 0,
-                    "quantity": quantity,
+                    "quantity": int(quantity),
                     "name": product.name,
                     "description": product.description or "",
-                    "weight": product.weight or 0,
+                    "weight":  0,
                     "dimensions": {
-                        "length": product.length or 0,
-                        "width": product.width or 0,
-                        "height": product.height or 0,
+                        "length":  0,
+                        "width":  0,
+                        "height":  0,
                     },
-                    "image_url":  "",
-                    "product_url": "",
+                    "image_url":  image_url,
+                    "product_url": request.build_absolute_uri(f"https://mtex.in/product/{product.id}/"),
                     "notes": {}
                 })
 
@@ -2110,6 +2118,14 @@ def magic_checkout_initiate_payment(request):
             price = float(size_variant.get_price)
             total_amount = price * quantity
 
+            # 🔥 GET DEFAULT IMAGE FROM ProductVariantImage
+            default_image = variant.images.filter(is_default=True).first()
+
+            image_url = ""
+            if default_image:
+                # request.build_absolute_uri() use get full URL 
+                image_url = request.build_absolute_uri(default_image.image.url)
+
             line_items.append({
                 "sku": str(product.sku or ""),
                 "variant_id": str(variant.id),
@@ -2130,8 +2146,8 @@ def magic_checkout_initiate_payment(request):
                     "width": 0,
                     "height":  0,
                 },
-                "image_url":  "",
-                "product_url": "",
+                "image_url":  image_url,
+                "product_url": f'https://mtex.in/product/{product.id}',
                 "notes": {}
             })
 
