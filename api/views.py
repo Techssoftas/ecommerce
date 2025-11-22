@@ -2082,7 +2082,7 @@ def magic_checkout_initiate_payment(request):
                     "tax_amount": 0,
                     "quantity": int(quantity),
                     "name": product.name,
-                    "description": product.description or "",
+                    "description": (product.description or "")[:20],
                     "weight":  0,
                     "dimensions": {
                         "length":  0,
@@ -2139,7 +2139,7 @@ def magic_checkout_initiate_payment(request):
                 "tax_amount": 0,
                 "quantity": quantity,
                 "name": product.name,
-                "description": 'product.description',
+                "description": (product.description or "")[:20],
                 "weight":  0,
                 "dimensions": {
                     "length":  0,
