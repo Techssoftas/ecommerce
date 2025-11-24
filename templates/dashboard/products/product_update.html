@@ -202,6 +202,12 @@ Products Create
                                                         </div>
                                                         <div class="col-lg-2">
                                                             <div class="form-check form-switch mb-3">
+                                                                <input type="checkbox" name="is_bestseller" {% if product.is_bestseller %}checked{% endif %} class="form-check-input" id="is_bestseller">
+                                                                <label class="form-check-label" for="is_bestseller">Best Seller</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2">
+                                                            <div class="form-check form-switch mb-3">
                                                                 <input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %} class="form-check-input" id="is_active">
                                                                 <label class="form-check-label" for="is_active">Is Showing</label>
                                                             </div>

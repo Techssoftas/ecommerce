@@ -580,6 +580,7 @@ def mens_product_create(request):
         is_returnable = request.POST.get('is_returnable') == 'on'  
         is_replaceable = request.POST.get('is_replaceable') == 'on'
         is_free_shipping = request.POST.get('free_shipping') == 'on'  
+        is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_active = request.POST.get('is_active') == 'on'  
         
         discount_price = request.POST.get('discount_price')
@@ -624,7 +625,6 @@ def mens_product_create(request):
         # delivery_time_min = request.POST.get('delivery_time_min')
         # delivery_time_max = request.POST.get('delivery_time_max')
         # is_featured = request.POST.get('is_featured') == 'on'
-        # is_bestseller = request.POST.get('is_bestseller') == 'on'
         # is_new_arrival = request.POST.get('is_new_arrival') == 'on'
         # is_trending = request.POST.get('is_trending') == 'on'
         # is_deal_of_day = request.POST.get('is_deal_of_day') == 'on'
@@ -669,7 +669,7 @@ def mens_product_create(request):
             # delivery_time_max=delivery_time_max,
             is_active=True,
             # is_featured=is_featured,
-            # is_bestseller=is_bestseller,
+            is_bestseller=is_bestseller,
             is_new_arrival=is_new_arrival,
             # is_trending=is_trending,
             # is_deal_of_day=is_deal_of_day,
@@ -1233,6 +1233,7 @@ def product_edit(request, pk):
         brand = request.POST.get('brand')
         model_name = request.POST.get('model_name')
         is_new_arrival = request.POST.get('is_new_arrival') == 'on'
+        is_bestseller = request.POST.get('is_bestseller') == 'on'
         is_cod_available = request.POST.get('cod_available') == 'on'
         is_returnable = request.POST.get('is_returnable') == 'on'
         is_replaceable = request.POST.get('is_replaceable') == 'on'
@@ -1271,6 +1272,7 @@ def product_edit(request, pk):
         product.hsn_code = hsn_code
         product.is_cod_available = is_cod_available
         product.is_new_arrival = is_new_arrival
+        product.is_bestseller = is_bestseller
         product.is_returnable = is_returnable
         product.is_replaceable = is_replaceable
         product.is_free_shipping = is_free_shipping
