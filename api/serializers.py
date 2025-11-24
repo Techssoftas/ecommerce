@@ -130,7 +130,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 
                  'phone', 'address', 'user_type', 'profile_image', 'date_joined']
-        read_only_fields = ['username', 'date_joined', 'user_type','email']
+        read_only_fields = ['username', 'date_joined', 'user_type','phone']
 
 class CategorySerializer(serializers.ModelSerializer):
     product_count = serializers.SerializerMethodField()

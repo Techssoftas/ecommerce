@@ -40,6 +40,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -79,7 +80,6 @@ class SendOTPView(APIView):
 
         return Response({'message': f'OTP sent successfully to {phone}'}, status=200)
 
-from rest_framework.authtoken.models import Token
 
 class LoginVerifyOTPView(APIView):
     permission_classes = [AllowAny]
@@ -87,6 +87,13 @@ class LoginVerifyOTPView(APIView):
     def post(self, request):
         phone = str(request.data.get('phone')).strip()
         otp = str(request.data.get('otp')).strip()
+
+        # 🆕 extra fields for cart / wishlist action
+        action = request.data.get('action')  # 'cart' or 'wishlist' or None
+        product_id = request.data.get('product_id')
+        variant_id = request.data.get('variant_id')
+        size_variant_id = request.data.get('size_variant_id')
+        quantity = int(request.data.get('quantity') or 1)
 
         if not phone or not otp:
             return Response({'error': 'Phone and OTP required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -138,7 +145,7 @@ class LoginVerifyOTPView(APIView):
 
                 headers = {
                     'accept': "application/json",
-                    # 'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
+                    # 'authkey': '',  # MSG91 authkey
                     'content-type': "application/json"
                 }
 
@@ -160,14 +167,97 @@ class LoginVerifyOTPView(APIView):
         # Create token for both new/existing user
         token, _ = Token.objects.get_or_create(user=user)
 
+        # 5) Action handle panna (cart / wishlist)
+        action_result = None
+
+        # ⭐ CART ACTION
+        if action == "cart" and product_id:
+            try:
+                product = Product.objects.get(id=product_id, is_active=True)
+            except Product.DoesNotExist:
+                return Response({'error': 'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            variant = None
+            if variant_id:
+                try:
+                    variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+                except ProductVariant.DoesNotExist:
+                    return Response({'error': 'Variant not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            size_variant = None
+            if size_variant_id:
+                try:
+                    size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+                except SizeVariant.DoesNotExist:
+                    return Response({'error': 'Size variant not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # User oda cart get_or_create
+            cart, _ = Cart.objects.get_or_create(user=user)
+
+            # Same product + variant + size irundha quantity increase panna
+            item, item_created = CartItem.objects.get_or_create(
+                cart=cart,
+                product=product,
+                variant=variant,
+                varient_size=size_variant,
+                defaults={'quantity': quantity}
+            )
+
+            if not item_created:
+                item.quantity += quantity
+                item.save()
+
+            action_result = {
+                "type": "cart",
+                "message": "Added to cart successfully",
+                "cart_total_items": cart.total_items,
+                "cart_total_price": float(cart.total_price or 0),
+            }
+
+        # ⭐ WISHLIST ACTION
+        if action == "wishlist" and product_id:
+            try:
+                product = Product.objects.get(id=product_id, is_active=True)
+            except Product.DoesNotExist:
+                return Response({'error': 'Product not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            variant = None
+            if variant_id:
+                try:
+                    variant = ProductVariant.objects.get(id=variant_id, product=product, is_active=True)
+                except ProductVariant.DoesNotExist:
+                    return Response({'error': 'Variant not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            size_variant = None
+            if size_variant_id:
+                try:
+                    size_variant = SizeVariant.objects.get(id=size_variant_id, variant=variant)
+                except SizeVariant.DoesNotExist:
+                    return Response({'error': 'Size variant not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            wishlist_obj, _ = Wishlist.objects.get_or_create(
+                user=user,
+                product=product,
+                variant=variant,
+                size_variant=size_variant,
+            )
+
+            action_result = {
+                "type": "wishlist",
+                "message": "Added to wishlist",
+                "product_id": product.id,
+                "variant_id": variant.id if variant else None,
+                "size_variant_id": size_variant.id if size_variant else None,
+            }
+
         return Response({
             'message': 'Login successful' if not created else 'Account created successfully!',
-            # 'is_new_user': created,
             'token': token.key,
             'user': {
                 'username': user.first_name,
                 'phone': user.phone,
-            }
+            },
+            'action_result': action_result,
         }, status=status.HTTP_200_OK)
 
 class EmailLoginView(APIView):
@@ -599,7 +689,7 @@ class ShopFilterListView(APIView):
         }
         """
         data = request.data
-        # print("data",data)
+        print("data",data)
         category_id = data.get('category')
         subcategory = data.get('subcategory')   # Mens / Womens
         color = data.get('color')               # ex: Black
@@ -688,12 +778,22 @@ class FilterListView(APIView):
 
 
 
+from django.db.models import Count, Q
+
 class CategoryListView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def get(self, request):
-        categories = Category.objects.filter(is_active=True)
+        categories = Category.objects.annotate(
+            product_count=Count('product', filter=Q(product__is_active=True))
+        ).filter(
+            is_active=True,
+            product_count__gt=0
+        )
+
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ProductDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
