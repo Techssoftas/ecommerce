@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import Group, AbstractUser
 from django.db import models, connection
@@ -321,6 +320,7 @@ class SizeVariant(models.Model):
 
     class Meta:
         unique_together = ('variant', 'size')
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.variant} - {self.size}"

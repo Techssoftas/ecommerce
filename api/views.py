@@ -27,7 +27,6 @@ from api.utils import send_sms
 from api.utils import send_order_sms
 from django.conf import settings
 import http.client
-User = get_user_model()
 
 import logging
 logger = logging.getLogger(__name__)
