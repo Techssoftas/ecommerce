@@ -480,10 +480,10 @@
                                 <!-- end showModal -->
                               </li>
                               <li>
-                                <a href="#" class="btn btn-subtle-danger btn-icon btn-sm remove-item-btn" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-order-id="{{ order.id }}"><i class="ph-trash"></i></a>
+                                <a href="#" class="btn btn-subtle-danger btn-icon btn-sm remove-item-btn" data-bs-toggle="modal" data-bs-target="#deleteRecordModal-{{ order.order_number }}" data-order-id="{{ order.id }}"><i class="ph-trash"></i></a>
 
                                 <!-- deleteRecordModal -->
-                                <div id="deleteRecordModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+                                <div id="deleteRecordModal-{{ order.order_number }}" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
                                   <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                       <div class="modal-header">
@@ -496,7 +496,7 @@
                                           </div>
                                           <div class="mt-4">
                                             <h4 class="mb-2">Are you sure ?</h4>
-                                            <p class="text-muted mx-3 mb-0">Are you sure you want to remove this record ?</p>
+                                            <p class="text-muted mx-3 mb-0">Are you sure you want to remove <span style="font-weight: 600;color:red">{{ order.order_number}}</span> this record ?</p>
                                           </div>
                                         </div>
                                         <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
