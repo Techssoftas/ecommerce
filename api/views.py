@@ -1625,6 +1625,9 @@ def verify_payment(request):
                 
                 if is_cod:
                     # COD Order
+                    cod_charge = 50.00  # ₹50 COD charge
+                    order.total_amount = (order.total_amount or 0) + cod_charge
+                    order.save()
                     payment_method_label = 'Cash on Delivery'
                     payment_status = 'Pending'
                     logger.info("COD order detected - Setting payment method as Cash on Delivery")
@@ -2130,6 +2133,7 @@ def cod_order_create(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+from decimal import Decimal
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
