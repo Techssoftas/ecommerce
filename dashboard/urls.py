@@ -99,7 +99,7 @@ urlpatterns = [
     path('download-label/<int:tracking_id>/', download_shipping_label, name='download_shipping_label'),
     path('track-order/<int:order_id>/', track_order, name='track_order'),
     #webhook traking
-    # path('delhivery/webhook/', delhivery_webhook, name='delhivery_webhook'),
+    path('delhivery/webhook/', delhivery_webhook, name='delhivery_webhook'),
 
 
 

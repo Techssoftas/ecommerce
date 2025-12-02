@@ -2532,3 +2532,15 @@ def track_order(request, order_id):
             'status': 'error',
             'message': str(e)
         }, status=500)
+
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+@api_view(['POST'])
+def delhivery_webhook(request):
+    """Handle Delhivery webhook for tracking updates"""
+    if request.method == 'POST':
+        return Response({'status': 'success', 'message': 'Tracking updated'}, status=status.HTTP_200_OK)
+
+        
+    return Response({'status': 'success', 'message': 'Tracking updated'},  status=status.HTTP_200_OK)
