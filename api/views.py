@@ -1720,7 +1720,7 @@ def create_razorpay_order(request):
     order = client.order.create(data=data)
     return Response({"order_id": order['id']})
 
-
+from dashboard.services import check_delhivery_serviceability
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
@@ -1741,14 +1741,7 @@ def shipping_info(request):
         contact = data.get('contact')
         addresses = data.get('addresses', [])
         
-        # Validate required fields
-        # if not all([order_id, razorpay_order_id, contact, addresses]):
-        #     return Response(
-        #         {"error": "Missing required fields"}, 
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        
-        # Process each address and add shipping methods
+       
         response_addresses = []
         
         for address in addresses:
@@ -1761,6 +1754,9 @@ def shipping_info(request):
             if not all([address_id, zipcode, country]):
                 continue
             
+             # 🔍 Step 1: Delhivery la pincode serviceability check
+            is_serviceable = check_delhivery_serviceability(str(zipcode))
+
             # Define shipping methods
             # You can customize this based on your business logic
             shipping_methods = [
@@ -1768,10 +1764,10 @@ def shipping_info(request):
                     "id": "1",
                     "description": "Free shipping with COD available",
                     "name": "Standard Delivery (5-7 days)",
-                    "serviceable": True,
+                    "serviceable": is_serviceable,
                     "shipping_fee": 0,  # Free shipping (0 paise)
-                    "cod": True,  # COD enabled
-                    "cod_fee": 5000  # ₹50 COD fee (5000 paise)
+                    "cod": True if is_serviceable else False,  # COD enabled
+                    "cod_fee": 5000 if is_serviceable else 0  # ₹50 COD fee (5000 paise)
                 },
                 
             ]
