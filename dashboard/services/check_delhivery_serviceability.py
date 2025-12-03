@@ -1,51 +1,51 @@
 import requests
 from django.conf import settings
 import logging
-logger = logging.getLogger('dashboard')
-DELHIVERY_PINCODE_URL = "https://track.delhivery.com/c/api/pin-codes/json/"
 
+# logger = logging.getLogger(__name__)
+
+DELHIVERY_PINCODE_URL = "https://track.delhivery.com/c/api/pin-codes/json/"
 
 def check_delhivery_serviceability(pincode: str) -> bool:
     """
-    Delhivery B2C Pincode Serviceability check.
+    Delhivery LIVE Pincode Serviceability check.
     Returns True if pincode is serviceable, False otherwise.
     """
     try:
         headers = {
-            "Authorization": f"Token {settings.DELHIVERY_API_TOKEN}"  # settings.py la add pannunga
+            "Authorization": f"Token {settings.DELHIVERY_API_TOKEN}"
         }
         params = {
             "filter_codes": pincode
         }
-        
-        resp = requests.get(
+
+        response = requests.get(
             DELHIVERY_PINCODE_URL,
             headers=headers,
             params=params,
-            timeout=5
+            timeout=5.0
         )
+        response.raise_for_status()  # Raise exception for 4xx/5xx status codes
 
-        resp.raise_for_status()
-        data = resp.json()
-        print(f"Delhivery serviceability response for {pincode}: {data}")
-        logger.info(f"Delhivery serviceability response: {data}")
+        data = response.json()
         delivery_codes = data.get("delivery_codes", [])
 
-        # 1. Empty list => NSZ (non-serviceable)
         if not delivery_codes:
+            # logger.warning(f"No delivery codes found for pincode: {pincode}")
             return False
 
         postal_code = delivery_codes[0].get("postal_code", {})
         remarks = (postal_code.get("remarks") or "").strip()
 
-        # 2. remarks == "Embargo" => temporary NSZ => non-serviceable
         if remarks.lower() == "embargo":
+            # logger.info(f"Pincode {pincode} is under embargo")
             return False
 
-        # 3. remark blank => serviceable
         return True
 
+    except requests.exceptions.RequestException as e:
+        # logger.error(f"Delhivery request error for pincode {pincode}: {e}")
+        return False
     except Exception as e:
-        # API error na safe side la non-serviceable nu treat pannalam
-        print(f"Delhivery serviceability check error for {pincode}: {e}")
+        # logger.error(f"Delhivery unexpected error for pincode {pincode}: {e}", exc_info=True)
         return False
