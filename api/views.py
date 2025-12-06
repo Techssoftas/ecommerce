@@ -49,31 +49,47 @@ class SendOTPView(APIView):
     print("SendOTPView")
     def post(self, request):
         phone = str(request.data.get('phone')).strip()
-
+        
         if not phone:
             return Response({'error': 'Phone number required'}, status=400)
 
         # Generate random 6-digit OTP
         otp = random.randint(100000, 999999)
-        print(f"Generated OTP for {phone}: {otp}")
+        
         # Save OTP in cache for 5 min
         cache.set(f"otp_{phone}", otp, timeout=300)
 
         # Send OTP SMS via MSG91
         try:
+
+             # 91 prefix check panni add panrom
+            if not phone.startswith('91'):
+                if len(phone) == 10 and phone.isdigit():
+                    phone = '91' + phone
+                else:
+                    print(f"⚠️ Invalid phone format: {phone}")
+                    raise ValueError("Invalid phone number format")
+                    
             conn = http.client.HTTPSConnection("control.msg91.com")
+            print(f"Generated OTP for {phone}: {otp}")
             payload = {
-                "template_id": "YOUR_OTP_TEMPLATE_ID",  
-                "recipients": [{"mobiles": phone, "otp": otp}]
+                    "template_id": '6933ead2feb44e75700baf8e',  # same registration template
+                    "short_url": "1",
+                    "mobile": phone,                  
+                    "var": str(otp) 
             }
+            
             headers = {
                 'accept': "application/json",
-                'authkey': 'YOUR_MSG91_AUTH_KEY',
+                'authkey': '470722Ae1mHUuQ3W6902fc0fP1', # MSG91 authkey
                 'content-type': "application/json"
             }
             conn.request("POST", "/api/v5/otp", json.dumps(payload), headers)
             res = conn.getresponse()
-            print("MSG91 Response:", res.read().decode())
+            print('res',res)
+            resp_data = res.read().decode()
+            resp_json = json.loads(resp_data)
+            print("Parsed:", resp_json)
         except Exception as e:
             print("⚠️ OTP Send Failed:", e)
 
@@ -144,7 +160,7 @@ class LoginVerifyOTPView(APIView):
 
                 headers = {
                     'accept': "application/json",
-                    # 'authkey': '',  # MSG91 authkey
+                     'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
                     'content-type': "application/json"
                 }
 
