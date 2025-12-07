@@ -72,13 +72,17 @@ class SendOTPView(APIView):
                     
             conn = http.client.HTTPSConnection("control.msg91.com")
             print(f"Generated OTP for {phone}: {otp}")
-            payload = {
-                    "template_id": '6933ead2feb44e75700baf8e',  # same registration template
-                    "short_url": "1",
-                    "mobile": phone,                  
-                    "var": str(otp) 
-            }
             
+            payload = {
+                    "template_id": "6933ead2feb44e75700baf8e",  # same registration template
+                    "short_url": "1",
+                    "recipients": [
+                        {
+                            "mobiles": phone,
+                            "var":str(otp) 
+                        }
+                    ]
+            }
             headers = {
                 'accept': "application/json",
                 'authkey': '470722Ae1mHUuQ3W6902fc0fP1', # MSG91 authkey
