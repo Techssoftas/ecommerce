@@ -46,67 +46,77 @@ User = get_user_model()
 class SendOTPView(APIView):
     permission_classes = [AllowAny]
 
-    print("SendOTPView")
     def post(self, request):
-        phone = str(request.data.get('phone')).strip()
-        
-        if not phone:
+        raw_phone = request.data.get('phone')
+        print("Raw phone:", raw_phone)
+
+        if not raw_phone:
             return Response({'error': 'Phone number required'}, status=400)
 
-        # Generate random 6-digit OTP
+        # phone clean pannrom
+        phone = str(raw_phone).strip().replace('+', '').replace(' ', '').replace('-', '')
+        print("Clean phone:", phone)
+
+        # India number assume (91)
+        if phone.startswith('91') and len(phone) == 12 and phone.isdigit():
+            full_mobile = phone
+        elif len(phone) == 10 and phone.isdigit():
+            full_mobile = '91' + phone
+        else:
+            return Response({'error': 'Invalid phone number format'}, status=400)
+
+        # 6-digit OTP
         otp = random.randint(100000, 999999)
-        
-        # Save OTP in cache for 5 min
-        cache.set(f"otp_{phone}", otp, timeout=300)
-
-        # Send OTP SMS via MSG91
+        key = f"otp_{str(full_mobile)}"
+        print("CACHE SET KEY:", key, "OTP:", otp)
+        cache.set(key, otp, timeout=300)
         try:
-
-             # 91 prefix check panni add panrom
-            if not phone.startswith('91'):
-                if len(phone) == 10 and phone.isdigit():
-                    phone = '91' + phone
-                else:
-                    print(f"⚠️ Invalid phone format: {phone}")
-                    raise ValueError("Invalid phone number format")
-                    
-            conn = http.client.HTTPSConnection("control.msg91.com")
-            print(f"Generated OTP for {phone}: {otp}")
-            
+            conn = http.client.HTTPSConnection("api.msg91.com")
+            print('full_mobile',full_mobile)
+            # Flow / template: ##var## is your login OTP ...
             payload = {
-                    "template_id": "6933ead2feb44e75700baf8e",  # same registration template
-                    "short_url": "1",
-                    "recipients": [
-                        {
-                            "mobiles": phone,
-                            "var":str(otp) 
-                        }
-                    ]
+                "flow_id": "6933ead2feb44e75700baf8e",  # MSG91 template/flow ID
+                "sender": "MTEXTE",                    # MSG91 sender ID (DLT verified)
+                "mobiles": full_mobile,                # 91XXXXXXXXXX
+                "var": str(otp)                        # maps to ##var## in template
             }
+
             headers = {
-                'accept': "application/json",
-                'authkey': '470722Ae1mHUuQ3W6902fc0fP1', # MSG91 authkey
-                'content-type': "application/json"
+                "accept": "application/json",
+                # "authkey": "470722Ae1mHUuQ3W6902fc0fP1",       # replace with real authkey
+                "content-type": "application/json"
             }
-            conn.request("POST", "/api/v5/otp", json.dumps(payload), headers)
+
+            print("Final payload:", payload)
+            conn.request("POST", "/api/v5/flow", json.dumps(payload), headers)
             res = conn.getresponse()
-            print('res',res)
-            resp_data = res.read().decode()
-            resp_json = json.loads(resp_data)
-            print("Parsed:", resp_json)
+            body = res.read().decode()
+            print("Status:", res.status)
+            print("Body:", body)
+
+            # optional parse
+            try:
+                resp_json = json.loads(body)
+                print("Parsed:", resp_json)
+            except Exception:
+                pass
+
         except Exception as e:
             print("⚠️ OTP Send Failed:", e)
+            return Response({'error': 'OTP send failed'}, status=500)
 
-        return Response({'message': f'OTP sent successfully to {phone}'}, status=200)
-
+        return Response(
+            {'message': f'OTP sent successfully to {full_mobile}'},
+            status=200
+        )
+    
 
 class LoginVerifyOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        phone = str(request.data.get('phone')).strip()
-        otp = str(request.data.get('otp')).strip()
-
+        raw_phone = str(request.data.get('phone')).strip()
+        otp = int(str(request.data.get('otp')).strip())
         # 🆕 extra fields for cart / wishlist action
         action = request.data.get('action')  # 'cart' or 'wishlist' or None
         product_id = request.data.get('product_id')
@@ -114,16 +124,37 @@ class LoginVerifyOTPView(APIView):
         size_variant_id = request.data.get('size_variant_id')
         quantity = int(request.data.get('quantity') or 1)
 
-        if not phone or not otp:
-            return Response({'error': 'Phone and OTP required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not raw_phone:
+            return Response({'error': 'Phone number required'}, status=400)
 
+        # phone clean pannrom
+        phone = str(raw_phone).strip().replace('+', '').replace(' ', '').replace('-', '')
+        print("Clean phone:", phone)
+
+        # India number assume (91)
+        if phone.startswith('91') and len(phone) == 12 and phone.isdigit():
+            full_mobile = phone
+        elif len(phone) == 10 and phone.isdigit():
+            full_mobile = '91' + phone
+        else:
+            return Response({'error': 'Invalid phone number format'}, status=400)
+        
+        print("Full mobile for login:", full_mobile)
         # OTP check
-        saved_otp = cache.get(f"otp_{phone}")
-        if str(saved_otp) != str(otp):
+        cache_key = f"otp_{full_mobile}"
+        print("CACHE GET KEY:", cache_key)
+
+        saved_otp = cache.get(cache_key)
+        print("Saved OTP:", saved_otp, type(saved_otp))
+        print("Provided OTP:", otp, type(otp))
+        if saved_otp is None:
+            return Response({'error': 'OTP expired or not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if int(saved_otp) != int(otp):
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
         # OTP valid → delete cache
-        cache.delete(f"otp_{phone}")
+        cache.delete(cache_key)
 
         # Check if user exists or not
         user, created = User.objects.get_or_create(phone=phone)
@@ -164,7 +195,7 @@ class LoginVerifyOTPView(APIView):
 
                 headers = {
                     'accept': "application/json",
-                     'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
+                    # 'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
                     'content-type': "application/json"
                 }
 
