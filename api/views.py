@@ -849,7 +849,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
-
+    # lookup_field = 'sku'
 
 
 
@@ -1552,14 +1552,26 @@ def verify_payment(request):
         # ✅ STEP 5: Create or Get User
         try:
             user = CustomUser.objects.filter(phone=customer_phone).first()
-            
+
             if user:
                 logger.info(f"Existing user found: {customer_phone}")
                 is_new_user = False
+
             else:
                 logger.info(f"Creating new user: {customer_phone}")
+
+                # Always unique username
+                base_username = customer_name.replace(" ", "").lower() if customer_name else f"user{customer_phone}"
+                username = base_username
+
+                # Ensure uniqueness
+                counter = 1
+                while CustomUser.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+
                 user = CustomUser.objects.create_user(
-                    username=address_data.get('name', customer_name) if address_data.get('name', customer_name) else customer_phone,
+                    username=username,
                     phone=customer_phone,
                     password=customer_phone,
                     email=customer_email if customer_email else None,
@@ -1574,7 +1586,7 @@ def verify_payment(request):
             logger.error(f"User creation/retrieval failed: {str(e)}")
             return Response({
                 "error": "User creation failed",
-                "message": f"User account create panna mudila: {str(e)}"
+                "message": f"User account can't create : {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # ✅ STEP 6: Generate tokens for authentication
@@ -1705,20 +1717,57 @@ def verify_payment(request):
                     }
                 )
                 logger.info(f"Payment record {'created' if created else 'updated'}: {payment.id} | Method: {payment_method_label} | Status: {payment_status}")
-        
-        except Product.DoesNotExist:
-            logger.error("Product not found")
-            return Response({
-                "error": "Product not found",
-                "message": "Product database la illa."
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        except SizeVariant.DoesNotExist:
-            logger.error("Size variant not found")
-            return Response({
-                "error": "Size variant not found",
-                "message": "Size variant database la illa."
-            }, status=status.HTTP_404_NOT_FOUND)
+                        # ✅ STEP 11: Send Order Confirmation SMS via MSG91
+                try:
+                    # 1) Mobile prepare pannrom
+                    mobile = str(customer_phone).strip()
+                    if not mobile.startswith('91'):
+                        if len(mobile) == 10 and mobile.isdigit():
+                            mobile = '91' + mobile 
+                        else:
+                            logger.warning(f"Invalid mobile for SMS: {mobile}")
+                            mobile = None
+
+                    if mobile:
+                        conn = http.client.HTTPSConnection("control.msg91.com")
+
+                        payload = {
+                            "flow_id": "6905efb8f9021a148f13ac92",  # ✅ Order confirmation template ID
+                            "short_url": "1",
+                            "sender": "MTEXTE",  
+                            "recipients": [
+                                {
+                                    "mobiles": mobile,
+                                    "name": customer_name,
+                                    "id": str(order.order_number),
+                                }
+                            ]
+                        }
+
+                        headers = {
+                            "accept": "application/json",
+                            "authkey": "470722Ae1mHUuQ3W6902fc0fP1",  
+                            "content-type": "application/json"
+                        }
+
+                        logger.info(f"Sending order confirmation SMS to {mobile} for order {order.order_number}")
+                        conn.request("POST", "/api/v5/flow", json.dumps(payload), headers)
+                        res = conn.getresponse()
+                        body = res.read().decode()
+                        logger.info(f"MSG91 Order SMS response: {body}")
+
+                        try:
+                            sms_resp = json.loads(body)
+                            if sms_resp.get("type") == "success":
+                                logger.info("✅ Order confirmation SMS sent successfully")
+                            else:
+                                logger.warning(f"⚠️ Order SMS failed: {sms_resp}")
+                        except Exception:
+                            logger.warning("⚠️ Failed to parse MSG91 SMS response")
+
+                except Exception as sms_e:
+                    logger.warning(f"⚠️ Order confirmation SMS sending failed: {sms_e}")
+
         
         except Exception as e:
             logger.error(f"Order creation failed: {str(e)}")
