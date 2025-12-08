@@ -83,7 +83,7 @@ class SendOTPView(APIView):
 
             headers = {
                 "accept": "application/json",
-                # "authkey": "470722Ae1mHUuQ3W6902fc0fP1",       # replace with real authkey
+                "authkey": "470722Ae1mHUuQ3W6902fc0fP1",       # replace with real authkey
                 "content-type": "application/json"
             }
 
@@ -195,7 +195,7 @@ class LoginVerifyOTPView(APIView):
 
                 headers = {
                     'accept': "application/json",
-                    # 'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
+                    'authkey': '470722Ae1mHUuQ3W6902fc0fP1',  # MSG91 authkey
                     'content-type': "application/json"
                 }
 
