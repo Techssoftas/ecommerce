@@ -283,7 +283,7 @@ class ProductVariant(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('product', 'color_name')
+        # unique_together = ('product', 'color_name')
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
