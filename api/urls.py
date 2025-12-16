@@ -77,5 +77,5 @@ urlpatterns = [
 
     path('shipping-address/', ShippingAddressListCreateView.as_view(), name='shipping-addresses'),
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),
-    path("webhooks/delhivery/", delhivery_webhook, name="delhivery-webhook"),
+    path("delhivery/webhook/", delhivery_webhook, name="delhivery-webhook"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
