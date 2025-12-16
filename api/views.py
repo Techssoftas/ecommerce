@@ -2459,121 +2459,123 @@ from .models import OrderTracking, TrackingScan
 from api.models import Order  # adjust import path if Order is elsewhere
 
 @csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def delhivery_webhook(request):
     if request.method != "POST":
         return HttpResponse(status=405)
 
-    # 1) Verify signature (if you set DELHIVERY_WEBHOOK_SECRET)
-    secret = getattr(settings, "DELHIVERY_WEBHOOK_SECRET", None)
-    if secret:
-        # Delhivery might send signature header name differently; try common headers
-        signature = request.headers.get("X-DELHIVERY-SIGNATURE") or request.headers.get("X-SIGNATURE") or request.headers.get("X-Hub-Signature")
-        if not signature:
-            return HttpResponse(status=403)
-        computed = hmac.new(secret.encode(), msg=request.body, digestmod=hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(computed, signature):
-            return HttpResponse(status=403)
+    # # 1) Verify signature (if you set DELHIVERY_WEBHOOK_SECRET)
+    # secret = getattr(settings, "DELHIVERY_WEBHOOK_SECRET", None)
+    # if secret:
+    #     # Delhivery might send signature header name differently; try common headers
+    #     signature = request.headers.get("X-DELHIVERY-SIGNATURE") or request.headers.get("X-SIGNATURE") or request.headers.get("X-Hub-Signature")
+    #     if not signature:
+    #         return HttpResponse(status=403)
+    #     computed = hmac.new(secret.encode(), msg=request.body, digestmod=hashlib.sha256).hexdigest()
+    #     if not hmac.compare_digest(computed, signature):
+    #         return HttpResponse(status=403)
 
-    # 2) Parse JSON body
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except Exception:
-        return HttpResponseBadRequest("Invalid JSON")
+    # # 2) Parse JSON body
+    # try:
+    #     payload = json.loads(request.body.decode("utf-8"))
+    # except Exception:
+    #     return HttpResponseBadRequest("Invalid JSON")
 
-    # 3) Extract AWB / event id / shipment info (try a few common shapes)
-    awb = payload.get("waybill") or payload.get("awb") or payload.get("waybill_number")
-    if not awb:
-        # nested style: {"ShipmentData":[{"Shipment":{...}}]}
-        try:
-            awb = payload.get("ShipmentData", [{}])[0].get("Shipment", {}).get("Waybill")
-        except Exception:
-            awb = None
+    # # 3) Extract AWB / event id / shipment info (try a few common shapes)
+    # awb = payload.get("waybill") or payload.get("awb") or payload.get("waybill_number")
+    # if not awb:
+    #     # nested style: {"ShipmentData":[{"Shipment":{...}}]}
+    #     try:
+    #         awb = payload.get("ShipmentData", [{}])[0].get("Shipment", {}).get("Waybill")
+    #     except Exception:
+    #         awb = None
 
-    if not awb:
-        return HttpResponseBadRequest("AWB not found in payload")
+    # if not awb:
+    #     return HttpResponseBadRequest("AWB not found in payload")
 
-    event_id = payload.get("event_id") or payload.get("id") or payload.get("ShipmentData", [{}])[0].get("EventID")
+    # event_id = payload.get("event_id") or payload.get("id") or payload.get("ShipmentData", [{}])[0].get("EventID")
 
-    # 4) Load tracking row
-    try:
-        tracking = OrderTracking.objects.get(awb_number=awb)
-    except OrderTracking.DoesNotExist:
-        # optionally create it or log and return 200 so Delhivery won't retry too aggressively
-        return JsonResponse({"status": "tracking_not_found"}, status=200)
+    # # 4) Load tracking row
+    # try:
+    #     tracking = OrderTracking.objects.get(awb_number=awb)
+    # except OrderTracking.DoesNotExist:
+    #     # optionally create it or log and return 200 so Delhivery won't retry too aggressively
+    #     return JsonResponse({"status": "tracking_not_found"}, status=200)
 
-    # 5) Idempotency: ignore duplicate event
-    if event_id and tracking.last_event_id == event_id:
-        return JsonResponse({"status": "duplicate_event"}, status=200)
+    # # 5) Idempotency: ignore duplicate event
+    # if event_id and tracking.last_event_id == event_id:
+    #     return JsonResponse({"status": "duplicate_event"}, status=200)
 
-    # 6) Extract status and scans (generic)
-    status = None
-    scans_list = []
-    if "ShipmentData" in payload:
-        shipment = payload["ShipmentData"][0].get("Shipment", {})
-        status = shipment.get("Status")
-        raw_scans = shipment.get("Scans", [])
-        for s in raw_scans:
-            scan = s.get("Scan") if isinstance(s, dict) else s
-            scans_list.append({
-                "status": scan.get("Status"),
-                "location": scan.get("Location"),
-                "time": scan.get("Time") or scan.get("scan_time")
-            })
-    else:
-        status = payload.get("status") or payload.get("current_status")
-        raw_scans = payload.get("scans") or []
-        for scan in raw_scans:
-            scans_list.append({
-                "status": scan.get("status") or scan.get("Status"),
-                "location": scan.get("location") or scan.get("Location"),
-                "time": scan.get("time") or scan.get("Time")
-            })
+    # # 6) Extract status and scans (generic)
+    # status = None
+    # scans_list = []
+    # if "ShipmentData" in payload:
+    #     shipment = payload["ShipmentData"][0].get("Shipment", {})
+    #     status = shipment.get("Status")
+    #     raw_scans = shipment.get("Scans", [])
+    #     for s in raw_scans:
+    #         scan = s.get("Scan") if isinstance(s, dict) else s
+    #         scans_list.append({
+    #             "status": scan.get("Status"),
+    #             "location": scan.get("Location"),
+    #             "time": scan.get("Time") or scan.get("scan_time")
+    #         })
+    # else:
+    #     status = payload.get("status") or payload.get("current_status")
+    #     raw_scans = payload.get("scans") or []
+    #     for scan in raw_scans:
+    #         scans_list.append({
+    #             "status": scan.get("status") or scan.get("Status"),
+    #             "location": scan.get("location") or scan.get("Location"),
+    #             "time": scan.get("time") or scan.get("Time")
+    #         })
 
-    # 7) Persist changes inside transaction
-    with transaction.atomic():
-        tracking.raw_data = payload
-        if status:
-            tracking.current_status = status
-        if event_id:
-            tracking.last_event_id = event_id
-        tracking.save()
+    # # 7) Persist changes inside transaction
+    # with transaction.atomic():
+    #     tracking.raw_data = payload
+    #     if status:
+    #         tracking.current_status = status
+    #     if event_id:
+    #         tracking.last_event_id = event_id
+    #     tracking.save()
 
-        # Create scans if new (simple de-dup by scan_time + status)
-        existing = set(tracking.scans.values_list("scan_time", "status"))
-        for s in scans_list:
-            scan_time = None
-            try:
-                scan_time = parse_datetime(s.get("time")) if s.get("time") else None
-                if scan_time and timezone.is_naive(scan_time):
-                    scan_time = timezone.make_aware(scan_time)
-            except Exception:
-                scan_time = None
+    #     # Create scans if new (simple de-dup by scan_time + status)
+    #     existing = set(tracking.scans.values_list("scan_time", "status"))
+    #     for s in scans_list:
+    #         scan_time = None
+    #         try:
+    #             scan_time = parse_datetime(s.get("time")) if s.get("time") else None
+    #             if scan_time and timezone.is_naive(scan_time):
+    #                 scan_time = timezone.make_aware(scan_time)
+    #         except Exception:
+    #             scan_time = None
 
-            key = (scan_time, s.get("status"))
-            if key in existing:
-                continue
+    #         key = (scan_time, s.get("status"))
+    #         if key in existing:
+    #             continue
 
-            TrackingScan.objects.create(
-                tracking=tracking,
-                status=s.get("status") or "unknown",
-                location=s.get("location"),
-                scan_time=scan_time or timezone.now(),
-            )
+    #         TrackingScan.objects.create(
+    #             tracking=tracking,
+    #             status=s.get("status") or "unknown",
+    #             location=s.get("location"),
+    #             scan_time=scan_time or timezone.now(),
+    #         )
 
-        # 8) Update Order.status mapping (tweak mapping to your terms)
-        order = tracking.order
-        status_lower = (tracking.current_status or "").lower()
-        if "deliv" in status_lower:  # delivered/delivery
-            order.status = "Delivered"
-        elif "out for delivery" in status_lower or "out_for_delivery" in status_lower:
-            order.status = "Shipped"
-        elif "transit" in status_lower or "in transit" in status_lower:
-            order.status = "Shipped"
-        elif "cancel" in status_lower or "returned" in status_lower:
-            order.status = "Cancelled"
-        order.save()
+    #     # 8) Update Order.status mapping (tweak mapping to your terms)
+    #     order = tracking.order
+    #     status_lower = (tracking.current_status or "").lower()
+    #     if "deliv" in status_lower:  # delivered/delivery
+    #         order.status = "Delivered"
+    #     elif "out for delivery" in status_lower or "out_for_delivery" in status_lower:
+    #         order.status = "Shipped"
+    #     elif "transit" in status_lower or "in transit" in status_lower:
+    #         order.status = "Shipped"
+    #     elif "cancel" in status_lower or "returned" in status_lower:
+    #         order.status = "Cancelled"
+    #     order.save()
 
-        # optional: notify user (email/push) if status changed to important states
+    #     # optional: notify user (email/push) if status changed to important states
 
     return JsonResponse({"status": "ok"}, status=200)
 
