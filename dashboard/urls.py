@@ -69,6 +69,7 @@ urlpatterns = [
     path('order_detail/<str:order_number>/', order_detail, name='order_detail'),
     path('order_edit/<str:pk>/', order_detail, name='order_edit'),
     path('order_delete/<str:order_number>/', order_delete, name='order_delete'),
+    path('order_cancel/<str:order_number>/', order_cancel, name='order_cancel'),
     path('order/<str:order_number>/invoice/', download_invoice, name='download_invoice'),
     # Payments
     path('payment_list/', payment_list, name='payment_list'),

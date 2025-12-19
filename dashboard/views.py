@@ -1460,6 +1460,20 @@ def order_delete(request, order_number):
    
 
 
+@login_required
+@user_passes_test(is_admin)
+def order_cancel(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number)
+
+    if request.method == "POST":
+        # Cancel the order
+        order.status = 'Cancelled'
+        order.save()
+        # Add a success message
+        messages.success(request, f"Order #{order.order_number} has been cancelled successfully.")
+        # Redirect to the orders list page
+        return redirect('dashboard:orders_list')
+
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas

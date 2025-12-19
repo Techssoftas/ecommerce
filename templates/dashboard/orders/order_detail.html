@@ -155,7 +155,7 @@
               <div class="card-header d-flex align-items-center gap-3">
                 <h6 class="card-title mb-0 flex-grow-1">Product Items</h6>
                 <div class="flex-shrink-0">
-                  <button type="button" class="btn btn-danger btn-sm"><i class="ph-x align-middle"></i> Cancel Order</button>
+                  <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelOrderModal-{{ order.order_number }}"><i class="ph-x align-middle"></i> Cancel Order</button>
                 </div>
               </div>
               <div class="card-body">
@@ -321,7 +321,7 @@
               <div class="card-header d-flex align-items-center flex-wrap gap-2">
                 <h6 class="card-title flex-grow-1 mb-0">Order Status</h6>
                 <div class="flex-shrink-0">
-                  <button type="button" class="btn btn-danger btn-sm"><i class="ph-x align-middle"></i> Cancel Order</button>
+                  <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelOrderModal-{{ order.order_number }}"><i class="ph-x align-middle"></i> Cancel Order</button>
                  {% if order.tracking.label_file %}
                   <a href="{{ order.tracking.label_file.url }}" class="btn btn-primary btn-sm"><i class="ph-download-simple align-middle me-1"></i> Invoice</a>
                 {% endif %}
@@ -348,6 +348,36 @@
     <!-- End Page-content -->
   </div>
   <!-- end main content -->
+
+  <!-- Cancel Order Modal -->
+  <div id="cancelOrderModal-{{ order.order_number }}" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-cancelmodal"></button>
+        </div>
+        <div class="modal-body p-md-5">
+          <div class="text-center">
+            <div class="text-danger">
+              <i class="ph-x-circle display-5"></i>
+            </div>
+            <div class="mt-4">
+              <h4 class="mb-2">Are you sure ?</h4>
+              <p class="text-muted mx-3 mb-0">Are you sure you want to cancel order <span style="font-weight: 600;color:red">#{{ order.order_number}}</span> ?</p>
+            </div>
+          </div>
+          <div class="d-flex gap-2 justify-content-center mt-4 pt-2 mb-2">
+            <button type="button" class="btn w-sm btn-light btn-hover" data-bs-dismiss="modal">Close</button>
+            <form method="POST" action="{% url 'dashboard:order_cancel' order.order_number %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn w-sm btn-danger">Yes, Cancel It!</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Cancel Order Modal -->
 
   <script src="{% static 'dashboard/js/pages/ecommerce-order-overview.init.js' %}"></script>
   <!-- leaflet-routing-machine -->
