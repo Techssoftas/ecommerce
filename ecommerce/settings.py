@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ["m2hit.in", "www.m2hit.in",'13.204.192.59','*' ,"127.0.0.1", "localhost"]
 
@@ -84,23 +84,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 # Database
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtexdb',
-        'USER': 'admin',
-        'PASSWORD': 'L3g7#R83s$X#',
-        'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'mtexdb',
+#         'USER': 'admin',
+#         'PASSWORD': 'L3g7#R83s$X#',
+#         'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
+#         'PORT': '3306',
+#     }
+# }
 
 
 # Password validation
@@ -155,7 +155,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20
+    'PAGE_SIZE': 12
 }
 
 # JWT Configuration
@@ -168,6 +168,8 @@ from datetime import timedelta
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
     "http://192.168.29.20:5173",#yogavarthini
     'http://192.168.29.150:5173',#my
     'http://192.168.29.3:5173',#naveen
@@ -183,6 +185,8 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
     "https://m2hit.in",
     "https://www.m2hit.in",
     "https://www.mtex.in",
