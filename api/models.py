@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.db.models import Sum, F, DecimalField
 from dashboard.services.email import send_order_mail 
 import logging
+import uuid 
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +121,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0)
     minimum_order_quantity = models.PositiveIntegerField(default=1)
     maximum_order_quantity = models.PositiveIntegerField(blank=True, null=True)
-    sku = models.CharField(max_length=100, unique=True)
+    sku = models.CharField(max_length=100, unique=True,blank=True)
     barcode = models.CharField(max_length=50, blank=True, null=True)
     hsn_code = models.CharField(max_length=20, blank=True, null=True)  # HSN code for tax
     
@@ -185,12 +186,16 @@ class Product(models.Model):
         return f"{self.id}"
     
     def save(self, *args, **kwargs):
+        
+        if not self.sku:
+            self.sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
         # Calculate discount percentage
         if self.mrp and self.price:
             self.discount_percentage = (
                 (Decimal(self.mrp) - Decimal(self.price)) / Decimal(self.mrp)
             ) * 100
         super().save(*args, **kwargs)
+
     
     @property
     def get_price_range(self):

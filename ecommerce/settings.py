@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     # Local apps
     # 'dashboard',
     'api',
+    'dashboard_api'
 ]
 
 MIDDLEWARE = [
@@ -83,23 +84,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 # Database
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mtexdb',
-        'USER': 'admin',
-        'PASSWORD': 'L3g7#R83s$X#',
-        'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'mtexdb',
+#         'USER': 'admin',
+#         'PASSWORD': 'L3g7#R83s$X#',
+#         'HOST': 'mtexdb.c1coqyua89pn.ap-south-1.rds.amazonaws.com',
+#         'PORT': '3306',
+#     }
+# }
 
 
 # Password validation
@@ -146,11 +147,13 @@ DOMAIN = "https://m2hit.in"
 # REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        
       'rest_framework.authentication.TokenAuthentication', 
         # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',

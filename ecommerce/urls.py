@@ -6,8 +6,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('dashboard/', include('dashboard.urls')),
-    path('api/', include('api.urls')),
-    path('', include('dashboard.urls')),  # Default to dashboard
+    
+    path('', include('dashboard.urls')), # Default to dashboard
+    path('api/',include('api.urls')),
+    path('api/', include('dashboard_api.urls')),
 ]
 
 if settings.DEBUG:

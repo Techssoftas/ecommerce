@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 
 
 from django.template.loader import render_to_string
-from weasyprint import HTML, CSS
+# from weasyprint import HTML, CSS
 from django.core.files.base import ContentFile
 from .label_utils import generate_qr_datauri, generate_code128_datauri
 import datetime
