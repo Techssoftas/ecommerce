@@ -1832,7 +1832,7 @@ def variant_edit(request, product_id, variant_id):
         variant_images = request.FILES.getlist('variant_images')
 
         variant.color_name = color_name
-        variant.sku = variant_sku
+        variant.variant_sku = variant_sku
         variant.hex_color_code = hex_color_code
         variant.save()
 
