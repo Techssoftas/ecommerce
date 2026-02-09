@@ -251,8 +251,13 @@
                           
                           <td class="products" style="font-family:sans-serif;">
                             {% with item=order.items.all.0 %}
-                              {{ item.product.name|slice:':30' }}{% if item.variant.sizes %}
+                              {{ item.product.name|slice:':30' }}
+                              {% if item.variant.sizes %}
                                 ({{ item.variant.color_name }})
+                                {% if item.variant.variant_name %}
+                                -
+                                {{ item.variant.variant_name }}
+                              {% endif %}
                               {% endif %}
                             {% endwith %}
                           </td>

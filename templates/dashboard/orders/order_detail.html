@@ -166,6 +166,7 @@
                         <th>Product Items</th>
 
                         <th>Item Color</th>
+                        <th>Variant Sku</th>
                         <th>Item Size</th>
                         <th>Quantity</th>
                         <th class="text-end">Amount</th>
@@ -199,6 +200,7 @@
                           <td>
                             <button type="button" class="btn rounded-pill mt-2" style="background-color: {{ item.variant.hex_color_code }}; border: 1px solid #ccc;"></button>
                           </td>
+                           <td>{% if item.variant.sku %} {{ item.variant.sku }} {% endif %}</td>
                           <td>{{ item.size_variant.size }}</td>
                           <td>{{ item.quantity }}</td>
 
