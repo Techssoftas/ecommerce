@@ -492,44 +492,22 @@ Mens Products Create
                         <div class="row">
                             <h5 class="mb-3">Product Variants</h5>
 
-                            <div class="col-lg-6">
+                            <div class="col-lg-4">
                                 <div class="mb-3">
                                     <label class="form-label">Color <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <label class="input-group-text" for="inputGroupSelect01">Colors</label>
-                                        <select class="form-select" id="inputGroupSelect01" name="variant_value">
-
-                                            <option value="black">Black</option>
-                                            <option value="red">Red</option>
-                                            <option value="green">Green</option>
-                                            <option value="blue">Blue</option>
-                                            <option value="yellow">Yellow</option>
-                                            <option value="orange">Orange</option>
-                                            <option value="purple">Purple</option>
-                                            <option value="pink">Pink</option>
-                                            <option value="white">White</option>
-                                            <option value="grey">Grey</option>
-                                            <option value="brown">Brown</option>
-                                            <option value="violet">Violet</option>
-                                            <option value="indigo">Indigo</option>
-                                            <option value="cyan">Cyan</option>
-                                            <option value="magenta">Magenta</option>
-                                            <option value="gold">Gold</option>
-                                            <option value="silver">Silver</option>
-                                            <option value="beige">Beige</option>
-                                            <option value="maroon">Maroon</option>
-                                            <option value="navy">Navy</option>
-                                            <option value="teal">Teal</option>
-                                            <option value="lime">Lime</option>
-                                            <option value="olive">Olive</option>
-                                        </select>
+                                       <input type="text" name="variant_value" class="form-control" 
+                                        id="productVariantColor" placeholder="Enter variant Color">
+                                
+                                        
                                     </div>
                                 </div>
                             </div>
 
 
 
-                            <div class="col-lg-6">
+                            <div class="col-lg-4">
                                 <div class="mb-3 ">
                                     <label for="productBrand" class="form-label">Colour Code <span
                                             class="text-danger">*</span></label>
@@ -545,17 +523,10 @@ Mens Products Create
                             </div>
 
                             
-                            <div class="col-lg-6">
+                            
+                            <div class="col-lg-4">
                                 <div class="mb-3">
-                                    <label for="productVariantName" class="form-label">Name <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" name="variant_name" class="form-control" 
-                                        id="productVariantName" placeholder="Enter variant name">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label for="productVariantSku" class="form-label">Sku <span
+                                    <label for="productVariantSku" class="form-label">Variant Sku <span
                                             class="text-danger">*</span></label>
                                     <input type="text" name="variant_sku" class="form-control" 
                                         id="productVariantSku" placeholder="Enter variant sku">

@@ -254,10 +254,10 @@
                               {{ item.product.name|slice:':30' }}
                               {% if item.variant.sizes %}
                                 ({{ item.variant.color_name }})
-                                {% if item.variant.variant_name %}
-                                -
-                                {{ item.variant.variant_name }}
                               {% endif %}
+                              {% if item.variant.variant_sku %}
+                                -
+                                {{ item.variant.variant_sku }}
                               {% endif %}
                             {% endwith %}
                           </td>

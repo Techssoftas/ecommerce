@@ -697,12 +697,10 @@ def mens_product_create(request):
 
         hex_color_code = request.POST.get('hex_color_code')
         variant_value = request.POST.get('variant_value')
-        variant_name = request.POST.get('variant_name')
         variant_sku = request.POST.get('variant_sku')
         # for size in variant_sizes and hex_color_code:
         variant = ProductVariant.objects.create(product=product,
-                                    variant_name=variant_name,
-                                    sku=variant_sku,
+                                    variant_sku=variant_sku,
                                     color_name=variant_value,
                                     hex_color_code=hex_color_code,
                                     )
@@ -1829,14 +1827,12 @@ def variant_edit(request, product_id, variant_id):
     if request.method == 'POST':
         # existing fields
         color_name = request.POST.get('color_name', '').strip()
-        variant_name = request.POST.get('variant_name', '').strip()
-        sku = request.POST.get('variant_sku', '').strip()
+        variant_sku = request.POST.get('variant_sku', '').strip()
         hex_color_code = request.POST.get('hex_color_code', '').strip()
         variant_images = request.FILES.getlist('variant_images')
 
         variant.color_name = color_name
-        variant.variant_name = variant_name
-        variant.sku = sku
+        variant.sku = variant_sku
         variant.hex_color_code = hex_color_code
         variant.save()
 
