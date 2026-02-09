@@ -276,6 +276,8 @@ class ProductVariant(models.Model):
     """Main variant (e.g., color)"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     color_name = models.CharField(max_length=100)  # Example: Red, Blue
+    variant_name = models.CharField(max_length=100, blank=True, null=True)  
+    sku = models.CharField(max_length=100, blank=True, null=True)
     hex_color_code = models.CharField(max_length=7, blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
