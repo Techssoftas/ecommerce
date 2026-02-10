@@ -1,0 +1,105 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from api.models import CustomUser, PasswordResetOTP
+import random
+import http.client
+import json
+
+class DashboardLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone = request.data.get("phone")
+        password = request.data.get("password")
+
+        if not phone or not password:
+            return Response({"error": "Phone number and password required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(request, username=phone, password=password) # USERNAME_FIELD is phone in CustomUser
+
+        if user is not None:
+            if user.user_type == 'admin':
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({
+                    "message": "Login Successful",
+                    "token": token.key,
+                    "user_type": user.user_type,
+                    "username": user.username or user.phone
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Unauthorized: Admin access required"}, status=status.HTTP_403_FORBIDDEN)
+        
+        return Response({"error": "Invalid Phone number or Password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class DashboardLogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            request.user.auth_token.delete()
+            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
+class DashboardForgotPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        if not phone:
+             return Response({'error': 'Phone number required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(phone=phone)
+            # Optional: Check if admin? User didn't specify strict check for forgot password, but good practice if only for dashboard.
+            # But let's keep it open or check admin if it's strictly dashboard api.
+            if user.user_type != 'admin':
+                 return Response({"error": "Unauthorized: Only admins can reset password here"}, status=status.HTTP_403_FORBIDDEN)
+
+            otp = str(random.randint(100000, 999999))
+
+            # Delete old OTPs
+            PasswordResetOTP.objects.filter(phone=phone).delete()
+            # Create new OTP
+            PasswordResetOTP.objects.create(phone=phone, otp=otp)
+
+            # Send SMS (Reusing logic logic or simplified)
+            formatted_phone = phone
+            if not phone.startswith('91'):
+                formatted_phone = '91' + phone
+            
+            if self.send_otp_sms(formatted_phone, otp):
+                return Response({
+                    'message': 'OTP sent successfully',
+                    'phone': formatted_phone
+                }, status=status.HTTP_200_OK)
+            else:
+                 return Response({'error': 'Failed to send OTP'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def send_otp_sms(self, phone, otp):
+        try:
+            conn = http.client.HTTPSConnection("control.msg91.com")
+            payload = {
+                "template_id": "6905a16bfe379201c74c5e32", # Using ID from api/views.py
+                "short_url": "1",
+                "recipients": [{"mobiles": phone, "number": otp}]
+            }
+            headers = {
+                'accept': "application/json",
+                'authkey': "470722Ae1mHUuQ3W6902fc0fP1", # Using key from api/views.py
+                'content-type': "application/json"
+            }
+            conn.request("POST", "/api/v5/flow", json.dumps(payload), headers)
+            res = conn.getresponse()
+            data = res.read()
+            response_data = json.loads(data.decode("utf-8"))
+            return response_data.get('type') == 'success'
+        except Exception as e:
+            print(f"Error sending SMS: {str(e)}")
+            return False
