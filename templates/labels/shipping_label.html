@@ -110,7 +110,7 @@
       </thead>
       <tbody>
        {% for item in order_items.items.all %}
-        <tr>
+        <tr  style="font-size: 20px; font-weight: 600">
           <td>{{ item.variant.variant_sku }}</td>
         <td>{{ item.size_variant.size }}</td>
         <td style="text-align:center">{{ item.quantity }}</td>
