@@ -1747,12 +1747,10 @@ def variant_create(request, product_id):
     if request.method == 'POST':
         # Main variant (color)
         color_name = request.POST.get('color_name')
+        variant_sku = request.POST.get('variant_sku')
         hex_color_code = request.POST.get('hex_color_code')
-        print("Color Name:", color_name)
-        print("Hex Color Code:", hex_color_code)
         # Images (can be multiple)
         variant_images = request.FILES.getlist('variant_images')
-        print("Variant Images:", variant_images)
         # Sizes (multiple with pricing)
        
 
@@ -1763,6 +1761,7 @@ def variant_create(request, product_id):
 
         # Create Variant (color-level)
         variant = ProductVariant.objects.create(
+            variant_sku=variant_sku,
             product=product,
             color_name=color_name,
             hex_color_code=hex_color_code

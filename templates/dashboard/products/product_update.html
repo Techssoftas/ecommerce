@@ -887,33 +887,10 @@ Products Create
                             <label class="form-label" for="product-price-input">Colors <span class="text-danger">*</span></label>
                                 
                             <div class="input-group">
-                                <label class="input-group-text" for="inputGroupSelect01">Colors</label>
-                                <select class="form-select" id="inputGroupSelect01" name="color_name">
-
-                                    <option value="black">Black</option>
-                                    <option value="red">Red</option>
-                                    <option value="green">Green</option>
-                                    <option value="blue">Blue</option>
-                                    <option value="yellow">Yellow</option>
-                                    <option value="orange">Orange</option>
-                                    <option value="purple">Purple</option>
-                                    <option value="pink">Pink</option>
-                                    <option value="white">White</option>
-                                    <option value="grey">Grey</option>
-                                    <option value="brown">Brown</option>
-                                    <option value="violet">Violet</option>
-                                    <option value="indigo">Indigo</option>
-                                    <option value="cyan">Cyan</option>
-                                    <option value="magenta">Magenta</option>
-                                    <option value="gold">Gold</option>
-                                    <option value="silver">Silver</option>
-                                    <option value="beige">Beige</option>
-                                    <option value="maroon">Maroon</option>
-                                    <option value="navy">Navy</option>
-                                    <option value="teal">Teal</option>
-                                    <option value="lime">Lime</option>
-                                    <option value="olive">Olive</option>
-                                </select>
+                                <label class="input-group-text" for="variant_create_colour">Color</label>
+                                <input type="text" name="color_name" class="form-control" 
+                                    id="variant_create_colour" placeholder="Enter variant Colors" required>
+                              
                             </div>
                         </div>
                         
@@ -935,6 +912,14 @@ Products Create
                             </div>
                         </div>
                       
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label for="variant_sku" class="form-label">Variant Sku <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="variant_sku" class="form-control" 
+                                    id="variant_sku" placeholder="Enter variant sku" required>
+                            </div>
+                        </div>
                        <!-- Size Selection -->
                         <div class="col-lg-12 mt-3">
                             <label class="form-label">Size <span class="text-danger">*</span></label>
