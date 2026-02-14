@@ -7,6 +7,8 @@ from api.models import CustomUser, PasswordResetOTP
 import random
 import http.client
 import json
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 class DashboardLoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -113,7 +115,21 @@ class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    permission_classes = [permissions.IsAuthenticated]
+    
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.filter(user_type='customer').order_by('-created_at')
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+from api.models import Product
+from api.serializers import DashboardProductSerializer
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all().order_by('-created_at')
+    serializer_class = DashboardProductSerializer
     permission_classes = [permissions.AllowAny]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['category', 'subcategory', 'is_active']
+    search_fields = ['name', 'description']
+    ordering_fields = ['price', 'created_at']

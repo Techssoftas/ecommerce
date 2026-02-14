@@ -221,6 +221,158 @@ class ProductSerializer(serializers.ModelSerializer):
         ).exists()
     
 
+# Dashboard Serializers
+class DashboardProductImageSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    image = serializers.ImageField(required=False)
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'is_primary', 'alt_text']
+
+class DashboardSizeVariantSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    class Meta:
+        model = SizeVariant
+        fields = ['id', 'size', 'sku', 'price', 'discount_price', 'mrp', 'stock']
+
+class DashboardProductVariantImageSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    image = serializers.ImageField(required=False)
+    class Meta:
+        model = ProductVariantImage
+        fields = ['id', 'image', 'is_default']
+
+class DashboardProductVariantSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    sizes = DashboardSizeVariantSerializer(many=True, required=False)
+    images = DashboardProductVariantImageSerializer(many=True, required=False)
+
+    class Meta:
+        model = ProductVariant
+        fields = ['id', 'color_name', 'variant_sku', 'hex_color_code', 'is_active', 'sizes', 'images']
+
+class DashboardProductSerializer(serializers.ModelSerializer):
+    images = DashboardProductImageSerializer(many=True, required=False)
+    variants = DashboardProductVariantSerializer(many=True, required=False)
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def create(self, validated_data):
+        images_data = validated_data.pop('images', [])
+        variants_data = validated_data.pop('variants', [])
+        
+        product = Product.objects.create(**validated_data)
+        
+        for image_data in images_data:
+            ProductImage.objects.create(product=product, **image_data)
+            
+        for variant_data in variants_data:
+            sizes_data = variant_data.pop('sizes', [])
+            variant_images_data = variant_data.pop('images', [])
+            
+            variant = ProductVariant.objects.create(product=product, **variant_data)
+            
+            for size_data in sizes_data:
+                SizeVariant.objects.create(variant=variant, **size_data)
+                
+            for variant_image_data in variant_images_data:
+                ProductVariantImage.objects.create(variant=variant, **variant_image_data)
+                
+        return product
+
+    def update(self, instance, validated_data):
+        # Update simple fields
+        fields = ['name', 'brand', 'model_name', 'fabric', 'occasion', 'short_description', 
+                  'description', 'specifications', 'key_features', 'category', 'subcategory', 
+                  'price', 'discount_price', 'discount_percentage', 'mrp', 'stock', 
+                  'minimum_order_quantity', 'maximum_order_quantity', 'sku', 'barcode', 'hsn_code',
+                  'weight', 'dimensions_length', 'dimensions_width', 'dimensions_height',
+                  'condition', 'availability_status', 'meta_title', 'meta_description', 'tags',
+                  'is_free_shipping', 'shipping_weight', 'delivery_time_min', 'delivery_time_max',
+                  'is_active', 'is_featured', 'is_bestseller', 'is_new_arrival', 'is_trending',
+                  'is_deal_of_day', 'is_returnable', 'is_replaceable', 'is_cod_available',
+                  'warranty_period', 'warranty_type', 'warranty_description',
+                  'return_period', 'replace_period', 'return_policy']
+        
+        for field in fields:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+        instance.save()
+
+        # Update Images
+        if 'images' in validated_data:
+            images_data = validated_data.pop('images')
+            self._update_nested_relation(
+                instance, images_data, 'images', ProductImage, 'product'
+            )
+
+        # Update Variants
+        if 'variants' in validated_data:
+            variants_data = validated_data.pop('variants')
+            self._update_variants(instance, variants_data)
+
+        return instance
+
+    def _update_nested_relation(self, parent, data_list, related_name, ModelClass, parent_field_name):
+        existing_items = {item.id: item for item in getattr(parent, related_name).all()}
+        kept_ids = []
+
+        for data in data_list:
+            item_id = data.get('id')
+            if item_id and item_id in existing_items:
+                # Update
+                item = existing_items[item_id]
+                for key, value in data.items():
+                    setattr(item, key, value)
+                item.save()
+                kept_ids.append(item_id)
+            else:
+                # Create
+                # Remove id from data if None or not present, though pop('id', None) inside loop is safer
+                if 'id' in data:
+                    del data['id'] 
+                data[parent_field_name] = parent
+                new_item = ModelClass.objects.create(**data)
+                kept_ids.append(new_item.id)
+        
+        # Delete removed items (Optional - depending on requirements, usually safe to delete if sending full list)
+        # For this request, I'll assume full sync.
+        for item_id, item in existing_items.items():
+            if item_id not in kept_ids:
+                item.delete()
+
+    def _update_variants(self, product, variants_data):
+        existing_variants = {v.id: v for v in product.variants.all()}
+        kept_variant_ids = []
+
+        for v_data in variants_data:
+            v_id = v_data.get('id')
+            sizes_data = v_data.pop('sizes', [])
+            images_data = v_data.pop('images', [])
+
+            if v_id and v_id in existing_variants:
+                variant = existing_variants[v_id]
+                for key, value in v_data.items():
+                    setattr(variant, key, value)
+                variant.save()
+                kept_variant_ids.append(v_id)
+            else:
+                if 'id' in v_data: del v_data['id']
+                v_data['product'] = product
+                variant = ProductVariant.objects.create(**v_data)
+                kept_variant_ids.append(variant.id)
+
+            # Update nested sizes and images for this variant
+            self._update_nested_relation(variant, sizes_data, 'sizes', SizeVariant, 'variant')
+            self._update_nested_relation(variant, images_data, 'images', ProductVariantImage, 'variant')
+
+        # Delete removed variants
+        for v_id, variant in existing_variants.items():
+            if v_id not in kept_variant_ids:
+                variant.delete()
+
 class ProductListSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     primary_image = serializers.SerializerMethodField()
