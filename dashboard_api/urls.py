@@ -1,11 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import DashboardLoginView, DashboardLogoutView, DashboardForgotPasswordView, PaymentViewSet, UserViewSet, ProductViewSet
+from .views import DashboardLoginView, DashboardLogoutView, DashboardForgotPasswordView, PaymentViewSet, UserViewSet, ProductViewSet, OrderViewSet, ReturnRequestViewSet
 
 router = DefaultRouter()
 router.register(r'payments', PaymentViewSet, basename='dashboard-payments')
 router.register(r'customers', UserViewSet, basename='dashboard-customers')
 router.register(r'products', ProductViewSet, basename='dashboard-products')
+router.register(r'orders', OrderViewSet, basename='dashboard-orders')
+router.register(r'return-requests', ReturnRequestViewSet, basename='dashboard-return-requests')
 
 urlpatterns = [
     path('login/', DashboardLoginView.as_view(), name='dashboard-login'),

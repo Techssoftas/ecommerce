@@ -133,3 +133,38 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category', 'subcategory', 'is_active']
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
+
+from api.models import Order, ReturnRequest
+from api.serializers import OrderSerializer, ReturnRequestSerializer
+from rest_framework.decorators import action
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all().order_by('-created_at')
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['status', 'payment__payment_method', 'payment__status']
+    search_fields = ['order_number', 'user__username', 'user__phone']
+    ordering_fields = ['created_at', 'total_amount']
+
+    @action(detail=False, methods=['get'])
+    def exchanges(self, request):
+        """
+        Returns orders that have at least one exchange request.
+        """
+        queryset = self.get_queryset().filter(items__returns__request_type='Exchange').distinct()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class ReturnRequestViewSet(viewsets.ModelViewSet):
+    queryset = ReturnRequest.objects.all().order_by('-requested_at')
+    serializer_class = ReturnRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['request_type', 'status']
+    search_fields = ['order_item__order__order_number', 'user__username', 'user__phone']
+    ordering_fields = ['requested_at']

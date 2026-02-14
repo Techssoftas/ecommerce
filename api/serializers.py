@@ -511,6 +511,11 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
 
+class ReturnRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReturnRequest
+        fields = '__all__'
+
 
 
 class PaymentSerializer(serializers.ModelSerializer):
