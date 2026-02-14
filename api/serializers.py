@@ -362,9 +362,17 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class PaymentSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='order.user.username')
+    order_number = serializers.CharField(source='order.order_number')
     class Meta:
+
         model = Payment
         fields = '__all__'
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        exclude = ['password','is_staff','is_superuser','is_active','last_login','user_type','groups','user_permissions','profile_image']
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer(read_only=True)

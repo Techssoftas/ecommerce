@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import DashboardLoginView, DashboardLogoutView, DashboardForgotPasswordView
+from .views import DashboardLoginView, DashboardLogoutView, DashboardForgotPasswordView, PaymentViewSet, UserViewSet
 
 router = DefaultRouter()
-# router.register(r'users', UserViewSet) # Example
+router.register(r'payments', PaymentViewSet, basename='dashboard-payments')
+router.register(r'customers', UserViewSet, basename='dashboard-customers')
 
 urlpatterns = [
     path('login/', DashboardLoginView.as_view(), name='dashboard-login'),

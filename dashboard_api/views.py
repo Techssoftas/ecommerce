@@ -103,3 +103,17 @@ class DashboardForgotPasswordView(APIView):
         except Exception as e:
             print(f"Error sending SMS: {str(e)}")
             return False
+
+from rest_framework import viewsets
+from api.models import *
+from api.serializers import PaymentSerializer,UserSerializer
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all().order_by('-created_at')
+    serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.filter(user_type='customer').order_by('-created_at')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
