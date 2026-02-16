@@ -186,6 +186,27 @@ class ProductVariantSerializer(serializers.ModelSerializer):
                   'created_at', 'updated_at', 'sizes', 'images']
 
 
+class ReviewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewImage
+        fields = ['review', 'image']
+  
+class ReviewSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer(read_only=True)
+    images = ReviewImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            'id',
+            'user',
+            'rating',
+            'title',        
+            'comment',     
+            'created_at',
+            'images'
+        ]
+
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
@@ -195,12 +216,14 @@ class ProductSerializer(serializers.ModelSerializer):
     primary_image = serializers.SerializerMethodField()
     new_variant  = serializers.SerializerMethodField()
     is_new_arrival = serializers.BooleanField()
+    reviews = ReviewSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'category','subcategory', 'price','mrp', 'discount_price', 'brand',
             'variants','description','new_variant','is_bestseller','is_new_arrival','key_features',
-            'discount_percentage', 'stock', 'images', 'primary_image',
+            'discount_percentage', 'stock', 'images', 'reviews','primary_image',
             'availability_status', 'is_active', 'is_featured'
         ]
 
@@ -372,6 +395,9 @@ class DashboardProductSerializer(serializers.ModelSerializer):
         for v_id, variant in existing_variants.items():
             if v_id not in kept_variant_ids:
                 variant.delete()
+
+
+
 
 class ProductListSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -581,3 +607,68 @@ class ShippingAddressSerializer(serializers.ModelSerializer):
             if ShippingAddress.objects.filter(user=user, is_default=True).exclude(id=self.instance.id if self.instance else None).exists():
                 raise serializers.ValidationError({"is_default": "User already has a default address."})
         return data
+
+
+
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        required=False,
+        write_only=True
+    )
+
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    product_id = serializers.IntegerField(source='product.id', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            'user_id',
+            'username',
+            'product_id',
+            'product_name',
+            'rating',
+            'title',
+            'comment',
+            'images'
+        ]
+
+    def validate(self, attrs):
+        request = self.context['request']
+        user = request.user
+        product = self.context['product']
+
+        # ✅ Check delivered order
+        delivered_order_exists = Order.objects.filter(
+            user=user,
+            status='Delivered',
+            items__product=product
+        ).exists()
+
+        if not delivered_order_exists:
+            raise serializers.ValidationError(
+                "You can review this product only after delivery."
+            )
+
+        return attrs
+
+    def create(self, validated_data):
+        images = validated_data.pop('images', [])
+        user = self.context['request'].user
+        product = self.context['product']
+
+        review = Review.objects.create(
+            user=user,
+            product=product,
+            **validated_data
+        )
+
+        for image in images:
+            ReviewImage.objects.create(
+                review=review,
+                image=image
+            )
+
+        return review

@@ -78,4 +78,8 @@ urlpatterns = [
     path('shipping-address/', ShippingAddressListCreateView.as_view(), name='shipping-addresses'),
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),
     path("delhivery/webhook/", delhivery_webhook, name="delhivery-webhook"),
+
+    #review and ratings get from customer
+    path('products/<int:product_id>/reviews/',CreateReviewAPIView.as_view(), name="create_review"),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

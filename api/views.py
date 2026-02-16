@@ -2701,3 +2701,34 @@ class ReturnRequestCreateView(APIView):
         )
 
         return Response({"message": f"{request_type} request submitted successfully."}, status=status.HTTP_201_CREATED)
+
+
+class CreateReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+
+        serializer = ReviewCreateSerializer(
+            data=request.data,
+            context={
+                'request': request,
+                'product': product
+            }
+        )
+
+        serializer.is_valid(raise_exception=True)
+        review = serializer.save()
+
+        return Response({
+            "user_id": review.user.id,
+            "username": review.user.username,
+            "product_id": review.product.id,
+            "product_name": review.product.name,
+            "rating": review.rating,
+            "title": review.title,
+            "comment": review.comment,
+            "review_images": [
+                img.image.url for img in review.images.all()
+            ]
+        }, status=status.HTTP_201_CREATED)
