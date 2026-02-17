@@ -79,7 +79,9 @@ urlpatterns = [
     path('shipping-address/<int:pk>/', ShippingAddressDetailView.as_view(), name='shipping-address-detail'),
     path("delhivery/webhook/", delhivery_webhook, name="delhivery-webhook"),
 
-    #review and ratings get from customer
+    #review and ratings get from customer,update,delete
     path('products/<int:product_id>/reviews/',CreateReviewAPIView.as_view(), name="create_review"),
+    path('reviews/update/<int:review_id>/', ReviewUpdateAPIView.as_view()),
+    path('reviews/delete/<int:review_id>/', ReviewDeleteAPIView.as_view()),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

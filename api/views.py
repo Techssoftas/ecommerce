@@ -6,11 +6,11 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import login, logout
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .models import *
 from .serializers import *
 from rest_framework.generics import RetrieveAPIView,UpdateAPIView
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated,AllowAny,BasePermission
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from django.conf import settings
@@ -27,6 +27,7 @@ from api.utils import send_sms
 from api.utils import send_order_sms
 from django.conf import settings
 import http.client
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -847,9 +848,16 @@ class CategoryListView(APIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
-    queryset = Product.objects.filter(is_active=True)
+    # queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
     # lookup_field = 'sku'
+    def get_queryset(self):
+        return Product.objects.filter(is_active=True).prefetch_related(
+            Prefetch(
+                'reviews',
+                queryset=Review.objects.filter(is_approved=True).prefetch_related('images')
+            )
+        )
 
 
 
@@ -2732,3 +2740,49 @@ class CreateReviewAPIView(APIView):
                 img.image.url for img in review.images.all()
             ]
         }, status=status.HTTP_201_CREATED)
+
+
+
+class IsReviewOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
+class ReviewUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsReviewOwner]
+
+    def patch(self, request, review_id):
+        review = get_object_or_404(Review, id=review_id)
+        self.check_object_permissions(request, review)
+
+        serializer = ReviewUpdateSerializer(
+            review,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            "message": "Review updated successfully",
+            "review": {
+                "rating": review.rating,
+                "title": review.title,
+                "comment": review.comment,
+                "images": [img.image.url for img in review.images.all()]
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class ReviewDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsReviewOwner]
+
+    def delete(self, request, review_id):
+        review = get_object_or_404(Review, id=review_id)
+        self.check_object_permissions(request, review)
+
+        review.delete()
+
+        return Response(
+            {"message": "Review deleted successfully"},
+            status=status.HTTP_200_OK
+        )

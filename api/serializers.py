@@ -651,7 +651,10 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "You can review this product only after delivery."
             )
-
+        if Review.objects.filter(user=user, product=product).exists():
+            raise serializers.ValidationError(
+                {"message": "You have already reviewed this product."}
+            )
         return attrs
 
     def create(self, validated_data):
@@ -672,3 +675,34 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
             )
 
         return review
+
+
+class ReviewUpdateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        required=False,
+        write_only=True
+    )
+
+    class Meta:
+        model = Review
+        fields = ['rating', 'title', 'comment', 'images']
+
+    def update(self, instance, validated_data):
+        images = validated_data.pop('images', None)
+
+        # Update text fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Replace images if provided
+        if images is not None:
+            instance.images.all().delete()
+            for image in images:
+                ReviewImage.objects.create(
+                    review=instance,
+                    image=image
+                )
+
+        return instance
