@@ -27,26 +27,38 @@ admin.site.register(ReturnRequest)
 #     list_filter = ('is_active', 'created_at')
 #     search_fields = ('name',)
 
-# class ProductImageInline(admin.TabularInline):
-#     model = ProductImage
-#     extra = 1
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
 
-# class ProductVariantInline(admin.TabularInline):
-#     model = ProductVariant
-#     extra = 1
+class ProductVariantInline(admin.TabularInline):
+    model = ProductVariant
+    extra = 1
 
-# @admin.register(Product)
-# class ProductAdmin(admin.ModelAdmin):
-#     list_display = ('name', 'category', 'price', 'stock', 'is_active', 'created_at')
-#     list_filter = ('category', 'is_active', 'created_at')
-#     search_fields = ('name', 'sku')
-#     inlines = [ProductImageInline, ProductVariantInline]
-
-# @admin.register(Order)
-# class OrderAdmin(admin.ModelAdmin):
-#     list_display = ('order_number', 'user', 'status', 'total_amount', 'created_at')
-#     list_filter = ('status', 'created_at')
-#     search_fields = ('order_number', 'user__username')
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('id','name','brand','model_name','short_category', 'price', 'stock', 'is_active', 'created_at')
+    list_filter = ('category', 'is_active', 'created_at')
+    search_fields = ('name', 'sku')
+    inlines = [ProductImageInline, ProductVariantInline]
+    def short_category(self, obj):
+        if obj.category and obj.category.name:
+            return obj.category.name[:20]
+        return ""
+    
+    short_category.short_description = "Category"
+    
+ 
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 1
+ 
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('order_number', 'user', 'status', 'total_amount', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('order_number', 'user__username')
+    inlines = [OrderItemInline]
 
 # @admin.register(Payment)
 # class PaymentAdmin(admin.ModelAdmin):
@@ -56,11 +68,11 @@ admin.site.register(ReturnRequest)
 
 admin.site.register(ProductImage)
 admin.site.register(ProductVariant)
-admin.site.register(Product)
+# admin.site.register(Product)
 admin.site.register(Cart)
 admin.site.register(CartItem)
 admin.site.register(CustomUser)
 admin.site.register(Wishlist)
-admin.site.register(OrderItem)
-admin.site.register(Order)
+# admin.site.register(OrderItem)
+# admin.site.register(Order)
 admin.site.register(Review)

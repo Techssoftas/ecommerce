@@ -373,6 +373,20 @@ class DashboardProductSerializer(serializers.ModelSerializer):
             if v_id not in kept_variant_ids:
                 variant.delete()
 
+class DashboardProductSubcategorySerializer(serializers.ModelSerializer):
+    # images = DashboardProductImageSerializer(many=True, required=False)
+    last_images = serializers.SerializerMethodField()
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    class Meta:
+        model = Product
+        fields = ['id','name','category_name','mrp','price','last_images']
+
+    def get_last_images(self, obj):
+        image = obj.images.filter(is_primary=True).order_by('-id').first()
+        if image:
+            return DashboardProductImageSerializer(image).data
+        return None
+
 class ProductListSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     primary_image = serializers.SerializerMethodField()

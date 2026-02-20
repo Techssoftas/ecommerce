@@ -123,16 +123,21 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 from api.models import Product
-from api.serializers import DashboardProductSerializer
+from api.serializers import DashboardProductSerializer, DashboardProductSubcategorySerializer
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by('-created_at')
     serializer_class = DashboardProductSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['category', 'subcategory', 'is_active']
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
+
+    def get_serializer_class(self):
+        if self.action == 'list' and 'subcategory' in self.request.query_params:
+            return DashboardProductSubcategorySerializer
+        return self.serializer_class
 
 from api.models import Order, ReturnRequest
 from api.serializers import OrderSerializer, ReturnRequestSerializer
@@ -143,7 +148,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['status', 'payment__payment_method', 'payment__status']
+    filterset_fields = ['order_number','status', 'payment__payment_method', 'payment__status']
     search_fields = ['order_number', 'user__username', 'user__phone']
     ordering_fields = ['created_at', 'total_amount']
 
