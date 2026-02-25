@@ -165,6 +165,17 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        data = {
+            "total_orders": Order.objects.count(),
+            "delivered_orders": Order.objects.filter(status='Delivered').count(),
+            "ready_to_ship_orders": Order.objects.filter(status='Ready to Ship').count(),
+            "cancelled_orders": Order.objects.filter(status='Cancelled').count(),
+            "pending_orders": Order.objects.filter(status='Pending').count(),
+        }
+        return Response(data)
+    
 class ReturnRequestViewSet(viewsets.ModelViewSet):
     queryset = ReturnRequest.objects.all().order_by('-requested_at')
     serializer_class = ReturnRequestSerializer

@@ -471,6 +471,13 @@ class WishlistSerializer(serializers.ModelSerializer):
         model = Wishlist
         fields = '__all__'
 
+class PaymentSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='order.user.username')
+    order_number = serializers.CharField(source='order.order_number')
+    class Meta:
+
+        model = Payment
+        fields = '__all__'
 
 
 class TrackingScanSerializer(serializers.ModelSerializer):
@@ -517,14 +524,34 @@ class OrderItemSerializer(serializers.ModelSerializer):
             if (now - delivery_date).days <= replace_period:
                 return True
         return False
-
+class OrderPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['payment_method']
+        
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(read_only=True,many=True)
     tracking = OrderTrackingSerializer(read_only=True)
+    payment = serializers.SerializerMethodField()   
+    user = serializers.SerializerMethodField()   
     class Meta:
         model = Order
-        fields = '__all__'
-
+        fields = ['order_number','user','status','total_amount','tracking','items','payment','created_at']
+        
+    def get_payment(self, obj):   # 👈 Outside Meta
+        if obj.payment:
+            return {
+                "payment_method": obj.payment.payment_method
+            }
+        return None
+    def get_user(self, obj):   # 👈 Outside Meta
+        if obj.user:
+            return {
+                "username": obj.user.username,
+              
+            }
+        return None
+    
 class ReturnRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReturnRequest
@@ -532,13 +559,6 @@ class ReturnRequestSerializer(serializers.ModelSerializer):
 
 
 
-class PaymentSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='order.user.username')
-    order_number = serializers.CharField(source='order.order_number')
-    class Meta:
-
-        model = Payment
-        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
